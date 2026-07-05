@@ -9,7 +9,7 @@ const ROOT = projectRoot();
 const SELF = fileURLToPath(import.meta.url);
 
 const TEXT_EXTENSIONS = new Set([".css", ".html", ".js", ".json", ".md", ".mjs", ".txt", ".yaml", ".yml", ".py", ".ps1", ".sh"]);
-const EXTENSIONLESS_TEXT_FILES = new Set([".gitignore", ".editorconfig", "pre-commit", "CODEOWNERS"]);
+const EXTENSIONLESS_TEXT_FILES = new Set([".gitignore", ".gitattributes", ".editorconfig", "pre-commit", "CODEOWNERS", "LICENSE"]);
 
 function isTextFile(path) {
   if (path === SELF) return false;
@@ -24,6 +24,7 @@ const PLACEHOLDERS = [
   { key: "PROJECT_TAGLINE", question: "一句话项目定位", example: "个人项目与技术分享网站", required: true },
   { key: "GITHUB_OWNER", question: "GitHub 账号", example: "lyty1997", required: true },
   { key: "GITHUB_REPO", question: "GitHub 仓库名", derive: (a) => a.PROJECT_NAME },
+  { key: "COPYRIGHT_HOLDER", question: "版权归属者（个人或组织的法定名称，写入 LICENSE）", derive: (a) => a.GITHUB_OWNER },
 ];
 
 const PREVIEW_PLACEHOLDERS = [
@@ -86,6 +87,29 @@ function replaceAllTokens(text, answers) {
   return result;
 }
 
+// 返回 keys 中仍然出现在仓库文本文件里的占位符键（用于判断哪些还没被替换）。
+function remainingTokenKeys(keys) {
+  const present = new Set();
+  for (const path of listFiles(ROOT, isTextFile)) {
+    const text = readFileSync(path, "utf8");
+    for (const key of keys) {
+      if (!present.has(key) && text.includes(`__${key}__`)) present.add(key);
+    }
+  }
+  return keys.filter((key) => present.has(key));
+}
+
+// 重跑时从已初始化的 package.json 里回读 slug，供派生 SSH_KEY_NAME 用，避免要求用户重输基础信息。
+function readExistingSlug() {
+  try {
+    const pkg = JSON.parse(readFileSync(resolve(ROOT, "package.json"), "utf8"));
+    if (typeof pkg.name === "string" && !/__[A-Z_]+__/.test(pkg.name)) return pkg.name;
+  } catch {
+    // 读不到就返回空，交给下面按需补问。
+  }
+  return "";
+}
+
 async function main() {
   const prompter = createPrompter();
 
@@ -99,21 +123,40 @@ async function main() {
     }
   }
 
-  console.log("== 项目基本信息 ==");
   const answers = {};
-  for (const spec of PLACEHOLDERS) {
-    answers[spec.key] = await ask(prompter, spec, answers);
+  // 只在基础占位符还没被替换时才问基础信息；已初始化后重跑（例如补配预览工作流）会跳过这一段，
+  // 只回读 slug 供派生用——兑现末尾"重跑只补填预览部分"的承诺。
+  const baseRemaining = remainingTokenKeys(PLACEHOLDERS.map((spec) => spec.key));
+  if (baseRemaining.length > 0) {
+    console.log("== 项目基本信息 ==");
+    for (const spec of PLACEHOLDERS) {
+      answers[spec.key] = await ask(prompter, spec, answers);
+    }
+  } else {
+    console.log("== 项目基本信息：检测到已初始化，跳过基础问答 ==");
+    const slug = readExistingSlug();
+    if (slug) answers.PROJECT_SLUG = slug;
   }
 
   console.log("\n== 跨机协同预览工作流（可选，本地渲染端 + 远端托管端）==");
   const wantsPreview = (await prompter.prompt("是否需要这套工作流？(y/N): ")).toLowerCase() === "y";
   if (wantsPreview) {
+    if (!answers.PROJECT_SLUG) {
+      answers.PROJECT_SLUG = await ask(
+        prompter,
+        { key: "PROJECT_SLUG", question: "kebab-case 技术标识（用于命名预览专用 SSH 密钥）", required: true },
+        answers
+      );
+    }
     for (const spec of PREVIEW_PLACEHOLDERS) {
       answers[spec.key] = await ask(prompter, spec, answers);
     }
   }
 
   prompter.close();
+
+  // 版权年份由脚本自动填写，不作为问答项。
+  answers.COPYRIGHT_YEAR = String(new Date().getFullYear());
 
   console.log("\n正在替换占位符...");
   let touched = 0;
@@ -144,7 +187,7 @@ async function main() {
     console.log(
       "未配置跨机协同预览工作流。用不到的话可以删除 docs/architecture/dev-workflow.md、" +
         "scripts/dev/preview.sh、scripts/dev/restart-remote.ps1、scripts/dev/dev-workflow.env.example；" +
-        "以后要用的话重新运行一次 node scripts/init.mjs 即可只补填这部分。"
+        "以后要用的话重新运行一次 node scripts/init.mjs：基础信息已替换过会自动跳过，只需补填这部分。"
     );
   }
 

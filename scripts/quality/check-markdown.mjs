@@ -59,6 +59,11 @@ function scanLinkTargets(line) {
   return targets;
 }
 
+// 去掉行内代码 `...`（用等长空格占位以保持列位置），避免把文档里演示的链接语法当成真链接。
+function stripInlineCode(line) {
+  return line.replace(/`[^`]*`/g, (match) => " ".repeat(match.length));
+}
+
 function normalizeTarget(rawTarget) {
   let target = rawTarget.trim();
   if (!target || SKIP_PREFIXES.some((prefix) => target.startsWith(prefix))) {
@@ -78,7 +83,14 @@ function checkInternalLinks() {
   for (const markdownPath of markdownFiles()) {
     const text = readText(markdownPath);
     const lines = text.split(/\r?\n/);
-    for (const [index, line] of lines.entries()) {
+    let inFence = false;
+    for (const [index, rawLine] of lines.entries()) {
+      if (/^\s*(```|~~~)/.test(rawLine)) {
+        inFence = !inFence;
+        continue;
+      }
+      if (inFence) continue;
+      const line = stripInlineCode(rawLine);
       for (const rawTarget of scanLinkTargets(line)) {
         const target = normalizeTarget(rawTarget);
         if (!target) continue;
@@ -106,12 +118,28 @@ function checkDocsReadmeIndexesAllDocs() {
   }
 
   const readmeText = readFileSync(readmePath, "utf8");
-  const errors = [];
 
+  // 收集 README 里所有内部链接指向的绝对路径（跳过围栏/行内代码），按"确实被链接"判定，
+  // 而不是裸 String.includes——后者会因路径子串碰撞（如 overview.md 是 architecture/overview.md 的子串）误判为已索引。
+  const linkedTargets = new Set();
+  let inFence = false;
+  for (const rawLine of readmeText.split(/\r?\n/)) {
+    if (/^\s*(```|~~~)/.test(rawLine)) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+    for (const rawTarget of scanLinkTargets(stripInlineCode(rawLine))) {
+      const target = normalizeTarget(rawTarget);
+      if (target) linkedTargets.add(resolve(DOCS_ROOT, target));
+    }
+  }
+
+  const errors = [];
   for (const docPath of listFiles(DOCS_ROOT, (path) => path.endsWith(".md"))) {
     if (docPath === readmePath) continue;
-    const relativePath = relative(DOCS_ROOT, docPath).replaceAll("\\", "/");
-    if (!readmeText.includes(relativePath)) {
+    if (!linkedTargets.has(docPath)) {
+      const relativePath = relative(DOCS_ROOT, docPath).replaceAll("\\", "/");
       errors.push(`docs/README.md does not index docs/${relativePath}`);
     }
   }

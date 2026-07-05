@@ -5,14 +5,19 @@ on:
   push:
     branches:
       - main
+      - dev
 
 permissions:
   contents: read
 
 jobs:
-  website-quality:
-    name: Website quality gates
-    runs-on: ubuntu-latest
+  quality:
+    name: Quality gates
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout
@@ -25,4 +30,3 @@ jobs:
 
       - name: Quality gates
         run: npm run quality
-

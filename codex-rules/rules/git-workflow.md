@@ -7,6 +7,13 @@
 - 不执行 `git reset --hard`、`git checkout --` 等破坏性操作，除非用户明确要求并确认风险。
 - 提交前运行相关质量门禁。
 
+## 分支与提交规范
+
+- 分支：`main` 稳定不直接提交，`dev` 开发主干，特性分支用 `feature/描述` / `bugfix/描述`。
+- 提交信息用中文，格式 `<type>(<scope>): <主题>`（常用 type：feat / fix / docs / refactor / chore / test）。
+- 提交信息**不带** `Co-Authored-By` 尾注。
+- 这套约定与根目录 [AGENTS.md](../../AGENTS.md)、[CLAUDE.md](../../CLAUDE.md) 一致，是本仓库的唯一提交规范来源。
+
 ## 提交内容
 
 - 提交应聚焦一个清晰目的。

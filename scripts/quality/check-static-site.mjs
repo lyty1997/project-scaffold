@@ -27,11 +27,18 @@ for (const snippet of config.requiredSnippets ?? []) {
   }
 }
 
-const resourceMatches = html.matchAll(/(?:href|src)="(\.\/[^"]+)"/g);
+// 覆盖单/双引号与任意相对路径；跳过绝对 URL（http(s)://、//、data:、mailto: 等）、
+// 根相对路径（/... 交给部署时校验）和纯锚点（#...）。
+const resourceMatches = html.matchAll(/(?:href|src)\s*=\s*("([^"]+)"|'([^']+)')/gi);
 for (const match of resourceMatches) {
-  const resourcePath = resolve(entryPath, "..", match[1]);
+  const url = (match[2] ?? match[3] ?? "").trim();
+  if (!url) continue;
+  if (/^(?:[a-z][a-z0-9+.-]*:|\/\/|#)/i.test(url)) continue;
+  if (url.startsWith("/")) continue;
+  const cleanUrl = url.split(/[?#]/, 1)[0];
+  const resourcePath = resolve(entryPath, "..", cleanUrl);
   if (!existsSync(resourcePath)) {
-    errors.push(`${config.entryFile} references missing resource: ${match[1]}`);
+    errors.push(`${config.entryFile} references missing resource: ${url}`);
   }
 }
 

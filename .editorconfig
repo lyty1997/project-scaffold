@@ -11,3 +11,7 @@ trim_trailing_whitespace = true
 [*.md]
 trim_trailing_whitespace = false
 
+# Windows PowerShell 脚本用 CRLF，并保持 UTF-8 BOM（见 codex-rules/known-issues.md）。
+[*.ps1]
+end_of_line = crlf
+

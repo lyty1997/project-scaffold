@@ -67,9 +67,10 @@ npm run check:js          # 质量脚本自身语法自检（node --check）
 
 ## 文档一致性门禁现状
 
-`npm run quality` 由四个门禁串联，任一失败即 CI 失败（`.github/workflows/ci.yml` 在 PR 与推送 `main` 时运行同一命令）：
+`npm run quality` 由五个步骤串联（先 `check:js` 做脚本自检，再跑四道内容门禁），任一失败即 CI 失败（`.github/workflows/ci.yml` 在 PR、推送 `main`/`dev` 时于 Ubuntu 与 Windows 上运行同一命令）：
 
-- `check:docs`（`scripts/quality/check-markdown.mjs`）：校验所有 `*.md` 的内部链接不断链、不逃逸仓库；并强制 **`docs/` 下每个 `.md` 都被 `docs/README.md` 索引**。新增 `docs/` 文档后必须在 `docs/README.md` 补索引，否则门禁失败。
+- `check:js`（`node --check`）：对 `scripts/init.mjs`、`scripts/quality/lib/files.mjs` 及四个门禁脚本做语法自检，防止脚本自身语法错误在运行时才暴露。
+- `check:docs`（`scripts/quality/check-markdown.mjs`）：校验所有 `*.md` 的内部链接不断链、不逃逸仓库（跳过围栏/行内代码里的示例链接）；并强制 **`docs/` 下每个 `.md` 都被 `docs/README.md` 以链接形式索引**。新增 `docs/` 文档后必须在 `docs/README.md` 补索引，否则门禁失败。
 - `check:contracts`（`scripts/quality/check-contracts.mjs`）：真相源是 [docs/contracts/contract-terms.json](docs/contracts/contract-terms.json)（稳定契约名/枚举）与 [docs/contracts/contract-rules.json](docs/contracts/contract-rules.json)（`forbidden_terms` 防旧名回潮、`scoped_terms` 防契约词跨层误用）。扫描范围由 `contract-rules.json` 的 `scan.roots` 决定，脚手架默认值只是全栈项目的常见示例，请按你项目实际的顶层目录调整。改契约名先动这两个 JSON。
 - `check:secrets`（`scripts/quality/check-secrets.mjs`）：扫描常见密钥形态，防止 token/密钥误入库。
 - `check:site`（`scripts/quality/check-static-site.mjs`）：读取 [docs/contracts/site-checks.json](docs/contracts/site-checks.json) 里配置的入口文件路径和必需片段；如果配置的入口文件还不存在（比如你还没搭建前端），这一项门禁会打印提示并直接跳过，不会因为"还没有前端"而报错。一旦有了真正的入口文件，改动它的结构或必需片段时同步改 `site-checks.json`。

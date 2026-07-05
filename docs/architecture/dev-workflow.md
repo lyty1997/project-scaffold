@@ -107,7 +107,7 @@ __PROJECT_NAME__.preview/          # 新增 worktree，专门用于 checkout 待
 为了让"改源码→同步→重启→查看"能在本地渲染端一端一次性发起、不必再手动切到远端托管机端会话，新增：
 
 - `scripts/dev/restart-remote.ps1`（只在本地渲染端用）：SSH 到远端托管机，`cd` 到仓库实际路径后执行 `./scripts/dev/preview.sh restart <分支>`。不重新实现远端逻辑，只是把"喊它跑一次"这一步从本地渲染端补上。默认分支取本地当前分支，也可用 `-Branch` 显式指定。所有环境相关的值（主机地址、用户名、仓库路径）同样从 `scripts/dev/dev-workflow.env` 读取，缺失时报错并提示补全配置文件，不在脚本里写死默认值。
-- 依赖：本地渲染端到 `__PREVIEW_HOST__`（用户 `__REMOTE_USER__`）的免密 SSH 登录，用一把**专用**密钥（占位符 `__SSH_KEY_NAME__`，例如 `~/.ssh/id_ed25519_<项目>_preview` 这种命名模式，不复用 GitHub 或其它用途的密钥），在 `~/.ssh/config` 里通过 `Host __PREVIEW_HOST__` + `IdentityFile` + `IdentitiesOnly yes` 绑定，公钥需要用户手动追加到远端托管机 `~/.ssh/authorized_keys`（这一步涉及修改远端机器的访问控制，Claude 不代为操作，只生成密钥对和使用说明）。**注意**：仅仅在本地 `known_hosts` 里出现远端主机指纹，不代表免密登录已经生效，配好后必须实际执行一次 SSH 命令验证能无密码登录成功，不能只凭配置文件"看起来对"就认为通道已打通。
+- 依赖：本地渲染端到 `__PREVIEW_HOST__`（用户 `__REMOTE_USER__`）的免密 SSH 登录，用一把**专用**密钥（占位符 `__SSH_KEY_NAME__`，例如 `~/.ssh/id_ed25519_<项目>_preview` 这种命名模式，不复用 GitHub 或其它用途的密钥）。`restart-remote.ps1` 会在 `dev-workflow.env` 里配置了 `REMOTE_USER` / `SSH_KEY_NAME` 时，直接以 `user@host` 并 `-i ~/.ssh/<密钥> -o IdentitiesOnly=yes` 发起 SSH；两者都没配置时退回裸 `ssh <host>`，改由 `~/.ssh/config` 的 `Host __PREVIEW_HOST__` + `IdentityFile` + `IdentitiesOnly yes` 解析。无论走哪条路，公钥都需要用户手动追加到远端托管机 `~/.ssh/authorized_keys`（这一步涉及修改远端机器的访问控制，Claude 不代为操作，只生成密钥对和使用说明）。**注意**：仅仅在本地 `known_hosts` 里出现远端主机指纹，不代表免密登录已经生效，配好后必须实际执行一次 SSH 命令验证能无密码登录成功，不能只凭配置文件"看起来对"就认为通道已打通。
 - `sync.ps1 -RestartPreview` 会在推送成功后自动调用这个脚本，实现单条命令收尾。
 
 ## 端到端迭代流程

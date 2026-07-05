@@ -41,6 +41,7 @@ git config core.hooksPath .githooks
 
 当前首版不依赖第三方包，`quality` 使用 Node.js 内置能力检查：
 
+- 质量脚本自身语法自检（`node --check`）。
 - Markdown 内部链接和 `docs/README.md` 索引完整性。
 - 契约词表和禁用旧名回潮。
 - 常见密钥形态。

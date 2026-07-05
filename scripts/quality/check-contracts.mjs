@@ -22,10 +22,9 @@ function compileMatcher(term, match = "word") {
   if (match === "regex") return new RegExp(term);
   if (match === "literal") return new RegExp(escaped);
   if (match === "markdown_code") return new RegExp(`\`${escaped}\``);
-  if (/^[0-9A-Za-z_]+$/.test(term)) {
-    return new RegExp(`(?<![0-9A-Za-z_])${escaped}(?![0-9A-Za-z_])`);
-  }
-  return new RegExp(escaped);
+  // word：Unicode 感知的词边界，ASCII 与中文（及多词短语）统一按"字母/数字/下划线"判定边界，
+  // 避免中文契约词退化成子串匹配（例如 `草稿` 命中 `草稿箱` 造成误判）。
+  return new RegExp(`(?<![\\p{L}\\p{N}_])${escaped}(?![\\p{L}\\p{N}_])`, "u");
 }
 
 function scanFiles(rules) {
@@ -67,14 +66,21 @@ function validateContractFiles(terms, rules) {
 
 function checkForbiddenAndScopedTerms(rules) {
   const errors = [];
-  const forbidden = asArray(rules.forbidden_terms).map((rule) => ({
-    ...rule,
-    matcher: compileMatcher(rule.term, rule.match),
-  }));
-  const scoped = asArray(rules.scoped_terms).map((rule) => ({
-    ...rule,
-    matcher: compileMatcher(rule.term, rule.match),
-  }));
+  // 编译规则里的正则；用户在 JSON 里写错正则（尤其 match:"regex"）时收集为清晰错误，
+  // 而不是让整个门禁抛未捕获异常、只剩一段栈信息。
+  const compileRules = (list, kind) =>
+    asArray(list)
+      .map((rule) => {
+        try {
+          return { ...rule, matcher: compileMatcher(rule.term, rule.match) };
+        } catch (error) {
+          errors.push(`${RULES_PATH}: ${kind} 规则词 \`${rule.term}\` 的正则无法编译：${error.message}`);
+          return null;
+        }
+      })
+      .filter(Boolean);
+  const forbidden = compileRules(rules.forbidden_terms, "forbidden_terms");
+  const scoped = compileRules(rules.scoped_terms, "scoped_terms");
 
   for (const filePath of scanFiles(rules)) {
     const relativePath = relative(ROOT, filePath).replaceAll("\\", "/");

@@ -7,7 +7,8 @@ repo_root="$(git rev-parse --show-toplevel)"
 cd "$repo_root"
 
 if ! command -v npm >/dev/null 2>&1; then
-  echo "pre-commit: 未找到 npm，跳过质量门禁；请手动运行 'npm run quality' 后再提交。" >&2
+  echo "pre-commit: 未找到 npm，无法运行质量门禁，已阻止本次提交。" >&2
+  echo "pre-commit: 请安装 Node.js/npm（要求 Node ≥ 22）后重试；确需跳过请自行评估风险用 git commit --no-verify。" >&2
   exit 1
 fi
 
