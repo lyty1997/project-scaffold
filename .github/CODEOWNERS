@@ -1,0 +1,8 @@
+# Replace @__GITHUB_OWNER__ with the actual GitHub account or team if the repository owner differs.
+* @__GITHUB_OWNER__
+
+# Documentation, contracts and quality gates need explicit owner review.
+/docs/ @__GITHUB_OWNER__
+/codex-rules/ @__GITHUB_OWNER__
+/scripts/quality/ @__GITHUB_OWNER__
+/.github/workflows/ @__GITHUB_OWNER__

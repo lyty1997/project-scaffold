@@ -1,0 +1,22 @@
+{
+  "version": "0.1.0",
+  "kind": "project_contract_terms",
+  "status": "active",
+  "owner": "__PROJECT_NAME__",
+  "description": "跨文档、代码和质量脚本共享的稳定契约名，防止品牌、命名和状态漂移，请根据你的项目实际情况增删。",
+  "terms": {
+    "__BRAND_NAME__": {
+      "kind": "brand",
+      "owner": "site",
+      "canonical": true,
+      "source": ["README.md"]
+    }
+  },
+  "enums": {
+    "content_stage": {
+      "owner": "content",
+      "members": ["draft", "planned", "published", "archived"],
+      "source": ["docs/product/content-roadmap.md"]
+    }
+  }
+}
