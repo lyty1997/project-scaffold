@@ -1,0 +1,32 @@
+# System
+.DS_Store
+Thumbs.db
+
+# Dependencies and package-manager caches
+node_modules/
+.npm/
+.pnpm-store/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+coverage/
+
+# Local environment
+.env
+.env.*
+!.env.example
+scripts/dev/dev-workflow.env
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*

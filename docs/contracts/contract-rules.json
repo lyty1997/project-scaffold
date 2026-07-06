@@ -1,0 +1,41 @@
+{
+  "version": "0.1.0",
+  "kind": "project_contract_rules",
+  "status": "active",
+  "owner": "__PROJECT_NAME__",
+  "description": "通用文档同步门禁规则。forbidden_terms 防旧名回潮；scoped_terms 防契约词跨层误用。",
+  "scan": {
+    "roots": ["docs", "public", "frontend", "backend", "scripts", "codex-rules", ".github"],
+    "roots_note": "roots 应该改成你项目里实际存在源码/文档的顶层目录，这里的列表只是全栈项目的常见示例，按需增删。",
+    "extensions": [".md", ".html", ".css", ".js", ".mjs", ".json", ".yml", ".yaml"],
+    "skip_paths": ["docs/contracts/", "node_modules/", ".git/"]
+  },
+  "forbidden_terms": [
+    {
+      "term": "已完成开发",
+      "match": "literal",
+      "use": "开发中",
+      "reason": "示例规则：避免把未完成的功能描述成已完成。请替换为你项目里实际需要防回潮的措辞。"
+    },
+    {
+      "term": "已上线产品服务",
+      "match": "literal",
+      "use": "计划中的产品服务",
+      "reason": "示例规则：当前阶段不得把未来能力写成已上线事实。请替换为你项目里实际需要防回潮的措辞。"
+    }
+  ],
+  "scoped_terms": [
+    {
+      "term": "待确认",
+      "match": "literal",
+      "allowed_paths": [
+        "docs/architecture/open-decisions.md",
+        "docs/architecture/glossary.md",
+        "docs/product/",
+        "docs/contracts/",
+        "codex-rules/"
+      ],
+      "reason": "待确认事项应集中记录，避免散落在页面和实现中。"
+    }
+  ]
+}

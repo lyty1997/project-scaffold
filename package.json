@@ -1,0 +1,19 @@
+{
+  "name": "__PROJECT_SLUG__",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "init": "node scripts/init.mjs",
+    "test": "echo \"(尚未配置测试；确定技术选型后按 docs/architecture/open-decisions.md 记录并补上)\"",
+    "quality": "npm run check:js && npm run check:docs && npm run check:contracts && npm run check:secrets && npm run check:site",
+    "check:js": "node --check scripts/init.mjs && node --check scripts/quality/lib/files.mjs && node --check scripts/quality/check-markdown.mjs && node --check scripts/quality/check-contracts.mjs && node --check scripts/quality/check-secrets.mjs && node --check scripts/quality/check-static-site.mjs",
+    "check:docs": "node scripts/quality/check-markdown.mjs",
+    "check:contracts": "node scripts/quality/check-contracts.mjs",
+    "check:secrets": "node scripts/quality/check-secrets.mjs",
+    "check:site": "node scripts/quality/check-static-site.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

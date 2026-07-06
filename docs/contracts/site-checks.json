@@ -1,0 +1,6 @@
+{
+  "entryFile": "public/index.html",
+  "requiredSnippets": [
+    "<title>__BRAND_NAME__</title>"
+  ]
+}
