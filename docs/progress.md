@@ -6,6 +6,11 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-07 / CI 保养：GitHub Actions 升到 v5
+
+- 完成：`.github/workflows/ci.yml` 里 `actions/checkout`、`actions/setup-node`、`actions/setup-java` 全部由 `@v4` 升到 `@v5`（共 5 处），消除 "Node.js 20 is deprecated"（这些 action 底层 runtime 由 node20 → node24）的 CI 警告。输入参数（`node-version`/`distribution`/`java-version`）在 v5 保持不变，无需其它改动；这是纯警告清理，不影响门禁成败。
+- 遗留：无。
+
 ## 2026-07-07 / 彻底修 CI：废弃 SVG 新鲜度字节门禁，只保留编译校验
 
 - 背景：上一条把 CI 的 PlantUML 版本对齐到 1.2026.1 后 push，CI **仍红**在同一步。查 SVG 内容发现文字是 `textLength="41.9998"` 这类值、整图 `width/height` 按文字排版反推，都来自 **JVM 的 AWT 字体度量**——我本地和 CI runner（Temurin 21 + 不同已装字体）字体度量不同，同一版本 PlantUML 渲染出的 SVG 字节照样不同。结论：`check:diagrams:fresh` 的"字节相等"比较跨机器天生对不上，版本对齐是必要但不充分，这道门禁的设计前提（同版本→同字节）本身就是错的。
