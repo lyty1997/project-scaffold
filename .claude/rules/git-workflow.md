@@ -13,3 +13,4 @@ type: `feat|fix|docs|style|refactor|test|chore`  scope: `core|agents|memory|skil
 
 ## 提交前
 - 运行风格检查和测试，确保无敏感信息
+- 本仓库已用 `.githooks/commit-msg` 把提交格式变成机器强制（`git config core.hooksPath .githooks` 后生效），不合规格式会被直接拒绝

@@ -24,6 +24,7 @@
 ## 规则索引
 
 - `rules/codex-workflow.md`：Codex 通用工作流。
+- `rules/issue-workflow.md`：Issue 编写与拆解规范（API 先对齐、自测证据、复杂任务拆子 issue）。
 - `rules/content-product-rules.md`：内容、产品服务和公开表达规则。
 - `rules/frontend-web-rules.md`：网站前端与交互规范。
 - `rules/markdown-docs.md`：Markdown 设计文档规范。

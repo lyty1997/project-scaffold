@@ -24,6 +24,8 @@
 
 - 测试框架与范围：确定技术栈后选定测试运行器（如 `node --test`、Vitest、Pytest 等），把占位的 `npm test` 换成真实命令，并考虑是否新增 `check:test` 门禁纳入 `npm run quality`。
 - 依赖与锁文件策略：引入第一个第三方依赖时，约定锁文件（`package-lock.json` 等）是否入库、CI 是否改用 `npm ci` 保证可复现构建；在此之前保持零依赖。
+- CI job 拆分时机：一旦引入数据库等需要外部服务的依赖，`.github/workflows/ci.yml` 应把现有单一 `quality` job 拆成"无外部依赖的快 job"（继续跑 `npm run quality`）和"起 docker/服务容器的慢 job"（跑迁移、集成测试），两者独立失败、互不拖慢；后者建议验证"迁移可回滚再重新迁移"的闭环（up → down → up），而不是只跑一遍 migrate 就算过。
+- 数据库迁移引入后，若同时维护"迁移顺序设计文档台账"，考虑加一道机器校验：以实际迁移文件名为真相源，扫描核对台账文档是否同步，避免人工登记的编号和文件系统漂移。参考实现见 [迁移一致性门禁参考脚本](stack-recipes/migration-ledger-check.md)（按需启用，不强制）。
 
 ## 隐私与运营
 

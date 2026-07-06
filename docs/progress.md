@@ -2,9 +2,15 @@
 
 本文件是 __PROJECT_NAME__ 的项目进度真相源，按时间倒序记录每次任务的完成内容与遗留项。每次任务结束或中断时更新。
 
-条目格式：`时间戳 / 主题 / 完成内容 / 遗留项`。
+条目格式：`时间戳 / 主题 / 完成内容 / 遗留项`。任务中如果 Agent 替用户做了未经明确确认的判断（例如自行选定某个细节实现方式），建议在条目里加一句"我替你做的判断（可否决）"，方便用户回看时能一眼看出哪些地方可以推翻重来。
 
 下面按新任务倒序追加条目。
+
+## 2026-07-06 / 从三个外部项目吸收通用脚手架配方
+
+- 完成：调研 DocRestore-pro、Augur_Maestro、Narrative_Maestro 三个项目的工程基建（.claude/rules/hooks、codex-rules/、pre-commit、CI、docs 组织方式等），提炼与本仓库不重复的通用配方并落地：（1）新增 `codex-rules/rules/issue-workflow.md`，修复 Codex 侧此前完全没有 issue 拆解规范的不对称，并在 `codex-rules/global-AGENTS.md`、`AGENTS.md` 补索引；（2）`docs/architecture/overview.md`"演进原则"新增模块设计高内聚低耦合 + docs 单一真相源 spec 的原则；（3）`codex-rules/rules/markdown-docs.md` 新增大文档"进行中/归档"拆分约定；（4）`docs/README.md` 新增"按问题找文档"反查表；（5）PR 模板加"对应设计文档"字段，`docs/progress.md` 条目格式说明加"我替你做的判断（可否决）"提示；（6）`docs/architecture/open-decisions.md`"工程基建"补 CI job 拆分与迁移一致性的演进指引；（7）新增 `docs/architecture/stack-recipes/`（python.md、typescript.md、migration-ledger-check.md），把 `.claude/rules/python-coding-rules.md`/`typescript-coding-rules.md` 已经文字规定的规范配上具体可复制的配置，明确标注"可选、按需启用"；（8）新增零依赖 `.githooks/commit-msg`，把此前只是文档约定的 `<type>(<scope>): <主题>` 提交格式变成机器强制门禁，用真实 git 仓库端到端验证过合规/不合规/merge/revert/空信息共 6 种场景；（9）`CLAUDE.md` 改用 `@AGENTS.md` 原生导入消除双份维护漂移风险，把此前只在 `CLAUDE.md` 的常用命令/目录职责/文档一致性门禁详情合并进 `AGENTS.md` 使其成为唯一真相源，`CLAUDE.md` 只保留 Claude-only 的 `.claude/` 说明段落。过程中发现一个预先存在的真实 bug：`.githooks/pre-commit` 在 git 索引里的文件模式是 `100644`（非可执行），导致配置 `core.hooksPath` 后该 hook 被 git 静默忽略、从未真正运行过；已用 `chmod +x` + `git add --chmod=+x` 修复并记入 `codex-rules/known-issues.md`，新增的 `commit-msg` 同步设置了可执行位。全程每步改动后都跑 `npm run quality` 验证未破坏门禁。
+- 我替你做的判断（可否决）：迁移一致性门禁按你在 AskUserQuestion 里认可的方向做成了独立参考脚本文档，没有接入 `check-contracts.mjs` 主链路——因为本仓库目前没有任何迁移工具，硬编到核心质量脚本里属于给零消费者的功能预留通用性，判断为过度工程；`commit-msg` 的 type 枚举沿用了已有 `git-workflow.md` 里的六个 type，没有额外扩展列表。
+- 遗留：无新增遗留项；`.claude/rules/` 与 `codex-rules/rules/` 同主题内容不完全一致的分层问题仍维持原状（这是既有的、经用户确认保留的设计，不是本次遗留）。
 
 ## 2026-07-06 / PlantUML 渲染产物自动生成 + 新鲜度门禁
 

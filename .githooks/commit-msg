@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+# 提交信息门禁：强制 `<type>(<scope>): <主题>` 格式（type 限定 feat|fix|docs|style|refactor|test|chore）。
+# 由 git 在提交时自动调用，读取 $1 指向的提交信息文件；零依赖纯 shell 正则，无需 husky/commitlint。
+# 启用方式（仓库首次克隆后执行一次）：git config core.hooksPath .githooks
+set -euo pipefail
+
+commit_msg_file="$1"
+
+# 取第一行非空、非注释（# 开头）内容作为主题行。
+subject_line=""
+while IFS= read -r line || [ -n "$line" ]; do
+  case "$line" in
+    ""|"#"*) continue ;;
+    *) subject_line="$line"; break ;;
+  esac
+done < "$commit_msg_file"
+
+if [ -z "$subject_line" ]; then
+  echo "commit-msg: 提交信息为空，已阻止本次提交。" >&2
+  exit 1
+fi
+
+# 合并提交和 revert 提交的格式由 git 自己生成，不受本规范约束。
+case "$subject_line" in
+  "Merge "*|"Revert \""*)
+    exit 0
+    ;;
+esac
+
+pattern='^(feat|fix|docs|style|refactor|test|chore)\([^)]+\): .+$'
+if ! [[ "$subject_line" =~ $pattern ]]; then
+  echo "commit-msg: 提交信息格式不合规，已阻止本次提交。" >&2
+  echo "commit-msg: 期望格式：<type>(<scope>): <主题>" >&2
+  echo "commit-msg: type 限定：feat|fix|docs|style|refactor|test|chore" >&2
+  echo "commit-msg: 示例：feat(core): 新增技术栈参考配方" >&2
+  echo "commit-msg: 实际收到：$subject_line" >&2
+  exit 1
+fi
+
+exit 0

@@ -13,6 +13,21 @@
 - [契约词表](contracts/contract-terms.json)
 - [契约扫描规则](contracts/contract-rules.json)
 - [站点检查规则](contracts/site-checks.json)
+- [技术栈参考配方](architecture/stack-recipes/README.md)：[Python](architecture/stack-recipes/python.md)、[TypeScript](architecture/stack-recipes/typescript.md)、[迁移一致性门禁](architecture/stack-recipes/migration-ledger-check.md)
+
+## 按问题找文档
+
+| 我想知道... | 去哪份文档 |
+| --- | --- |
+| 这个项目现在处于什么阶段、这一版做什么/不做什么 | 本文件"当前阶段"一节 |
+| 系统整体结构、目录职责、模块怎么划分 | [架构概览](architecture/overview.md) |
+| 某个名词/缩写具体指什么 | [术语表](architecture/glossary.md) |
+| 还没拍板的技术/产品决策有哪些 | [待决策问题](architecture/open-decisions.md) |
+| 内容栏目、产品服务的规划和边界 | [内容与产品路线](product/content-roadmap.md) |
+| 本地开发怎么跨机预览、怎么同步 | [跨机协同开发预览工作流](architecture/dev-workflow.md) |
+| 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
+| `npm run quality` 各步骤具体查什么 | 根目录 [AGENTS.md](../AGENTS.md) "文档一致性门禁现状"（`CLAUDE.md` 通过 `@AGENTS.md` 导入同一份内容） |
+| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 `codex-rules/` |
 
 ## 当前阶段
 
