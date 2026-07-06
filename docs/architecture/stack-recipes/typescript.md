@@ -56,6 +56,8 @@ export default tseslint.config(
 
 ```ts
 // vitest.config.ts —— 默认命令跑这份，不碰真实数据库
+import { defineConfig } from "vitest/config";
+
 export default defineConfig({
   test: { include: ["tests/**/*.test.ts"], exclude: ["tests/db-integration/**"] },
 });
@@ -63,6 +65,8 @@ export default defineConfig({
 
 ```ts
 // vitest.db.config.ts —— 单独命令跑，需要真实数据库
+import { defineConfig } from "vitest/config";
+
 export default defineConfig({
   test: {
     include: ["tests/db-integration/**"],

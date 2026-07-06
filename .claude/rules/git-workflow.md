@@ -8,7 +8,7 @@
 ```
 <type>(<scope>): <中文主题>
 ```
-type: `feat|fix|docs|style|refactor|test|chore`  scope: `core|agents|memory|skills|tools|tui|meeting`
+type: `feat|fix|docs|style|refactor|test|chore`  scope 按项目模块自定（本仓库当前常用 `scaffold`），`.githooks/commit-msg` 只强制"有 scope"，不校验枚举
 - 不要带上"Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 ## 提交前

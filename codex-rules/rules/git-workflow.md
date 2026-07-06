@@ -13,7 +13,7 @@
 - 提交信息用中文，格式 `<type>(<scope>): <主题>`（type 限定：feat / fix / docs / style / refactor / test / chore）。
 - 提交信息**不带** `Co-Authored-By` 尾注。
 - 这套约定与根目录 [AGENTS.md](../../AGENTS.md)、[CLAUDE.md](../../CLAUDE.md) 一致，是本仓库的唯一提交规范来源。
-- 格式不再只是文档约定：`.githooks/commit-msg` 会机器校验并拒绝不合规提交（`git config core.hooksPath .githooks` 后生效），merge/revert 提交不受此约束。
+- 格式不再只是文档约定：`.githooks/commit-msg` 会机器校验并拒绝不合规提交（`git config core.hooksPath .githooks` 后生效）。git 自动生成主题行的提交不受此约束：merge、revert、Reapply，以及 `rebase --autosquash` 的 `fixup!`/`squash!`/`amend!` 前缀。
 
 ## 提交内容
 

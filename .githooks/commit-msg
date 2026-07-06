@@ -20,9 +20,10 @@ if [ -z "$subject_line" ]; then
   exit 1
 fi
 
-# 合并提交和 revert 提交的格式由 git 自己生成，不受本规范约束。
+# 由 git 自己生成主题行的提交不受本规范约束：
+# merge、revert、revert 的 revert（Reapply），以及 rebase --autosquash 用的 fixup!/squash!/amend! 前缀。
 case "$subject_line" in
-  "Merge "*|"Revert \""*)
+  "Merge "*|"Revert \""*|"Reapply \""*|"fixup! "*|"squash! "*|"amend! "*)
     exit 0
     ;;
 esac
