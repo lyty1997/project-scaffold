@@ -14,7 +14,6 @@
     "check:secrets": "node scripts/quality/check-secrets.mjs",
     "check:site": "node scripts/quality/check-static-site.mjs",
     "check:diagrams": "node scripts/quality/check-diagrams.mjs",
-    "check:diagrams:fresh": "node scripts/quality/render-diagrams.mjs --check",
     "gen:diagrams": "node scripts/quality/render-diagrams.mjs"
   },
   "engines": {

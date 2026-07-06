@@ -32,7 +32,7 @@ jobs:
         run: npm run quality
 
   diagrams:
-    name: Diagram compile + freshness check
+    name: Diagram compile check
     runs-on: ubuntu-latest
     env:
       PUML_VERSION: "1.2026.1"
@@ -61,10 +61,5 @@ jobs:
 
       - name: Check diagrams compile
         run: npm run check:diagrams
-        env:
-          PUML_JAR: ${{ github.workspace }}/plantuml.jar
-
-      - name: Check rendered SVGs are up to date
-        run: npm run check:diagrams:fresh
         env:
           PUML_JAR: ${{ github.workspace }}/plantuml.jar

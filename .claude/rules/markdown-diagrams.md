@@ -57,5 +57,5 @@
 
 - **生成/刷新**：`npm run gen:diagrams`（`scripts/quality/render-diagrams.mjs`）扫描所有 ` ```plantuml ` 块，找到紧跟其后的 `![](path.svg)` 图片引用，编译并覆盖写入该路径；没有配图片引用的代码块会被跳过（只保证能编译，不强行猜文件名）。改完图源码后本地跑一次这个命令、把变化的 SVG 一并提交即可，不用再手工 `java -jar` + 复制文件。
 - **`check:diagrams`**（`scripts/quality/check-diagrams.mjs`）：扫描仓库所有 plantuml 块真实编译校验，编译失败即报错退出。只认编译是否成功，不比较字节内容——不同 PlantUML 版本渲染同一份源码字节并不相同（版本号写进了 SVG 头），本地随便什么版本的 jar 都该能稳定跑这个检查。
-- **`check:diagrams:fresh`**（`node scripts/quality/render-diagrams.mjs --check`）：只读校验模式，比较"用当前 `PUML_JAR` 重新编译"和"已提交的 SVG"字节是否一致，不一致就报出哪些图表过期并提示跑 `gen:diagrams`。这个必须用和生成时同一个 PlantUML 版本才有意义，本地版本对不上会有误报，所以只在 CI 里用锁定版本 jar 强制跑。
-- 以上都**不在** `npm run quality` 聚合链路里（`quality` 承诺零第三方依赖、纯 Node 内置能力，而这些依赖外部 Java + `plantuml.jar`），本地要跑必须先 `export PUML_JAR=/path/to/plantuml.jar`；CI 用专属的 `diagrams` job 自动装好 Java 和锁定版本的 jar，依次跑 `check:diagrams` + `check:diagrams:fresh`，对每个 PR 强制生效。
+- **不做"SVG 是否最新"的门禁**：曾经有过一道 `check:diagrams:fresh`（按字节比较"重新编译"与"已提交 SVG"），已废弃。PlantUML 的 SVG 字节不仅依赖版本，还依赖运行环境的 JVM 字体度量（`textLength`/坐标/整图尺寸都按字体 metrics 反推），同一份源码在不同机器上渲染字节不同，字节相等的新鲜度门禁无法跨机器稳定通过。所以真相源只认 plantuml 源码（`check:diagrams` 保证能编译），SVG 是给 GitHub 等平台看的产物，改完源码本地 `gen:diagrams` 刷新提交即可，CI 不再回头校验它。
+- 以上都**不在** `npm run quality` 聚合链路里（`quality` 承诺零第三方依赖、纯 Node 内置能力，而这些依赖外部 Java + `plantuml.jar`），本地要跑必须先 `export PUML_JAR=/path/to/plantuml.jar`；CI 用专属的 `diagrams` job 自动装好 Java 和锁定版本的 jar，跑 `check:diagrams`，对每个 PR 强制生效。

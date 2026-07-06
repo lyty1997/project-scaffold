@@ -90,9 +90,9 @@ PUML_JAR=/path/to/plantuml.jar npm run gen:diagrams     # 改完图表源码后�
 另有两道独立于 `quality` 之外、围绕 PlantUML 图表的机制，共享 `scripts/quality/lib/plantuml.mjs` 的提取/编译逻辑：
 
 - `check:diagrams`（`scripts/quality/check-diagrams.mjs`）：扫描所有 Markdown 里的 ` ```plantuml ` 代码块并用 `java -jar $PUML_JAR` 真实编译，仓库里一个 plantuml 块都没有时直接跳过；一旦有块但没设置 `PUML_JAR` 则报错退出（不静默跳过，因为确实有东西要校验）。只认编译退出码，不比较字节内容——不同 PlantUML 版本渲染同一份源码字节不同，本地用任意版本的 jar 跑这个检查都该稳定通过。
-- `gen:diagrams` / `check:diagrams:fresh`（`scripts/quality/render-diagrams.mjs`，后者加 `--check` 只读模式）：把每个 plantuml 块编译结果写入（或校验）紧跟其后的 `![](path.svg)` 图片引用指向的文件，实现"改源码 → 自动重新渲染 `docs/diagrams/` 下的 SVG"，不用再手工 `java -jar` + 复制文件。`--check` 模式按字节比较已提交的 SVG 和重新编译结果，必须用同一个 PlantUML 版本才有意义（否则版本差异会造成误报），所以只作为 CI 专属门禁，不建议本地随意跑。
+- `gen:diagrams`（`scripts/quality/render-diagrams.mjs`）：把每个 plantuml 块编译结果写入紧跟其后的 `![](path.svg)` 图片引用指向的文件，实现"改源码 → 自动重新渲染 `docs/diagrams/` 下的 SVG"，不用再手工 `java -jar` + 复制文件。这是**本地生成器、不是门禁**——CI 不校验已提交 SVG 与源码是否字节一致。原因：PlantUML 的 SVG 字节不仅依赖版本，还依赖运行环境的 JVM 字体度量（`textLength`/坐标/整图尺寸都按字体 metrics 反推），同一份源码在不同机器上渲染字节不同，任何"字节相等"的新鲜度门禁都无法跨机器稳定通过。真相源是 markdown 里的 plantuml 源码（由 `check:diagrams` 保证能编译）；SVG 只是给 GitHub 这类不渲染内嵌 plantuml 代码块的平台看的产物，改完源码本地跑一次 `gen:diagrams` 刷新并提交即可。
 
-CI 里由 `.github/workflows/ci.yml` 的独立 `diagrams` job（只跑 ubuntu-latest）负责下载校验过 SHA256 的 PlantUML 官方 release jar，依次跑 `check:diagrams` 和 `check:diagrams:fresh`，不需要本地贡献者都装 Java 才能跑主 `quality` 门禁。
+CI 里由 `.github/workflows/ci.yml` 的独立 `diagrams` job（只跑 ubuntu-latest）负责下载校验过 SHA256 的 PlantUML 官方 release jar，跑 `check:diagrams`（只校验 plantuml 源码能编译，不比较 SVG 字节），不需要本地贡献者都装 Java 才能跑主 `quality` 门禁。
 
 ## 工程约定
 

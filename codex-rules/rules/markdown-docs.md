@@ -12,7 +12,7 @@
 - 统一使用 PlantUML，禁止 Mermaid、ASCII art、截图贴图或直接贴 SVG/PNG 二进制（无源不可维护）；极简目录树可保留 ASCII。
 - 新增/修改图表必须真实编译验证（`java -jar plantuml.jar`），不能只凭"看起来对"交付；细则、图类型选择速查表和常见坑点见 `.claude/rules/markdown-diagrams.md` 与 `.claude/skills/plantuml-in-markdown/`。
 - GitHub 不原生渲染 PlantUML：每个 ` ```plantuml ` 代码块下方应紧跟一张渲染好的图片引用（`![](../diagrams/<name>.svg)`），源码块保留用于编辑与 diff，渲染产物落在 `docs/diagrams/`。改完图源码后跑 `PUML_JAR=/path/to/plantuml.jar npm run gen:diagrams` 自动重新渲染并覆盖对应 SVG，不用手工跑 `java -jar` 再复制文件。
-- CI 有两道独立门禁（都不在 `npm run quality` 聚合链路里，需要本机装 Java + 设置 `PUML_JAR` 才能跑）：`check:diagrams` 校验所有 ` ```plantuml ` 块能编译通过；`check:diagrams:fresh` 校验 `docs/diagrams/` 下已提交的 SVG 是否与最新源码一致（不一致会报出具体文件并提示跑 `gen:diagrams`）。细则见 `.claude/rules/markdown-diagrams.md`。
+- CI 有一道独立门禁（不在 `npm run quality` 聚合链路里，需要本机装 Java + 设置 `PUML_JAR` 才能跑）：`check:diagrams` 校验所有 ` ```plantuml ` 块能编译通过。**不校验已提交 SVG 是否与源码一致**——PlantUML 的 SVG 字节依赖运行环境的字体度量、跨机器不可复现，字节相等的新鲜度门禁无法稳定通过，所以 `gen:diagrams` 只是本地生成器。细则见 `.claude/rules/markdown-diagrams.md`。
 - 图表应保持简单、可读，不能用图替代文字说明。
 
 ## 链接与索引

@@ -5,12 +5,16 @@ import { projectRoot } from "./lib/files.mjs";
 
 // 用法：
 //   node scripts/quality/render-diagrams.mjs            # 生成/刷新模式（写文件）
-//   node scripts/quality/render-diagrams.mjs --check     # 校验模式（只读，CI 用锁定版本 jar 跑）
 //
 // 只处理"```plantuml 代码块 紧跟着 ![](path.svg) 图片引用"这种配对——没有配图片引用的代码块
 // 视为尚未决定渲染产物落地路径，跳过，交给 check-diagrams.mjs 保证它至少能编译。
+//
+// 注意：这里只负责"把 plantuml 源码渲染成 SVG 落地"，不做任何"已提交 SVG 是否最新"的校验。
+// 原因：PlantUML 的 SVG 字节不仅依赖版本，还依赖运行环境的 JVM 字体度量（textLength/坐标/整图尺寸
+// 都是按字体 metrics 反推的），同一份源码在不同机器上渲染出的字节并不相同，任何"字节相等"的新鲜度
+// 门禁都无法跨机器稳定通过。真相源是 markdown 里的 plantuml 源码，由 check-diagrams.mjs 保证它能编译；
+// SVG 只是给 GitHub 这类不渲染 ```plantuml 的平台看的产物，改完源码本地跑一次本脚本刷新并提交即可。
 const ROOT = projectRoot();
-const CHECK_MODE = process.argv.includes("--check");
 
 const jar = process.env.PUML_JAR;
 if (!jar) {
@@ -25,7 +29,6 @@ if (jobs.length === 0) {
   process.exit(0);
 }
 
-const stale = [];
 const written = [];
 const errors = [];
 
@@ -39,13 +42,9 @@ for (const job of jobs) {
     continue;
   }
 
+  // 内容一致就跳过，避免无意义地重写文件（时间戳变化）。
   const existing = existsSync(job.imagePath) ? readFileSync(job.imagePath, "utf8") : null;
   if (existing === compiled.svg) {
-    continue;
-  }
-
-  if (CHECK_MODE) {
-    stale.push(`${relImg}（源自 ${relMd}:${job.line}）`);
     continue;
   }
 
@@ -60,19 +59,6 @@ if (errors.length > 0) {
     console.error(`- ${error}`);
   }
   process.exit(1);
-}
-
-if (CHECK_MODE) {
-  if (stale.length > 0) {
-    console.error(`发现 ${stale.length} 个渲染产物与最新 PlantUML 源码不一致（用锁定版本 jar 重新编译后字节不同）：`);
-    for (const item of stale) {
-      console.error(`- ${item}`);
-    }
-    console.error("请用同一个 PUML_JAR 版本本地运行 `npm run gen:diagrams` 后提交更新后的 SVG。");
-    process.exit(1);
-  }
-  console.log(`Diagram freshness check passed (${jobs.length} rendered SVG(s) up to date).`);
-  process.exit(0);
 }
 
 if (written.length > 0) {

@@ -6,6 +6,14 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-07 / 彻底修 CI：废弃 SVG 新鲜度字节门禁，只保留编译校验
+
+- 背景：上一条把 CI 的 PlantUML 版本对齐到 1.2026.1 后 push，CI **仍红**在同一步。查 SVG 内容发现文字是 `textLength="41.9998"` 这类值、整图 `width/height` 按文字排版反推，都来自 **JVM 的 AWT 字体度量**——我本地和 CI runner（Temurin 21 + 不同已装字体）字体度量不同，同一版本 PlantUML 渲染出的 SVG 字节照样不同。结论：`check:diagrams:fresh` 的"字节相等"比较跨机器天生对不上，版本对齐是必要但不充分，这道门禁的设计前提（同版本→同字节）本身就是错的。
+- 决策（已征询用户，选"不要比较 SVG 了，只管源头的 PlantUML"）：**废弃 SVG 新鲜度门禁**。改动：（1）`.github/workflows/ci.yml` 的 `diagrams` job 删掉 "Check rendered SVGs are up to date" 步骤、job 名改为 "Diagram compile check"，只保留 `check:diagrams`（编译校验）；PUML 版本保持 1.2026.1（编译步骤仍用，且与开发环境一致）。（2）`scripts/quality/render-diagrams.mjs` 删掉 `--check` 比较模式，退化为纯 SVG 生成器，并补注释说明为什么不做新鲜度校验。（3）`package.json` 删掉 `check:diagrams:fresh` 脚本（`gen:diagrams` 保留）。（4）同步改 `AGENTS.md`、`.claude/rules/markdown-diagrams.md`、`codex-rules/rules/markdown-docs.md` 里对该门禁的描述，`codex-rules/known-issues.md` 把原"版本错配"条目改写为最终结论 + 排查教训。
+- 真相源边界（改动后）：markdown 里的 plantuml 源码是唯一真相源，`check:diagrams` 保证它能编译；`docs/diagrams/` 下的 SVG 只是给 GitHub 等不渲染内嵌 plantuml 的平台看的产物，改完源码本地 `gen:diagrams` 刷新提交即可，CI 不再回头字节校验它。
+- 验证：本地 `npm run quality` 五道全绿；`PUML_JAR=…1.2026.1.jar npm run check:diagrams` 通过（2 块编译过）。CI 结果以 push 后实际 run 为准（本条目下的提交推上去后确认）。
+- 订正：上一条（版本错配）标的"根治"实为不充分，真正根治是本条的废弃字节门禁；两条都保留，完整反映排查过程。
+
 ## 2026-07-07 / 修复 CI：diagrams 新鲜度校验因 PlantUML 版本错配而红
 
 - 现象：把领先本地的 4 个提交推上 origin/main 后，CI 首次在"有 plantuml 图表"的状态下真正跑，diagrams job 的 "Check rendered SVGs are up to date"（`check:diagrams:fresh`）报 2 个 SVG（`dev-workflow-loop.svg`、`architecture-overview.svg`）与锁定版本重编字节不一致。Quality gates（Ubuntu/Windows）与 `check:diagrams`（纯编译）均通过，仅字节比较步骤红。
