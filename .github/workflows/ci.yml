@@ -30,3 +30,41 @@ jobs:
 
       - name: Quality gates
         run: npm run quality
+
+  diagrams:
+    name: Diagram compile + freshness check
+    runs-on: ubuntu-latest
+    env:
+      PUML_VERSION: "1.2024.7"
+      PUML_SHA256: "e34c12bbe9944f1f338ca3d88c9b116b86300cc8e90b35c4086b825b5ae96d24"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Download pinned plantuml.jar
+        run: |
+          curl -sSL -o plantuml.jar \
+            "https://github.com/plantuml/plantuml/releases/download/v${PUML_VERSION}/plantuml-${PUML_VERSION}.jar"
+          echo "${PUML_SHA256}  plantuml.jar" | sha256sum -c -
+
+      - name: Check diagrams compile
+        run: npm run check:diagrams
+        env:
+          PUML_JAR: ${{ github.workspace }}/plantuml.jar
+
+      - name: Check rendered SVGs are up to date
+        run: npm run check:diagrams:fresh
+        env:
+          PUML_JAR: ${{ github.workspace }}/plantuml.jar

@@ -159,6 +159,8 @@ deactivate Preview
 @enduml
 ```
 
+![本地渲染端与远端托管端协同预览闭环](../diagrams/dev-workflow-loop.svg)
+
 **捷径**：图中"User → 远端托管端：请求同步并重启预览"这一步，如果本地渲染端就是发起改动的一方，不必真的去找一个远端托管端会话——直接在本地渲染端跑 `sync.ps1 -RestartPreview` 即可，它会在推送成功后自己通过 SSH 触发远端托管端的 `preview.sh restart`，等价于图中 `Win → Hub`、`User → Linux`、`Linux → Hub`、`Linux → Preview` 这几步揉在一起，少一次人工切换。
 
 ## 落地步骤 Checklist

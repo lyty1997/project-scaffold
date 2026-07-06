@@ -12,17 +12,33 @@ __PROJECT_NAME__ 的首版目标是建立一个可维护的 __PROJECT_TAGLINE__�
 
 以下是占位示例，请替换成你项目的实际架构：
 
-```mermaid
-flowchart TD
-  User[访问者] --> Frontend[前端应用]
-  Frontend --> Backend[后端 / API]
-  Backend --> Storage[数据存储]
-  Docs[docs 真相源] --> Frontend
-  Docs --> Backend
-  Quality[quality 门禁] --> Docs
-  Quality --> Frontend
-  Quality --> Backend
+```plantuml
+@startuml
+package "访问者" {
+  [访问者] as User
+}
+package "应用" {
+  [前端应用] as Frontend
+  [后端 / API] as Backend
+  [数据存储] as Storage
+}
+package "工程规范" {
+  [docs 真相源] as Docs
+  [quality 门禁] as Quality
+}
+
+User --> Frontend
+Frontend --> Backend
+Backend --> Storage
+Docs --> Frontend
+Docs --> Backend
+Quality --> Docs
+Quality --> Frontend
+Quality --> Backend
+@enduml
 ```
+
+![架构概览组件图](../diagrams/architecture-overview.svg)
 
 请根据实际情况补充说明当前是否有运行时后端、数据库、登录、评论系统或用户数据采集等能力，以及各能力所处的阶段。
 
