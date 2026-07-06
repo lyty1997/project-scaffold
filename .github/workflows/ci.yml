@@ -35,8 +35,8 @@ jobs:
     name: Diagram compile + freshness check
     runs-on: ubuntu-latest
     env:
-      PUML_VERSION: "1.2024.7"
-      PUML_SHA256: "e34c12bbe9944f1f338ca3d88c9b116b86300cc8e90b35c4086b825b5ae96d24"
+      PUML_VERSION: "1.2026.1"
+      PUML_SHA256: "89c116168a2a0f7cf5292e11617ba22abd743f891914f1fec5bc9c7d257b3092"
 
     steps:
       - name: Checkout

@@ -6,6 +6,14 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-07 / 修复 CI：diagrams 新鲜度校验因 PlantUML 版本错配而红
+
+- 现象：把领先本地的 4 个提交推上 origin/main 后，CI 首次在"有 plantuml 图表"的状态下真正跑，diagrams job 的 "Check rendered SVGs are up to date"（`check:diagrams:fresh`）报 2 个 SVG（`dev-workflow-loop.svg`、`architecture-overview.svg`）与锁定版本重编字节不一致。Quality gates（Ubuntu/Windows）与 `check:diagrams`（纯编译）均通过，仅字节比较步骤红。
+- 根因（与本次 license/双语改动无关）：`check:diagrams:fresh` 逐字节比对"重编结果 vs 已提交 SVG"，而 CI 锁 `1.2024.7`、实际开发/生成环境用 `1.2026.1`（`.claude/rules/markdown-diagrams.md` 的 jar 即 1.2026.1），版本号写进 SVG 头导致字节必然不同；叠加图表 SVG 提交后源码又改过没重新 `gen:diagrams`，SVG 相对当前源码已过期（本地用 1.2026.1 重编同样对不上，坐实是"过期 + 版本错配"双因）。这批图表提交此前从没 push、CI 从没在有图表状态下跑过 fresh，所以问题一直潜伏。
+- 修复（根治，非治标）：把 `.github/workflows/ci.yml` 的 `PUML_VERSION` 由 `1.2024.7` 对齐到 `1.2026.1`、`PUML_SHA256` 换成官方 release jar 的校验和 `89c1…3092`（已 curl 下载官方 jar 验证 URL 有效、且与本地 `~/work/envcfg/plantuml-1.2026.1.jar` 的 sha256 逐字相同）；用 1.2026.1 `npm run gen:diagrams` 重新渲染 2 个 SVG。本地用同一 jar 复验 `check:diagrams`（2 块编译过）+ `check:diagrams:fresh`（2 个 SVG up to date）均通过。坑与修法记入 `codex-rules/known-issues.md`。
+- 我替你做的判断（可否决）：选择把 **CI 锁定版本升到 1.2026.1**（对齐你本地实际用的版本），而不是把 SVG 降级到 1.2024.7 重生成——因为你的开发环境和 `.claude` 绘图规则都是 1.2026.1，让 CI 校验版本跟随生成版本才能根除错配，否则你下次本地 `gen:diagrams` 又会破坏 CI。
+- 遗留：CI 仍有 "Node.js 20 is deprecated"（`actions/checkout@v4`/`setup-node@v4`/`setup-java@v4` 底层 node20）的**警告**（非失败），本次未动 action 版本，避免夹带无关改动；如需消除可单独把这些 action 升到 v5。若 push 后 fresh 仍红（本地 1.2026.1 与 CI runner 的 Java/字体环境差异导致字节不同），说明 fresh 的字节比较策略跨环境脆弱，需另立任务改用"结构等价"而非"字节相等"比较。
+
 ## 2026-07-07 / 提交信息改中英双语（英文在前）+ 许可证换 Apache-2.0
 
 - 完成（两条脚手架约定变更）：
