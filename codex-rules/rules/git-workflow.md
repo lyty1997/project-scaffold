@@ -10,7 +10,7 @@
 ## 分支与提交规范
 
 - 分支：`main` 稳定不直接提交，`dev` 开发主干，特性分支用 `feature/描述` / `bugfix/描述`。
-- 提交信息用中文，格式 `<type>(<scope>): <主题>`（type 限定：feat / fix / docs / style / refactor / test / chore）。
+- 提交信息主题行采用中英双语、英文在前，格式 `<type>(<scope>): <English 主题> / <中文主题>`（用 ` / ` 分隔英文与中文两段；type 限定：feat / fix / docs / style / refactor / test / chore）。示例：`feat(core): add stack recipe / 新增技术栈配方`。
 - 提交信息**不带** `Co-Authored-By` 尾注。
 - 这套约定与根目录 [AGENTS.md](../../AGENTS.md)、[CLAUDE.md](../../CLAUDE.md) 一致，是本仓库的唯一提交规范来源。
 - 格式不再只是文档约定：`.githooks/commit-msg` 会机器校验并拒绝不合规提交（`git config core.hooksPath .githooks` 后生效）。git 自动生成主题行的提交不受此约束：merge、revert、Reapply，以及 `rebase --autosquash` 的 `fixup!`/`squash!`/`amend!` 前缀。

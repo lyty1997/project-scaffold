@@ -46,3 +46,7 @@ git config core.hooksPath .githooks
 - 契约词表和禁用旧名回潮。
 - 常见密钥形态。
 - 静态站点入口和资源引用。
+
+## 许可证
+
+本项目以 [Apache License 2.0](LICENSE) 授权。相比 MIT，它在保留宽松使用的同时增加了专利授权、变更声明与 `NOTICE` 传递等更明确的条款。`LICENSE` 附录里的版权年份和归属者由 `npm run init` 自动填写。

@@ -15,7 +15,7 @@
 ## 分支与提交
 
 - 分支：`main` 稳定不直接提交，`dev` 开发主干，特性分支 `feature/描述` / `bugfix/描述`。
-- 提交信息中文，格式 `<type>(<scope>): <主题>`，不带 `Co-Authored-By`。
+- 提交信息主题行中英双语、英文在前，格式 `<type>(<scope>): <English 主题> / <中文主题>`（用 ` / ` 分隔），不带 `Co-Authored-By`。
 - 完整规范见 [codex-rules/rules/git-workflow.md](codex-rules/rules/git-workflow.md)。
 
 ## 提交前自检

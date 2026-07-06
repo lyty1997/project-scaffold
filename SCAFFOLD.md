@@ -6,7 +6,7 @@
 
 1. 用这个仓库的内容作为新项目的起点（clone 后改远端，或者直接下载解压）。
 2. 运行 `node scripts/init.mjs`（或 `npm run init`），按提示填写项目名、品牌名、GitHub 信息；如果需要跨机协同预览工作流（本地渲染端 + 远端托管端），选择启用并填写远端主机信息。脚本会自动替换所有占位符标记，并在最后跑一次 `npm run quality` 自检。
-3. 跑 `git config core.hooksPath .githooks` 启用本地 pre-commit 质量门禁与 commit-msg 提交信息门禁（后者强制 `<type>(<scope>): <主题>` 格式，零依赖纯 shell 实现，不需要装 husky/commitlint）。
+3. 跑 `git config core.hooksPath .githooks` 启用本地 pre-commit 质量门禁与 commit-msg 提交信息门禁（后者强制 `<type>(<scope>): <English 主题> / <中文主题>` 中英双语、英文在前的格式，零依赖纯 shell 实现，不需要装 husky/commitlint）。
 4. 如果启用了跨机预览工作流，按 `docs/architecture/dev-workflow.md`"远程重启"一节生成 SSH 密钥并装到远端 `~/.ssh/authorized_keys`。
 5. 确认没问题后删除这份 `SCAFFOLD.md`——它只是给"刚拿到脚手架、还没初始化"的阶段看的，初始化完成后 `README.md` 就是项目自己的正常 README 了。
 

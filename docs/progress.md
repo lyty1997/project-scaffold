@@ -6,6 +6,15 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-07 / 提交信息改中英双语（英文在前）+ 许可证换 Apache-2.0
+
+- 完成（两条脚手架约定变更）：
+  1. **提交信息中英双语、英文在前**：约定主题行格式改为 `<type>(<scope>): <English 主题> / <中文主题>`（用 ` / ` 分隔）。`.githooks/commit-msg` 正则从 `...: .+$` 收紧为 `...: .*[A-Za-z].* / .+$`——强制"英文段（至少一个 ASCII 字母）在前 + ` / ` 分隔 + 后段非空"，merge/revert/Reapply/fixup!/squash!/amend! 等 git 自动主题行仍豁免。用真实钩子跑了 11 个场景端到端验证：合规双语、英文段含 `A/B`、英文段含 ` / `、三种豁免前缀全部放行；中文单语、英文单语、英文段空、缺 scope、无 type 前缀全部拦截。同步更新 `AGENTS.md`（共享真相源）、`codex-rules/rules/git-workflow.md`、`.claude/rules/git-workflow.md`、`.claude/rules/language.md`、`CONTRIBUTING.md`、`SCAFFOLD.md`、`docs/architecture/stack-recipes/typescript.md`（补注 commitlint 备选方案不校验双语结构）。
+  2. **许可证 MIT → Apache License 2.0**：`LICENSE` 换成 Apache 官方 2.0 全文（curl 取 apache.org 原始 `.txt` 保证逐字准确），仅把附录版权行改为脚手架占位符 `Copyright __COPYRIGHT_YEAR__ __COPYRIGHT_HOLDER__`，`init.mjs` 的占位符替换链路照常生效；`package.json` 补 `"license": "Apache-2.0"` SPDX 标识；`README.md` 加"许可证"小节。
+- 验证：`npm run quality` 五道门禁全绿（check:js / check:docs / check:contracts / check:secrets / check:site）。
+- 我替你做的判断（可否决）：（a）双语放在**同一主题行**用 ` / ` 分隔，而非"英文主题行 + 中文正文"——因为你说"英文在前"更贴合同行可见的主题行；如果你更想要英文主题 + 中文 body，说一声我改钩子和文档。（b）钩子只做**结构**校验（英文在前 + 分隔 + 后段非空），不做 CJK 逐字检测——后者在纯 shell 跨平台（CI 含 Windows）下脆弱，且与现有钩子"只校验结构不校验语义"的风格一致，第二段是不是中文由人把关。（c）没有新增 `NOTICE` 文件——Apache-2.0 不强制，且空 `NOTICE` 会平添传递义务，判断为过度工程；将来有第三方署名需求时再加。
+- 遗留：`docs/progress.md` 历史条目（2026-07-06）里引用的旧格式 `<type>(<scope>): <主题>` 属历史记录，如实反映当时行为，未改写。
+
 ## 2026-07-06 / 定版 review：修复吸收配方提交的三处小瑕疵
 
 - 完成：对"吸收三份外部项目配方"提交做定版 review（门禁全绿、钩子模式位 100755、抽查配方与 DocRestore-pro/Augur_Maestro/Narrative_Maestro 真实配置逐项一致），修掉发现的三处小瑕疵：（1）`docs/architecture/stack-recipes/typescript.md` 两段 vitest 配置片段补上缺失的 `import { defineConfig } from "vitest/config"`，兑现"可直接复制粘贴"的承诺；（2）`.githooks/commit-msg` 豁免清单从 merge/revert 扩展到 `Reapply "` 与 `rebase --autosquash` 的 `fixup!`/`squash!`/`amend!` 前缀（这些主题行都是 git 自动生成的），`codex-rules/rules/git-workflow.md` 同步更新豁免说明，并在临时仓库重新端到端验证 9 种场景（合规/autosquash/Reapply/merge/revert 放行，乱写/缺 scope 仍被拦截）；（3）`.claude/rules/git-workflow.md` 里从其他项目带来的陈旧 scope 枚举（`core|agents|memory|skills|tools|tui|meeting`，与本仓库实际使用的 `scaffold` 不符）改为"scope 按项目模块自定，钩子只强制有 scope 不校验枚举"，与钩子实际行为对齐。

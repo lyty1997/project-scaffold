@@ -96,3 +96,5 @@ module.exports = {
 ```
 
 两者二选一即可，不要同时装两套校验同一件事。
+
+注意：本仓库约定提交主题行中英双语、英文在前（`<type>(<scope>): <English 主题> / <中文主题>`，用 ` / ` 分隔英文与中文两段）。这条"双语结构"目前只有自带的 shell 钩子在校验；`@commitlint/config-conventional` 只管 type/scope，不校验双语结构。若换用 commitlint 又想保留双语门禁，需要另加一条匹配 ` / ` 分隔的 `subject` 自定义规则，或继续用 shell 钩子。

@@ -6,9 +6,10 @@
 
 ## 提交格式
 ```
-<type>(<scope>): <中文主题>
+<type>(<scope>): <English 主题> / <中文主题>
 ```
-type: `feat|fix|docs|style|refactor|test|chore`  scope 按项目模块自定（本仓库当前常用 `scaffold`），`.githooks/commit-msg` 只强制"有 scope"，不校验枚举
+主题行中英双语、英文在前，用 ` / ` 分隔英文与中文两段（例：`feat(scaffold): add stack recipe / 新增技术栈配方`）。
+type: `feat|fix|docs|style|refactor|test|chore`  scope 按项目模块自定（本仓库当前常用 `scaffold`），`.githooks/commit-msg` 强制"有 scope + 英文段在前 + ` / ` 分隔 + 后段非空"，不校验 scope 枚举
 - 不要带上"Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
 ## 提交前

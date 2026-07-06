@@ -96,7 +96,7 @@ CI 里由 `.github/workflows/ci.yml` 的独立 `diagrams` job（只跑 ubuntu-la
 
 ## 工程约定
 
-- 分支：`main` 稳定不直接提交，`dev` 开发主干，特性分支 `feature/描述` / `bugfix/描述`。提交信息中文，格式 `<type>(<scope>): <主题>`，不带 Co-Authored-By；`.githooks/commit-msg` 会机器校验此格式。
+- 分支：`main` 稳定不直接提交，`dev` 开发主干，特性分支 `feature/描述` / `bugfix/描述`。提交信息主题行采用中英双语、英文在前，格式 `<type>(<scope>): <English 主题> / <中文主题>`（用 ` / ` 分隔英文与中文），不带 Co-Authored-By；`.githooks/commit-msg` 会机器校验此格式。
 - `.env`、`node_modules/`、构建产物、日志、`scripts/dev/dev-workflow.env` 不进 Git（见 `.gitignore`）。
 - 每次任务结束更新 [docs/progress.md](docs/progress.md)（时间戳/主题/完成/遗留）；解决 bug 后把原因和方案追加到 [codex-rules/known-issues.md](codex-rules/known-issues.md)，动手前先查阅它避免重复踩坑。
 
