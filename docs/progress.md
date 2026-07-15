@@ -6,6 +6,15 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-15 22:44 CST / CLAUDE.md 收敛为纯导入，消除重复状态
+
+- 完成：CLAUDE.md 删去「Claude Code 专属配置」「导入内容里的 Codex 侧写法」「规则优先级」三节，只留单一真相源声明 + `@AGENTS.md` 导入，32 行降到 6 行。根因判断：`.claude/rules/`、`.claude/skills/`、`.claude/hooks/` 全部由 Claude Code 在启动时自动注入，CLAUDE.md 里那份清单是手抄副本；`a7879aa` 漏登记 `sync-shared-rules` 是这份重复状态的必然产物。消除重复状态优于加门禁去校验重复状态——原本提案的 `check:claude-md` 门禁因此撤回未实施。
+- 查证（官方 memory 文档）：CLAUDE.md 启动时自动加载；`@` 导入在启动时随引用它的文件一起展开，上限 4 层；`.claude/rules/*.md` 是 Claude Code 原生自动发现位置，递归扫描、启动时加载、优先级等同 `.claude/CLAUDE.md`；用户级 `~/.claude/rules/` 先于项目级加载。故 `docs/README.md` 不为 `.claude/` 补索引不影响 Claude 加载规范——索引的受益人是人类读者，此项按用户决定不补。
+- 用户决定：`apply_patch` 覆盖说明与 `.claude/rules/` 优先级链一并删除，AGENTS.md 一行不动。已知代价：Claude Code 仍会读到「手工编辑使用 `apply_patch`」这条它无法执行的指令；`.claude/rules/` 与 `codex-rules/rules/` 冲突时无裁决依据，可能退回「自行取更保守一方」。
+- 完成：清理 `docs/architecture/dev-workflow.md:35` 对 CLAUDE.md 的凭空引用——原文称「与 [CLAUDE.md] 里给临时手动预览用的端口是两回事」，但 `git log -S'端口' -- CLAUDE.md` 显示 CLAUDE.md 从未有过端口说明。该失效引用长期未被拦截，因为 `check:docs` 只验链接可解析、不验声称内容是否属实。
+- 验证：`npm run quality` 全绿；`check:docs` 确认 `./AGENTS.md` 链接可达。
+- 遗留：无。
+
 ## 2026-07-15 21:18 CST / 精炼 Agent 规范并降低上下文噪声
 
 - 完成：将根 `AGENTS.md` 收敛为始终适用的项目边界和最短工作闭环；将 `codex-rules/global-AGENTS.md` 改为按任务触点选读的路由表；去除启动检查、不确定性、文档先行、验证、语言、安全和 PlantUML 说明在多文件间的重复。
