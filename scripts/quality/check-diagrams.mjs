@@ -5,9 +5,8 @@ import { projectRoot } from "./lib/files.mjs";
 // 独立于 npm run quality 之外：quality 门禁承诺"零第三方依赖、纯 Node 内置能力"，
 // 而本检查依赖外部 Java + plantuml.jar，只作为单独脚本本地跑，CI 里由专属 job 负责装好依赖后执行。
 //
-// 只校验"能编译"，不比较字节内容——不同 PlantUML 版本渲染同一份源码字节上并不相同（版本号写进了
-// SVG 头），本地随便什么版本的 jar 跑这个检查都该稳定通过。渲染产物与 docs/diagrams/ 是否同步，
-// 由 check-diagrams-fresh.mjs 在 CI 里用锁定版本单独校验。
+// 只校验“能编译”，不比较 SVG 字节。PlantUML 布局受 JVM 字体度量影响，跨机器不能稳定复现。
+// 展示用 SVG 由 gen:diagrams 在本地按需刷新，不设置字节一致性门禁。
 const ROOT = projectRoot();
 const jobs = findAllPlantumlBlocks(ROOT);
 

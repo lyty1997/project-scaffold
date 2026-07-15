@@ -6,6 +6,7 @@
 
 - [项目进度](progress.md)
 - [架构概览](architecture/overview.md)
+- [质量门禁](architecture/quality-gates.md)
 - [术语表](architecture/glossary.md)
 - [待决策问题](architecture/open-decisions.md)
 - [跨机协同开发预览工作流](architecture/dev-workflow.md)
@@ -27,8 +28,8 @@
 | 内容栏目、产品服务的规划和边界 | [内容与产品路线](product/content-roadmap.md) |
 | 本地开发怎么跨机预览、怎么同步 | [跨机协同开发预览工作流](architecture/dev-workflow.md) |
 | 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
-| `npm run quality` 各步骤具体查什么 | 根目录 [AGENTS.md](../AGENTS.md) "文档一致性门禁现状"（`CLAUDE.md` 通过 `@AGENTS.md` 导入同一份内容） |
-| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 `codex-rules/` |
+| `npm run quality`、图表检查和本地钩子具体做什么 | [质量门禁](architecture/quality-gates.md) |
+| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
 
 ## 当前阶段
 
