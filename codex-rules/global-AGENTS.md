@@ -1,35 +1,17 @@
-# __PROJECT_NAME__ Codex 全局规范
+# Codex 规则索引
 
-本文是 __PROJECT_NAME__ 的 Codex 工作入口规范。开始任何任务前，必须先读取根目录 `AGENTS.md`，再按任务类型读取本目录下的相关规则和 `docs/README.md` 指向的设计文档。
+根目录 [AGENTS.md](../AGENTS.md) 始终生效。本文件只负责路由：先判断任务类型，再读取对应规则；不要预加载整个 `codex-rules/`。设计事实仍以 [docs/README.md](../docs/README.md) 索引的文档为准。
 
-## 优先级
+| 任务触点 | 读取规则 |
+| --- | --- |
+| 复杂实现、跨层改动、需求存在待决策项 | [Codex 工作流](rules/codex-workflow.md) |
+| 编写或拆解 issue、跨模块契约 | [Issue 工作流](rules/issue-workflow.md) |
+| 内容栏目、公开表达、产品或反馈能力 | [内容与产品](rules/content-product-rules.md) |
+| 页面、交互、样式、前端依赖 | [网站前端](rules/frontend-web-rules.md) |
+| `docs/`、Markdown、PlantUML | [Markdown 文档](rules/markdown-docs.md) |
+| 用户沟通、公开文案、注释风格 | [语言与解释](rules/language.md) |
+| 凭证、个人数据、外部内容 | [安全与隐私](rules/security-privacy.md) |
+| 命令、工具、权限或网络失败 | [工具失败处理](rules/tool-failure.md) |
+| 分支、提交、push、PR 或 CI | [Git 工作流](rules/git-workflow.md) |
 
-1. 系统、开发者、用户的显式指令优先于本规范。
-2. 根目录 `AGENTS.md` 是项目级最高规范。
-3. `docs/` 是定位、信息架构、内容模型、产品服务、部署和公开表达的真相源。
-4. `codex-rules/` 是 Codex 执行任务时的操作规范，不能替代设计文档。
-
-规范冲突先按上述优先级处理；同一优先级的规范冲突且无法从明确上下文消解时，向用户说明冲突点、可选处理方式及各自影响，请用户决策。获得明确决定前，不得自行选择所谓“默认”或“更保守”的方案；可以继续不受该冲突影响且能够独立验证的工作。
-
-## 启动检查
-
-每次任务开始时至少确认：
-
-- 已读取 `AGENTS.md`。
-- 已读取 `docs/README.md`。
-- 若任务涉及定位、信息架构、内容模型、路由、SEO、部署、用户数据、评论、订阅或产品服务，已读取相关设计文档。
-- 已检查 `codex-rules/known-issues.md` 和本次任务相关规则。
-- 已区分用户明确要求、仓库中可查证的事实与仍需用户决定的事项，没有用自行假设填补缺失信息。
-- 不写入、不打印 API Key、Secret、token、真实隐私数据、未公开商业计划或客户数据。
-
-## 规则索引
-
-- `rules/codex-workflow.md`：Codex 通用工作流。
-- `rules/issue-workflow.md`：Issue 编写与拆解规范（API 先对齐、自测证据、复杂任务拆子 issue）。
-- `rules/content-product-rules.md`：内容、产品服务和公开表达规则。
-- `rules/frontend-web-rules.md`：网站前端与交互规范。
-- `rules/markdown-docs.md`：Markdown 设计文档规范。
-- `rules/language.md`：语言、注释、解释风格规范。
-- `rules/security-privacy.md`：密钥、隐私和公开内容安全规范。
-- `rules/tool-failure.md`：工具失败处理规范。
-- `rules/git-workflow.md`：Git 工作流规范。
+任务触及脚本、跨平台、Git hooks、扫描器或 PlantUML 时，再查 [已知注意事项](known-issues.md)。规则冲突按“系统 / 开发者 / 用户显式指令 → 根 `AGENTS.md` → `docs/` 设计 → 本目录执行细则”处理；同级冲突无法查证时请用户决定。
