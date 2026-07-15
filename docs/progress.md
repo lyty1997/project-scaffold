@@ -6,6 +6,17 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-15 21:18 CST / 精炼 Agent 规范并降低上下文噪声
+
+- 完成：将根 `AGENTS.md` 收敛为始终适用的项目边界和最短工作闭环；将 `codex-rules/global-AGENTS.md` 改为按任务触点选读的路由表；去除启动检查、不确定性、文档先行、验证、语言、安全和 PlantUML 说明在多文件间的重复。
+- 完成：把质量命令、CI 和 PlantUML 的实现说明迁移到按需读取的 `docs/architecture/quality-gates.md`，更新 `docs/README.md` 索引；精炼全部 Codex 主题规则和已知问题，并修正 `check-diagrams.mjs` 对已删除 SVG 新鲜度脚本的失效注释。
+- 量化：`AGENTS.md + codex-rules/` 从 463 行、35,648 字节降到 235 行、14,992 字节，分别减少约 49% 和 58%；根 `AGENTS.md` 从 12,411 字节降到 3,100 字节，减少约 75%。
+- 完成：同步 `CLAUDE.md`（经 `@AGENTS.md` 导入同一份规范，本次重构改动了它的前提）——新增「导入内容里的 Codex 侧写法」，声明 `apply_patch` 在 Claude Code 侧对应 Edit/Write：该条原在 `Codex 工作约束` 标题下有 Codex 限定，重构并入通用的「编辑与验证」后会无条件套到 Claude Code 上。
+- 完成：`CLAUDE.md` 新增「规则优先级」，把 `.claude/rules/` 接入 `global-AGENTS.md` 本次固化的优先级链（同级于 `codex-rules/rules/`），并删去原先「冲突取更保守一方为准」这句——它与该链「同级冲突请用户决定」的口径相悖，且与自身后半句「不默认二选一」矛盾。
+- 完成：补录 `CLAUDE.md` 漏登记的 `sync-shared-rules` skill（`a7879aa` 新增时未同步）。
+- 验证：`git diff --check` 通过；`npm run quality` 全部通过（脚本语法、Markdown、契约、密钥扫描、静态站点）；`CLAUDE.md` 改动后重跑 `npm run quality` 仍全绿，新增的三个内部链接由 `check:docs` 校验可达。
+- 遗留：`docs/README.md` 与 `AGENTS.md` 的真相源清单均已不提 `CLAUDE.md` / `.claude/`，Claude Code 这一层只能从 `CLAUDE.md` 自身发现；是否补回索引待定（与本次「AGENTS.md 只留跨 Agent 共识」的瘦身方向相悖，需用户决定）。
+
 ## 2026-07-14 13:15 CST / 明确 Codex 禁止臆测用户意图
 
 - 完成：在根 `AGENTS.md`、`codex-rules/global-AGENTS.md`、`codex-rules/rules/codex-workflow.md` 和 `codex-rules/rules/language.md` 中明确：Codex 不得臆测或自行补全用户未表达的意图、偏好、优先级、验收标准、业务事实和授权；能查证的事实先查证，仍不确定或只能由用户取舍的事项必须写明已知事实、可选方案及影响，请用户决策；确认前不得实施依赖该决定的部分，也不得以“默认”“更保守”或“可否决判断”代替确认。
