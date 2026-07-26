@@ -13,5 +13,6 @@
 | 凭证、个人数据、外部内容 | [安全与隐私](rules/security-privacy.md) |
 | 命令、工具、权限或网络失败 | [工具失败处理](rules/tool-failure.md) |
 | 分支、提交、push、PR 或 CI | [Git 工作流](rules/git-workflow.md) |
+| 搭建或修改 CI/CD、部署、发版、回滚 | [CI/CD 工作流](rules/cicd-workflow.md) |
 
 任务触及脚本、跨平台、Git hooks、扫描器或 PlantUML 时，再查 [已知注意事项](known-issues.md)。规则冲突按“系统 / 开发者 / 用户显式指令 → 根 `AGENTS.md` → `docs/` 设计 → 本目录执行细则”处理；同级冲突无法查证时请用户决定。

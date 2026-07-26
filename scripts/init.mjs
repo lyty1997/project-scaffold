@@ -1,5 +1,5 @@
 import { basename, extname, relative, resolve } from "node:path";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createInterface } from "node:readline/promises";
 import { execSync } from "node:child_process";
@@ -110,6 +110,29 @@ function readExistingSlug() {
   return "";
 }
 
+// 选择暂不搭 CI/CD 时，把这件事挂进待决策文档，避免它只停留在一次终端输出里。
+// 幂等：已经记过就不重复追加。
+const CICD_TODO = "- CI/CD 搭建：脚手架已备好探测与生成能力（`npm run cicd:probe`），尚未选定部署目标与发布方式。";
+
+function recordCicdTodo() {
+  const path = resolve(ROOT, "docs/architecture/open-decisions.md");
+  if (!existsSync(path)) return;
+
+  const text = readFileSync(path, "utf8");
+  if (text.includes("CI/CD 搭建：")) return;
+
+  const heading = "## 工程基建\n\n";
+  const at = text.indexOf(heading);
+  if (at === -1) {
+    console.log("未在 open-decisions.md 找到「工程基建」小节，请自行记录 CI/CD 待办。");
+    return;
+  }
+
+  const insertAt = at + heading.length;
+  writeFileSync(path, `${text.slice(0, insertAt)}${CICD_TODO}\n${text.slice(insertAt)}`, "utf8");
+  console.log("已把 CI/CD 待办记入 docs/architecture/open-decisions.md 的「工程基建」小节。");
+}
+
 async function main() {
   const prompter = createPrompter();
 
@@ -153,6 +176,11 @@ async function main() {
     }
   }
 
+  console.log("\n== CI/CD（可选，现在决定或以后再说）==");
+  console.log("脚手架自带的 CI 只跑内容质量门禁，不含构建、部署、发版、回滚。");
+  console.log("CI/CD 由探测器按项目实际形态现场生成，不预置模板，所以现在没有源码也可以先跳过。");
+  const wantsCicd = (await prompter.prompt("现在就搭 CI/CD？(y/N): ")).toLowerCase() === "y";
+
   prompter.close();
 
   // 版权年份由脚本自动填写，不作为问答项。
@@ -191,10 +219,24 @@ async function main() {
     );
   }
 
-  console.log("\n== 后续步骤 ==");
-  console.log("1. git config core.hooksPath .githooks   # 启用本地 pre-commit 质量门禁");
+  if (!wantsCicd) {
+    recordCicdTodo();
+  }
+
+  // 后续步骤用数组自动编号，避免新增条目时手工维护序号出错。
+  const nextSteps = ["git config core.hooksPath .githooks   # 启用本地 pre-commit 质量门禁"];
   if (wantsPreview) {
-    console.log(`2. 在 ${answers.PREVIEW_HOST} 上把 SSH 公钥装进 ~/.ssh/authorized_keys，参考 docs/architecture/dev-workflow.md 的"远程重启"一节`);
+    nextSteps.push(`在 ${answers.PREVIEW_HOST} 上把 SSH 公钥装进 ~/.ssh/authorized_keys，参考 docs/architecture/dev-workflow.md 的"远程重启"一节`);
+  }
+  nextSteps.push(
+    wantsCicd
+      ? "npm run cicd:probe   # 看探测结果，再用 setup-cicd skill 走完生成与实测闭环"
+      : "以后要搭 CI/CD 时跑 npm run cicd:probe，或直接用 setup-cicd skill（已记入 docs/architecture/open-decisions.md）"
+  );
+
+  console.log("\n== 后续步骤 ==");
+  for (const [index, step] of nextSteps.entries()) {
+    console.log(`${index + 1}. ${step}`);
   }
   console.log("\n运行 npm run quality 做一次自检...");
   try {

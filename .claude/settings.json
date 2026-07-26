@@ -20,6 +20,11 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PROJECT_DIR}/.claude/hooks/post-edit-safety.py",
             "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_DIR}/.claude/hooks/cicd-reminder.py",
+            "timeout": 15
           }
         ]
       }
