@@ -10,6 +10,7 @@
 - [术语表](architecture/glossary.md)
 - [待决策问题](architecture/open-decisions.md)
 - [跨机协同开发预览工作流](architecture/dev-workflow.md)
+- [CI/CD 自动搭建](architecture/cicd-autosetup.md)
 - [并行项目规则同步台账](architecture/sibling-repo-sync.md)（仓库所有者私人笔记，非通用脚手架内容）
 - [内容与产品路线](product/content-roadmap.md)
 - [契约词表](contracts/contract-terms.json)
