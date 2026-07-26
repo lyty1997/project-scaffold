@@ -22,6 +22,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v5
@@ -30,6 +32,7 @@ jobs:
 
       - name: Quality gates
         run: npm run quality
+        shell: bash
 
   diagrams:
     name: Diagram compile check
@@ -41,6 +44,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v5
+        with:
+          persist-credentials: false
 
       - name: Set up Node
         uses: actions/setup-node@v5
@@ -58,8 +63,55 @@ jobs:
           curl -sSL -o plantuml.jar \
             "https://github.com/plantuml/plantuml/releases/download/v${PUML_VERSION}/plantuml-${PUML_VERSION}.jar"
           echo "${PUML_SHA256}  plantuml.jar" | sha256sum -c -
+        shell: bash
 
       - name: Check diagrams compile
         run: npm run check:diagrams
+        shell: bash
         env:
           PUML_JAR: ${{ github.workspace }}/plantuml.jar
+
+  workflow-lint:
+    name: Workflow lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      ACTIONLINT_VERSION: "1.7.12"
+      ACTIONLINT_SHA256: "8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+
+      - name: Verify ShellCheck is available
+        run: shellcheck --version
+        shell: bash
+
+      - name: Download pinned actionlint
+        run: |
+          set -euo pipefail
+          archive="${RUNNER_TEMP}/actionlint.tar.gz"
+          curl --fail --silent --show-error --location \
+            --output "${archive}" \
+            "https://github.com/rhysd/actionlint/releases/download/v${ACTIONLINT_VERSION}/actionlint_${ACTIONLINT_VERSION}_linux_amd64.tar.gz"
+          printf '%s  %s\n' "${ACTIONLINT_SHA256}" "${archive}" | sha256sum --check -
+          tar -xzf "${archive}" -C "${RUNNER_TEMP}" actionlint
+          chmod +x "${RUNNER_TEMP}/actionlint"
+          "${RUNNER_TEMP}/actionlint" -version
+          printf 'ACTIONLINT_BIN=%s/actionlint\n' "${RUNNER_TEMP}" >> "${GITHUB_ENV}"
+        shell: bash
+
+      - name: Check workflows
+        run: npm run check:workflows
+        shell: bash
+
+      - name: Check actionlint fixtures
+        run: npm run check:workflows:fixtures
+        shell: bash

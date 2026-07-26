@@ -6,6 +6,15 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-26 CST / CI/CD 自动搭建能力（第二增量本地实现）
+
+- 完成 `actionlint` 独立门禁：`.github/workflows/ci.yml` 新增 Ubuntu `workflow-lint` job，固定下载 actionlint v1.7.12 并校验归档 SHA256，同时确认 ShellCheck 可用；新增 `npm run check:workflows` 薄包装，外部二进制缺失、非法绕过参数或 actionlint finding 都会失败。正负 fixture 还会把渲染器生成的 Release Please 与布尔 `dry_run` 部署 workflow 交给真实 actionlint。
+- 完成台账驱动的 Release Please 生成：固定 `googleapis/release-please-action` v5.0.0 提交 SHA，支持已建立版本源映射的 `node` / `simple`，生成 workflow、config，并仅在首次 bootstrap 创建 manifest；支持默认 `GITHUB_TOKEN` 或已登记来源的 PAT secret，不把 GitHub App 写成已支持能力。未初始化的脚手架根仓库没有产品版本真相源，因此没有提交活的 Release workflow/config/manifest。
+- 收紧生命周期与失败边界：拒绝手写同名文件、symlink、无法证明归属的 config、旧 managed 残留和 manifest 状态丢失；多文件写入使用 staging、备份、原子替换与失败回滚。版本源、package owner、extra-files、SemVer、Git branch、跨平台 workflow 文件名及受限 config schema 都有回归用例，根级非法配置不能被 package override 掩盖。部署 `dry_run` guard 按 boolean 语义生成，`kind: deploy` 的每个 step 必须显式分类为真实发布或安全准备，且至少有一个受保护发布步骤。全局安全扫描还会处理跨行 YAML 标量、双引号 Unicode 转义和 `on` 区域 block scalar，并拒绝 workflow 使用 YAML alias / anchor、显式 mapping key 或显式 tag key，避免隐藏 `continue-on-error` 或 `pull_request_target`。
+- 评估 `zizmor`：用校验过 SHA256 的 v1.28.0 官方二进制对当前仓库执行 regular persona 离线扫描，报告 8 项（1 项 suppressed），显示的 7 项 high 均来自 GitHub 官方 Action 使用 v5 tag。它从 v1.20.0 起默认要求所有 Action（含 `actions/*`）钉 SHA，与当前“官方 Action 允许版本 tag、第三方 Action 钉 40 位 SHA”策略不同；本轮不加入常驻或 non-blocking 假门禁，待项目决定全面钉 SHA 并配套自动更新后再引入。
+- 验证：`npm run quality` 全绿；真实 actionlint 对仓库 workflow 与持久化 fixture 均通过；`npm run gen:cicd` 在无台账的脚手架根目录明确跳过，未生成产品 Release 配置。真实绿地项目的临时分支、Release PR、tag 与 GitHub Release 尚未执行，仍需在具体项目确认版本源、凭证模式和发布节奏后完成远端验收。
+- 数据与外部服务：未新增用户数据收集，也未给脚手架启用新的运行时第三方服务；CI 会下载并校验官方 actionlint 归档，目标项目只有在台账显式启用后才使用 release-please。
+
 ## 2026-07-26 CST / CI/CD 自动搭建能力（第一增量）
 
 - 背景：脚手架此前只有 CI（内容质量门禁），CD 完全空白，也没有任何机制在绿地项目长出源码时提醒该搭。用户要求"提醒到 + 全自动搭完 + 适配任意技术栈（gcc/C/C++/Python/TypeScript/HTML × Pages/Cloudflare/Vercel/容器/包发布/自建）"，并明确"按需适配对应的项目，而不是在这里建现成的"。

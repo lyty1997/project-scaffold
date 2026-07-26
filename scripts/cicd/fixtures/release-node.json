@@ -1,0 +1,29 @@
+{
+  "generatorVersion": 1,
+  "workflows": [],
+  "targets": [],
+  "secrets": [],
+  "releasePlease": {
+    "workflowFile": "release-please.yml",
+    "targetBranch": "main",
+    "credential": {
+      "mode": "github-token"
+    },
+    "config": {
+      "release-type": "node",
+      "include-v-in-tag": true,
+      "include-component-in-tag": false,
+      "packages": {
+        ".": {}
+      }
+    },
+    "initialManifest": {
+      ".": "0.1.0"
+    },
+    "versionSources": {
+      ".": [
+        "package.json"
+      ]
+    }
+  }
+}

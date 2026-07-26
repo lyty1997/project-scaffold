@@ -1,0 +1,35 @@
+{
+  "generatorVersion": 1,
+  "workflows": [
+    {
+      "id": "deploy-dry-run",
+      "file": "deploy-dry-run.yml",
+      "kind": "deploy",
+      "displayName": "Deploy dry-run fixture",
+      "on": {
+        "pushBranches": [
+          "main"
+        ]
+      },
+      "jobs": [
+        {
+          "id": "deploy",
+          "steps": [
+            {
+              "name": "Deploy",
+              "run": "echo deploy",
+              "deployStep": true
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "kind": "fixture",
+      "rollback": "重跑旧提交"
+    }
+  ],
+  "secrets": []
+}

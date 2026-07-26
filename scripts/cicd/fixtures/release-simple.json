@@ -1,0 +1,31 @@
+{
+  "generatorVersion": 1,
+  "workflows": [],
+  "targets": [],
+  "secrets": [],
+  "releasePlease": {
+    "workflowFile": "release-please.yml",
+    "targetBranch": "main",
+    "credential": {
+      "mode": "github-token"
+    },
+    "config": {
+      "release-type": "simple",
+      "include-v-in-tag": true,
+      "include-component-in-tag": false,
+      "packages": {
+        ".": {
+          "version-file": "scripts/cicd/fixtures/version.txt"
+        }
+      }
+    },
+    "initialManifest": {
+      ".": "0.1.0"
+    },
+    "versionSources": {
+      ".": [
+        "scripts/cicd/fixtures/version.txt"
+      ]
+    }
+  }
+}

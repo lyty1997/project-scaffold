@@ -1,6 +1,6 @@
 # CI/CD 自动搭建
 
-状态：active（第一增量已实现；第二增量未开始）
+状态：active（第一、第二增量本地实现完成；真实项目远端验收待补）
 最近更新：2026-07-26
 
 本文定义脚手架如何在绿地项目起步时**主动提醒该搭 CI/CD**，并在获得授权后**按项目实际形态自动搭完**。
@@ -8,7 +8,9 @@
 
 ## 一、要解决的问题
 
-脚手架当前只有 CI（`quality` 双 OS 矩阵 + `diagrams`），CD 一行没有：没有部署、发版、回滚 workflow，没有 secrets 与环境约定，`npm test` 仍是占位。部署目标在[待决策问题](open-decisions.md)里是未定项。
+脚手架当前只有通用 CI（`quality` 双 OS 矩阵 + `diagrams` + `workflow-lint`），没有任何
+项目级 CD：没有部署、发版、回滚 workflow，没有 secrets 与环境约定，`npm test` 仍是
+占位。部署目标在[待决策问题](open-decisions.md)里是未定项。
 
 要补齐的是三件事，缺一不可：
 
@@ -44,14 +46,16 @@ CD 深度按已确认的范围：**部署流水线 + Release 自动化 + 回滚�
 
 顺带白送一个能力：漂移检测可以做成"重新渲染 + 字节比对"。这与被废弃的 `check:diagrams:fresh` 不同——YAML 序列化不依赖 JVM 字体度量，同一份 JSON 在任何机器上必然产出同样字节，跨机器稳定。
 
-### 2.3 只自己写三块，其余全部复用
+### 2.3 项目适配核心只写三块，外部引擎复用
 
-调研（含实测）后确认该自己写的只有**探测器、台账、渲染器**，其余一律复用现成方案：
+项目适配与 workflow 生成的核心只写**探测器、台账、渲染器**；仓库仍保留零依赖安全
+门禁、提醒钩子、actionlint 薄包装与回归 fixture，用来约束这三块自身。Release 计算和
+workflow YAML/表达式语义检查不自研，分别复用 release-please 与 actionlint：
 
 | 能力 | 采用 | 理由 |
 | --- | --- | --- |
-| Release 自动化 | `googleapis/release-please-action` | 语言无关（18 种 strategy，`simple` 适配 C/C++），以 Action 运行，目标仓库零 npm 依赖，且是"先开 Release PR 待人合并"模式，天然保留人工闸门 |
-| workflow 正确性校验 | `actionlint` 二进制 | 26 类检查：表达式类型、runner label、`needs` 环、`permissions` 取值、`run` 脚本过 shellcheck。照抄现有 `diagrams` job 的"固定版本 + SHA256 + 环境变量指路径 + 不进 quality"范式 |
+| Release 自动化 | `googleapis/release-please-action` v5.0.0（workflow 固定到提交 `45996ed1f6d02564a971a2fa1b5860e934307cf7`） | 语言无关，`simple` 可适配 C/C++；以 Action 运行，目标仓库零 npm 依赖，且是"先开 Release PR 待人合并"模式，保留人工闸门 |
+| workflow 正确性校验 | `actionlint` v1.7.12 官方二进制（Linux x86_64 归档 SHA256 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`） | 检查 YAML、表达式类型、runner label、`needs` 环、`permissions` 取值等；照抄现有 `diagrams` job 的"固定版本 + SHA256 + 环境变量指路径 + 不进 quality"范式 |
 | 构建/发布原语 | `aminya/setup-cpp`、`pypa/cibuildwheel`、`actions/deploy-pages`、`docker/build-push-action`、`wrangler` 等 | 官方 building block，不自研构建脚本 |
 
 明确**不引入**并记录理由，避免以后重复调研：
@@ -62,6 +66,17 @@ CD 深度按已确认的范围：**部署流水线 + Release 自动化 + 回滚�
 - **Dagger / Earthly**：Earthly Cloud 已于 2025-07-16 停服；Dagger 无 SaaS 缓存时构建慢到不值得，且对文档型脚手架数量级过重。
 - **act**：只支持 linux runner，直接毁掉本仓库 ubuntu+windows 双矩阵的验证价值；官方 `not_supported` 明确不支持 OIDC 与 `job.environment`，意味着**所有 deploy job 在 act 下必然失败**。只能在文档里作为可选 debug 工具提及。
 - **npm 上的 `actionlint` 包**：非官方野包（发布者非 rhysd，最后发布 2022-12-07）。只走官方二进制。
+
+`zizmor` 在第二增量重新评估后仍不设为常驻门禁：使用校验过 SHA256 的 v1.28.0
+官方二进制对当前仓库执行 regular persona 离线扫描，退出码为 14，报告 8 项（1 项
+suppressed）；显示的 7 项 high 全部是 `actions/checkout` / `setup-*` 使用官方 v5 tag。
+当前安全骨架已禁止
+`pull_request_target`、错误 secrets 引用，并把 `continue-on-error` 限制为省略或显式
+`false`，同时要求第三方 Action
+钉 40 位 SHA；而 zizmor v1.20.0 起默认要求包括 `actions/*` 在内的所有 Action 都钉 SHA，
+与本设计允许 GitHub 官方 Action 使用版本 tag 的既定策略冲突。等项目决定"全部 Action
+钉 SHA + 用 Dependabot/Renovate 自动更新"时再引入；当前不得用 non-blocking job 或
+`continue-on-error` 做一个看似存在、实际不拦截的门禁。
 
 ### 2.4 探测只用来选工具链，不用来猜命令
 
@@ -158,21 +173,132 @@ stop
 
 台账 JSON → workflow YAML。内部持有结构化 JS 对象（job / step 的 AST），末端用自写的**受限 YAML 序列化器**输出——只需覆盖 map / seq / string / number / bool / 块标量 `|`，约 100 行纯 Node。输出集合完全可控，因此**不需要解析器**。
 
-生成物头部写 managed 标记注释 + 台账内容 hash，供漂移检测使用。
+生成物头部写 managed 标记注释 + 台账内容 hash，供漂移检测使用；Release workflow 还记录
+上一份 config 的 SHA256，作为后续更新 `release-please-config.json` 时的所有权证明。
+
+写盘先对全部目标和现有残留做 `lstat` 预检：拒绝 symlink、非普通文件、同名手写
+workflow、无法证明归属的 config，以及台账移除后仍会触发的旧 managed workflow。全部
+内容先写相邻临时文件，再逐文件备份替换；任一步失败就按倒序恢复旧文件，持久化夹具会在
+第二个文件替换失败时断言所有旧字节和文件集合不变。manifest 缺失但 config 或 release
+workflow 已存在时视为运行状态丢失，只能恢复，不能拿 `initialManifest` 重建。
 
 命令入口 `npm run gen:cicd`，与既有 `gen:diagrams`（本地生成器）对齐。
 
 ### 4.4 门禁 `scripts/quality/check-cicd.mjs`
 
-零依赖，**进 `npm run quality`**。行为照抄既有先例：
+零依赖，**进 `npm run quality`**，分两层执行：
 
-- 台账不存在 → `exit 0` 跳过（同 `check-static-site.mjs` 的"配置不存在就跳过"）。
-- 台账存在 → 校验：声明的每个目标都有对应 workflow 文件；文件头 hash 与台账当前 hash 一致（漂移检测）；secrets 清单齐备；每个目标都声明了回滚方式。
-- 纯正则静态断言（不需要 YAML 解析）：无 `continue-on-error: true`、无 `pull_request_target`、每个 `run` 步骤都有显式 `shell:`、secrets 引用符合书写约定。
+- 无论台账是否存在，都扫描 `.github/workflows/` 的全局安全红线：无
+  可产生假绿的 `continue-on-error`、无 `pull_request_target`，secrets 引用符合书写约定。
+- 台账不存在时，只跳过台账驱动的完整性与漂移检查；若残留 managed workflow、
+  release-please config 或 manifest，仍按“真相源丢失”失败。
+- 台账存在时，校验声明的 workflow 文件及字节漂移、secrets 清单、每个目标的回滚方式，
+  以及 release-please config/manifest 的所有权边界。
+- workflow 目录、workflow、config 与 manifest 都必须是仓库内普通文件，symlink 直接失败；
+  flow-style、双引号转义或 `on` 区域 block scalar 中的 `pull_request_target`，以及跨行、
+  大小写变化、表达式或别名形式的 `continue-on-error` 都不能绕过；显式 `false` 仍可用。
+  workflow 禁止 YAML alias / anchor、显式 mapping key 与显式 tag key，避免危险事件藏在
+  其他字段的 block scalar 后再展开，或用 `? on` / `!!str on` 改写关键结构；需要复用时
+  在台账或渲染器结构层表达，不把 YAML 组合语义留给零依赖扫描器猜。
+- 台账存在时，手写 workflow 中表达式引用的 secrets 同样必须登记来源。
+- 每个 `run` 步骤显式 `shell:` 由渲染器装配和 managed 产物字节漂移间接保证；手写
+  workflow 的 YAML、表达式和 shell 语义交给独立 `actionlint`，不在正则扫描器里伪造
+  一套不完整的解析规则。
 
 `actionlint` 因依赖外部二进制，走独立的 `npm run check:workflows` + 独立 CI job，**不进 `quality`**。
 
-### 4.5 提醒三层
+### 4.5 workflow 语义检查 `scripts/quality/check-workflows.mjs`
+
+Node 薄包装只负责定位并启动官方 `actionlint`，不复制它的规则：
+
+- 本地入口：`ACTIONLINT_BIN=/absolute/path/actionlint npm run check:workflows`。
+- 未显式设置 `ACTIONLINT_BIN` 时尝试使用 `PATH` 中的 `actionlint`；找不到就明确失败，
+  不因外部工具缺失而静默跳过。
+- `actionlint` 扫描 `.github/workflows/*.{yml,yaml}`；退出码原样透传。
+- 命令行只接受要检查的 `.yml` / `.yaml` 路径，拒绝 `-ignore`、`-shellcheck=` 等
+  actionlint 选项，避免临时参数绕过仓库门禁；自定义 runner 等稳定配置写入
+  `.github/actionlint.yaml` 后评审入库。
+- 它依赖外部二进制，因此不加入零依赖、双 OS 的 `npm run quality`，只在 Ubuntu 的
+  独立 `workflow-lint` job 运行一次。
+- CI 固定下载 v1.7.12 的 Linux x86_64 归档并校验上述 SHA256；版本注释只供人阅读，
+  校验和才是下载产物的机器约束。
+- `actionlint` 找到 `shellcheck` 时才会检查 shell 脚本；CI 必须先确认
+  `shellcheck` 可执行，不能把"runner 恰好预装"当成永久承诺。
+- 正负 fixture 除了检查 actionlint 失败透传，还会把生成的 Release Please 与布尔
+  `dry_run` 部署 workflow 交给真实 actionlint。
+
+`check:cicd` 与 `actionlint` 分工不同：前者零依赖扫描全部 workflow 的项目安全红线，
+并对 managed 产物做漂移和完整性校验；后者使用真实 YAML/表达式语义检查。两者不能互相替代。
+
+### 4.6 Release Please 按台账生成
+
+Release 自动化不能作为未初始化脚手架的活配置提交；只有具体项目在台账中显式提供
+`releasePlease` 决策后，渲染器才生成它。字段至少包含：
+
+- `workflowFile`、`targetBranch`；
+- `credential.mode`（`github-token` 或 `secret`）及 secret 模式下的 `secretName`；
+- 作为 release-please 配置主体的 `config`（必须含非空 `packages`；渲染器校验下述不变量
+  并补项目级标题）；
+- `initialManifest`（每个 package path 的当前 SemVer）；
+- `versionSources`（每个 package path 对应的项目版本文件路径）。
+
+第二增量只接受已建立版本文件映射的 `node` 与 `simple` release type；`simple` 可服务
+C/C++、Python 等非 Node 项目。其他 release type 需要先补对应主版本文件映射和 fixture，
+不能未经校验原样透传。这组字段不替项目选择 release type、初始版本、历史起点、tag
+规则或版本文件；这些仍是 setup 阶段必须确认的项目事实与用户决定。
+
+`config` 使用固定 Action 版本对应的受限字段子集，未知字段直接失败；必须显式写
+`include-v-in-tag` 与 `include-component-in-tag`。如提供 `bootstrap-sha`，必须是完整
+40 位小写提交 SHA。渲染器会补上符合仓库提交规范的双语 Release PR 标题模式；自定义
+模式也必须保留 `English / 中文` 结构和可解析的 `${version}` / `${branch}` 占位符。
+`skip-github-pull-request` 是 Action input 而不是 manifest config，任何值都拒绝；
+`skip-github-release` 只接受布尔 `false`。根级与每个 package 的声明先分别做完整类型、
+路径和 extra-files 元素校验，再计算 package override；override 不能掩盖仍会写入最终
+config 的非法根字段。
+
+文件所有权必须分开，避免两个 writer：
+
+| 文件 | 所有者与门禁 |
+| --- | --- |
+| `docs/contracts/cicd-answers.json` | 使用者决策真相源；保存 release 配置、初始版本、版本源与凭证模式 |
+| `.github/workflows/<workflowFile>` | `gen:cicd` 确定性生成；带 managed 标记并做字节漂移检查 |
+| `release-please-config.json` | `gen:cicd` 确定性生成；做字节漂移检查，更新前必须由 managed release workflow 中的旧摘要证明归属 |
+| `.release-please-manifest.json` | 仅首次 bootstrap 时由 `gen:cicd` 创建；之后由 Release PR 更新，生成器不得覆盖；门禁只校验 package key 与 SemVer |
+| `package.json`、`version.txt`、`pyproject.toml`、CMake 文件等 | 项目版本源或同步产物；由具体 release type / `extra-files` 决定，路径必须在台账登记且真实存在 |
+
+渲染器要求 config / manifest / versionSources 的 package key 一致，版本源路径规范、
+存在、无重复且只有一个 package owner；`node` 的 `package.json` 或 `simple` 的
+`version-file` 必须登记为主版本文件，extra-files 也必须逐项映射。首次 bootstrap 对照
+`initialManifest`，之后对照现有 manifest，避免把 bootstrap 值误当运行状态。真实 Release
+PR 仍要检查所有结构化 extra-files 是否实际更新到同一版本；未做远端验收前不能写成
+Release 流程已经可用。
+
+生成器只创建不存在的目标，或更新可证明由自身管理的普通文件。已有手写 workflow /
+config 不会因为写入台账就自动变成生成器所有；冲突时必须改名，或由使用者确认备份与
+迁移。改名、移除 workflow 或停用 Release 时，旧产物会在任何新写入前阻断并列出清理项，
+生成器不会自行删除运行状态。
+
+生成的 workflow 固定使用
+`googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7`
+（v5.0.0），只由目标分支 push 触发，权限为 `contents: write`、`issues: write`、
+`pull-requests: write`，且 `cancel-in-progress: false`。流程是：
+
+1. 目标分支 push 后创建或更新 Release PR；
+2. Release PR 的 CI 按项目凭证模式运行并由人确认；使用默认 `GITHUB_TOKEN` 时，
+   GitHub 会为机器人创建或更新 PR 产生待批准的 workflow run，需要有写权限的人点击
+   **Approve workflows to run** 后才进入真绿判定；
+3. 人工合并 Release PR；
+4. 同一个 release workflow 创建 tag 与 GitHub Release。
+
+若后续要增加包、镜像或附件发布，应使用 release-please 的 `release_created` 输出在
+**同一个 workflow** 串联；当前第二增量未生成这些发布步骤。不能假设默认
+`GITHUB_TOKEN` 创建的 tag 会触发另一个 workflow。
+`github-token` 不新增长期凭证，但 GitHub 对机器人生成事件的后续 workflow 触发有限制。
+当前渲染器的 `secret` 模式支持传入 PAT，并只在台账登记 secret 名与来源、不写凭证值；
+GitHub App installation token 需要先增加生成短期 token 的专用步骤与 App 参数 schema，
+当前生成器尚未实现，不能把普通 secret 输入写成“已支持 GitHub App”。
+
+### 4.7 提醒三层
 
 | 层 | 位置 | 判定条件 | 表现 |
 | --- | --- | --- | --- |
@@ -182,7 +308,7 @@ stop
 
 第三层必须新写独立 hook：现有 `post-edit-safety.py` 对 `.md` / `.yml` / `.c` / `.cpp` 一律在 `detect_stack` 处提前返回、完全静默，扩它的 `CHECKS` 表无法覆盖。
 
-### 4.6 执行体 `.claude/skills/setup-cicd/SKILL.md`
+### 4.8 执行体 `.claude/skills/setup-cicd/SKILL.md`
 
 形状照抄既有的 `sync-shared-rules`（读台账 → 逐目标实际探查 → 按各自机制适配 → 实测校验 → 写回并本地提交 → 更新台账），它已经是本仓库验证过的"探查 + 现场适配"范式。
 
@@ -196,9 +322,9 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 | --- | --- | --- |
 | 0 | 权限体检：token scope 是否含 `workflow`；`permissions.admin` 是否为真；仓库 `visibility` 与套餐 | 缺 `workflow` scope 则停下来引导 `gh auth refresh -h github.com -s workflow`（需人工授权，属于必须暂停的点） |
 | 1 | 跑探测器，输出事实清单并展示给使用者 | 探测不到构建系统就停下来问，不猜 |
-| 2 | 就"探测不出来的事"逐项确认：构建命令、测试命令、部署目标、发布节奏 | 使用者答不上来的项先不生成对应 workflow，记进[待决策问题](open-decisions.md) |
-| 3 | 写台账 | —— |
-| 4 | 渲染 workflow | —— |
+| 2 | 就"探测不出来的事"逐项确认：构建命令、测试命令、部署目标、发布节奏；启用 Release 时再确认 release type、当前版本、版本源、历史起点、tag 与凭证模式 | 使用者答不上来的项先不生成对应 workflow，记进[待决策问题](open-decisions.md) |
+| 3 | 写台账；Release 决策写入可选 `releasePlease` | —— |
+| 4 | 渲染 workflow 与 release-please config；manifest 只在不存在时 bootstrap | 已存在 manifest 时绝不覆盖 |
 | 5 | 本地校验：`npm run quality` + `npm run check:workflows` | 红了就修，不许跳过 |
 | 6 | 临时分支 + draft PR 触发真机实测，部署步骤走 `dry_run=true` | —— |
 | 7 | 按"真绿判据"逐 job 逐 step 断言 | 失败则取日志定位 → 修 → 再推，直到转绿 |
@@ -216,8 +342,11 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 | 非 `actions/` 组织的 action 一律钉 40 位 SHA | 供应链风险；这也是 GitHub `starter-workflows` 贡献规范的明文要求 |
 | 每个 workflow 自带最小 `permissions:` 块 | 根级只读权限不会被继承到需要写的 job；显式声明任一项后，未声明项自动为 `none` |
 | 禁止 `pull_request_target` | 它在 fork PR 上下文里能拿到仓库 secrets，是已知的凭证窃取入口 |
-| 禁止 `continue-on-error: true` | 会让 job 失败而 run 结论仍是 success，制造假绿 |
-| 部署类 workflow 带 `dry_run` 输入（默认 true）gate 住真实发布步骤 | 首次验证零副作用；同时白送"手动重跑即回滚入口"和"演练开关"两个能力 |
+| `continue-on-error` 只能省略或显式为 `false` | `true`、动态表达式或别名都可能让 job 失败而 run 结论仍是 success，制造假绿 |
+| 部署类 workflow 带 `dry_run` 输入（默认 true）gate 住真实发布步骤；每个 step 必须显式分类为 `deployStep: true/false`，且至少一个为 `true` | 首次验证零副作用；新增步骤若漏分类会硬失败，不能靠已有 guard 充当哨兵；同时提供"手动重跑即回滚入口"和"演练开关" |
+| release-please Action 固定到已核验的 40 位提交 SHA | 它需要写仓库与 PR 权限，不能依赖可移动 tag |
+| Release workflow 的 `cancel-in-progress` 固定为 `false` | 发版中途取消会留下 tag、Release PR 或产物状态不一致 |
+| 已存在的 `.release-please-manifest.json` 不由生成器覆盖 | manifest 是 Release PR 持续更新的运行状态，不是每次从初始台账重置的生成物 |
 | 用 artifact 或日志哨兵留证据，**不用** `$GITHUB_STEP_SUMMARY` | act 会直接丢弃它，且 API 不直接暴露 summary |
 
 ## 七、自动化边界：能全自动到哪里
@@ -248,7 +377,10 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 2. 免费计划下 **private 仓库不支持** environments / 分支保护 / rulesets / Pages。
 3. `gh` **没有 `gh ruleset create`**（实测本机只有 `check` / `list` / `view`）——rulesets、classic 分支保护、environments、Pages 启用一律走 `gh api --input`，且写 secret 必须走 stdin 而非 `--body`，避免密钥进 shell history。
 
-另有两个易踩的行为差异：`gh api` 对 403/404 一律 `exit 1` 且错误 JSON 走 stdout，判定必须解析响应体的 `.status` 而非退出码；`GITHUB_TOKEN` 推的提交与 tag **不会触发下游 workflow**，所以"CI 自动打 tag → tag 触发发布"这条链用默认 token 会静默断掉。
+另有两个易踩的行为差异：`gh api` 对 403/404 一律 `exit 1` 且错误 JSON 走 stdout，判定
+必须解析响应体的 `.status` 而非退出码；默认 `GITHUB_TOKEN` 创建或更新 PR 会产生
+approval-required 的 `pull_request` run，其他由它推送的提交与 tag **不会触发下游
+workflow**，所以“CI 自动打 tag → tag 触发发布”这条链会静默断掉。
 
 ## 八、"真绿"判据
 
@@ -273,7 +405,7 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 | GitHub Pages | 重跑旧 commit 的部署 run | 无原生 rollback；`github-pages` environment 有并发锁，卡死需 API force-cancel |
 | Cloudflare | `wrangler rollback` | 可回滚版本窗口 100，是硬上限 |
 | 容器 | 按 immutable digest 重新部署 | —— |
-| GitHub Release | `gh release edit --latest` 指回旧版 | —— |
+| GitHub Release | 不可真正回滚 | 可把旧版重新标为 latest 或补发修正版，但无法撤回已被下载的 tag/附件 |
 | **npm / PyPI 包发布** | **本质不可回滚** | 只能发新版本 + `deprecate` / `yank`，必须在文档里写清楚，不能承诺"全目标可回滚" |
 
 ## 十、工程量判断与增量拆分
@@ -292,13 +424,24 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 探测器 + 台账 + 渲染器 + `check:cicd` + 三层提醒 + `setup-cicd` skill + `init.mjs` 改动 + 本文档与规则文件。
 验收标准：在一个真实绿地项目上跑通"提醒 → 探测 → 拍板 → 生成 → 本地门禁绿 → 临时分支实测转绿 → 远端 apply"，并留下输入输出证据。
 
-**第二增量（第一增量落地并用过至少一个真实项目后再评估）**
-`actionlint` 独立 job + `npm run check:workflows`；按需加 `zizmor`。
+**第二增量**
+原设计要求第一增量先在真实项目用过一次再启动。2026-07-26 使用者明确要求在第一增量
+之后继续第二增量，因此本轮完成本地可验证的实现；这不等于仓库里已经存在真实绿地项目的
+远端验收证据。该验收继续单独记录，不能因第二增量代码完成而写成已经验收。
+
+范围：`actionlint` 独立 job + `npm run check:workflows`；按台账与项目版本源生成
+release-please workflow/config；同步规则、skill、质量文档与可重复 fixture。`zizmor`
+只做引入价值评估，本轮结论为暂不设常驻门禁。
+
+非目标：不给尚未初始化的脚手架根仓库直接开启产品 Release；不预置某一技术栈的发布
+workflow；不自动发布 npm/PyPI/镜像；未经明确授权不创建真实 tag 或 GitHub Release。
 
 ## 十一、已拍板的决定
 
 1. **台账放 `docs/contracts/cicd-answers.json`**：与既有契约文件同列，符合"docs 是真相源"。
-2. **Release 自动化归第二增量**：`release-please` 会引入两个配置文件，且需要先定版本号真相源（C/C++ 用 `version.txt` + `extra-files` 注解同步 `CMakeLists.txt`）。单独一步更好验收。
+2. **Release 自动化归第二增量**：`release-please` 会引入静态 config 与 bootstrap 状态
+   manifest，且需要先定版本号真相源（C/C++ 用 `version.txt` + `extra-files` 注解同步
+   `CMakeLists.txt`）。单独一步更好验收。
 3. **`gh auth refresh -s workflow` 留到 `setup-cicd` 的 preflight 提示**，不在 `npm run init` 时打断初始化。
 
 ## 十二、第一增量的落地清单
@@ -313,5 +456,6 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 | `.claude/rules/cicd-workflow.md`、`codex-rules/rules/cicd-workflow.md` | 第二层提醒与行为约束 |
 | `scripts/init.mjs` | 第一层提醒；可选章节 + 待办落 `open-decisions.md` |
 
-第二增量待做：`actionlint` 独立 job 与 `npm run check:workflows`；`release-please` 接入；按需评估 `zizmor`。
-
+第二增量的本地实现与门禁已完成：`actionlint` 独立 job 与 `npm run check:workflows`；
+release-please 按台账生成能力；`zizmor` 已实扫并评估为暂不设常驻门禁。真实绿地项目
+以及 Release PR/tag/Release 仍须在具体项目确认版本源、凭证模式与发布节奏后远端验收。

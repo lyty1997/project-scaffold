@@ -22,6 +22,17 @@
 
 ## 工程基建
 
+- Release 自动化的项目级决策：启用 release-please 前，必须确认发布包路径、`release-type`、
+  当前版本、是否需要及具体 `bootstrap-sha`、版本号真相源及需同步的版本文件、tag 规则；脚手架不得把自身
+  `package.json` 预设为所有下游项目的产品版本源。
+- Release Please 凭证模式：当前生成器支持默认 `GITHUB_TOKEN`（零新增长期凭证，但
+  机器人 PR 的 CI 需要有写权限的人手工批准，其他后续 workflow 不会自动触发）或
+  fine-grained PAT（可自动触发，但属于长期 secret，需轮换）。GitHub App installation
+  token 更适合短期凭证，但需要另行设计 App 参数和 token 生成步骤，当前尚未支持。必须
+  在具体项目启用 Release 前由使用者确认；使用 PAT 时只记录 secret 名与来源，不写凭证值。
+- Breaking change 的提交表达：扩展提交钩子以允许 `feat(scope)!:` / `fix(scope)!:`，
+  或维持当前主题格式并要求在正文写 `BREAKING CHANGE:`。该选择会同时影响本地钩子、
+  Release Please 版本计算和贡献文档，确认前不修改提交约定。
 - 测试框架与范围：确定技术栈后选定测试运行器（如 `node --test`、Vitest、Pytest 等），把占位的 `npm test` 换成真实命令，并考虑是否新增 `check:test` 门禁纳入 `npm run quality`。
 - 依赖与锁文件策略：引入第一个第三方依赖时，约定锁文件（`package-lock.json` 等）是否入库、CI 是否改用 `npm ci` 保证可复现构建；在此之前保持零依赖。
 - CI job 拆分时机：一旦引入数据库等需要外部服务的依赖，`.github/workflows/ci.yml` 应把现有单一 `quality` job 拆成"无外部依赖的快 job"（继续跑 `npm run quality`）和"起 docker/服务容器的慢 job"（跑迁移、集成测试），两者独立失败、互不拖慢；后者建议验证"迁移可回滚再重新迁移"的闭环（up → down → up），而不是只跑一遍 migrate 就算过。

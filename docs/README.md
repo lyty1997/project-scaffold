@@ -30,6 +30,7 @@
 | 本地开发怎么跨机预览、怎么同步 | [跨机协同开发预览工作流](architecture/dev-workflow.md) |
 | 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
 | `npm run quality`、图表检查和本地钩子具体做什么 | [质量门禁](architecture/quality-gates.md) |
+| CI/CD 如何探测、生成、校验和按项目接入发版 | [CI/CD 自动搭建](architecture/cicd-autosetup.md) |
 | Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
 
 ## 当前阶段

@@ -1,0 +1,15 @@
+name: Valid actionlint fixture
+
+on:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print sentinel
+        run: echo "fixture-ok"
+        shell: bash

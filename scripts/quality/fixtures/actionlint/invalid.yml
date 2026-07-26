@@ -1,0 +1,17 @@
+name: Invalid actionlint fixture
+
+on:
+  push:
+    branch:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print sentinel
+        run: echo "fixture-must-fail"
+        shell: bash
