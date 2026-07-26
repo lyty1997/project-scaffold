@@ -6,6 +6,16 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-07-26 CST / CI/CD 自动搭建能力（第一增量）
+
+- 背景：脚手架此前只有 CI（内容质量门禁），CD 完全空白，也没有任何机制在绿地项目长出源码时提醒该搭。用户要求"提醒到 + 全自动搭完 + 适配任意技术栈（gcc/C/C++/Python/TypeScript/HTML × Pages/Cloudflare/Vercel/容器/包发布/自建）"，并明确"按需适配对应的项目，而不是在这里建现成的"。
+- 设计：新增 [CI/CD 自动搭建](architecture/cicd-autosetup.md)。核心判断是把一份 CI/CD 拆成「结构与安全骨架」（不随技术栈变，代码化固化在渲染器里）和「工具链与命令」（每个项目都不同，靠探测事实 + 用户拍板产生，写进 JSON 台账）。因此仓库里不存在任何成品 workflow 模板，加新技术栈不需要加文件。真相源是 `docs/contracts/cicd-answers.json`，YAML 只是产物——这也绕开了 Node 22 无内置 YAML 解析器与零依赖承诺的冲突（生成器只写不读 YAML）。
+- 完成（第一增量）：`scripts/cicd/probe.mjs`（探测器，本地信号 + 8 个远端只读端点 + token scope 体检，有阻塞项非零退出）；`scripts/cicd/render.mjs`（渲染器 + 约 100 行受限 YAML 序列化器，固化最小权限、第三方 action 钉 40 位 SHA、`${{ secrets.X }}` 写法、显式 `shell:`、禁 `pull_request_target`、禁 `continue-on-error: true`、部署步骤 dry_run 闸门、部署类 `cancel-in-progress: false`）；`scripts/quality/check-cicd.mjs`（进 `quality`，安全红线覆盖全部 workflow，漂移检测靠"重新渲染 + 字节比对"只覆盖 managed 产物）；三层提醒（`init.mjs` 可选章节 + 待办落 `open-decisions.md`、`.claude/rules/cicd-workflow.md` 与 codex 侧同名规则 + 路由表、新增独立 hook `.claude/hooks/cicd-reminder.py`）；`.claude/skills/setup-cicd/SKILL.md` 九步闭环。
+- 验证证据：探测器实跑抓出真实阻塞项（本机 token scope 为 `gist, read:org, repo`，缺 `workflow`，会导致 push workflow 文件被拒）；渲染器 fixture 自测覆盖正常路径（C++ CMake 矩阵 + Pages 部署）与异常路径（8 条违规全部拦下），产物经 pyyaml 解析校验通过；门禁 5 种失败模式（漂移、secret 未登记、缺回滚方式、台账丢失、managed 残留）逐条验证报错；hook 5 个判定用例（未初始化/应提醒/当天去重/已有台账/非 Write-Edit）全部符合预期；`init.mjs` 在全新副本上验证 y/N 两个分支，待办记录幂等。
+- 过程中修掉的两个真 bug（由 fixture 自测暴露，不是"看起来对"能发现的）：部署步骤的 `if` 与用户自带条件合成时把 `&&` 落在了 `${{ }}` 外面，生成的是非法表达式；`env:`/`with:` 是嵌套对象，原实现只扫顶层字符串，导致 secrets 写法违规整条漏检。
+- 工程量判断：整体偏大，拆两个增量后第一增量为"刚刚好"。主动砍掉三项——"积木库 + 验证后自增长"（单人项目触发频次低，会腐烂成无人维护的垃圾场；台账文件本身已是零维护成本的沉淀）、staging/production 环境分层（用户未选）、`zizmor` 深度安全审计（渲染器已固化 SHA 钉法与禁 `pull_request_target`，第一增量收益有限）。
+- 遗留：第二增量未开始——`actionlint` 独立 job 与 `npm run check:workflows`、`release-please` 接入（需先定版本号真相源）、按需评估 `zizmor`。另外整套链路尚未在真实绿地项目上端到端跑过一次"实测转绿 + 远端 apply"，这一步要等有实际项目时补，且需要先解决 token 缺 `workflow` scope 的问题。
+
 ## 2026-07-15 22:44 CST / CLAUDE.md 收敛为纯导入，消除重复状态
 
 - 完成：CLAUDE.md 删去「Claude Code 专属配置」「导入内容里的 Codex 侧写法」「规则优先级」三节，只留单一真相源声明 + `@AGENTS.md` 导入，32 行降到 6 行。根因判断：`.claude/rules/`、`.claude/skills/`、`.claude/hooks/` 全部由 Claude Code 在启动时自动注入，CLAUDE.md 里那份清单是手抄副本；`a7879aa` 漏登记 `sync-shared-rules` 是这份重复状态的必然产物。消除重复状态优于加门禁去校验重复状态——原本提案的 `check:claude-md` 门禁因此撤回未实施。

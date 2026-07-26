@@ -1,6 +1,6 @@
 # CI/CD 自动搭建
 
-状态：draft（等待仓库所有者确认后才进入实现）
+状态：active（第一增量已实现；第二增量未开始）
 最近更新：2026-07-26
 
 本文定义脚手架如何在绿地项目起步时**主动提醒该搭 CI/CD**，并在获得授权后**按项目实际形态自动搭完**。
@@ -295,9 +295,23 @@ SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-ma
 **第二增量（第一增量落地并用过至少一个真实项目后再评估）**
 `actionlint` 独立 job + `npm run check:workflows`；按需加 `zizmor`。
 
-## 十一、需要拍板的未定项
+## 十一、已拍板的决定
 
-1. **台账放 `docs/contracts/cicd-answers.json` 还是 `.github/cicd-answers.json`**：前者与既有契约文件同列、更符合"docs 是真相源"；后者离产物更近。倾向前者。
-2. **第一增量是否包含 Release 自动化**：`release-please` 引入成本低，但它会往仓库加 `release-please-config.json` 与 `.release-please-manifest.json`，且需要决定版本号真相源（C/C++ 用 `version.txt` + `extra-files` 注解同步 `CMakeLists.txt`）。可以放第二增量。
-3. **`gh auth refresh -s workflow` 的时机**：它需要开浏览器人工授权。是在 `npm run init` 时就提示，还是留到 `setup-cicd` 的 preflight 才提示。倾向后者，避免打断初始化。
+1. **台账放 `docs/contracts/cicd-answers.json`**：与既有契约文件同列，符合"docs 是真相源"。
+2. **Release 自动化归第二增量**：`release-please` 会引入两个配置文件，且需要先定版本号真相源（C/C++ 用 `version.txt` + `extra-files` 注解同步 `CMakeLists.txt`）。单独一步更好验收。
+3. **`gh auth refresh -s workflow` 留到 `setup-cicd` 的 preflight 提示**，不在 `npm run init` 时打断初始化。
+
+## 十二、第一增量的落地清单
+
+| 文件 | 职责 |
+| --- | --- |
+| `scripts/cicd/probe.mjs` | 探测器；`npm run cicd:probe`；有阻塞项时非零退出 |
+| `scripts/cicd/render.mjs` | 渲染器 + 受限 YAML 序列化器；`npm run gen:cicd`；违反不变量硬失败 |
+| `scripts/quality/check-cicd.mjs` | 门禁；进 `npm run quality`；安全红线覆盖全部 workflow，漂移检测只覆盖 managed 产物 |
+| `.claude/hooks/cicd-reminder.py` | 第三层提醒；三条件命中才提醒，每天最多一次 |
+| `.claude/skills/setup-cicd/SKILL.md` | 执行体；九步黄金工作流与验收清单 |
+| `.claude/rules/cicd-workflow.md`、`codex-rules/rules/cicd-workflow.md` | 第二层提醒与行为约束 |
+| `scripts/init.mjs` | 第一层提醒；可选章节 + 待办落 `open-decisions.md` |
+
+第二增量待做：`actionlint` 独立 job 与 `npm run check:workflows`；`release-please` 接入；按需评估 `zizmor`。
 
