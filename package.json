@@ -7,14 +7,15 @@
   "scripts": {
     "init": "node scripts/init.mjs",
     "test": "echo \"(尚未配置测试；确定技术选型后按 docs/architecture/open-decisions.md 记录并补上)\"",
-    "quality": "npm run check:js && npm run check:docs && npm run check:contracts && npm run check:secrets && npm run check:site",
-    "check:js": "node --check scripts/init.mjs && node --check scripts/quality/lib/files.mjs && node --check scripts/quality/lib/plantuml.mjs && node --check scripts/quality/check-markdown.mjs && node --check scripts/quality/check-contracts.mjs && node --check scripts/quality/check-secrets.mjs && node --check scripts/quality/check-static-site.mjs && node --check scripts/quality/check-diagrams.mjs && node --check scripts/quality/render-diagrams.mjs && node --check scripts/cicd/probe.mjs && node --check scripts/cicd/render.mjs",
+    "quality": "npm run check:js && npm run check:docs && npm run check:contracts && npm run check:secrets && npm run check:site && npm run check:cicd",
+    "check:js": "node --check scripts/init.mjs && node --check scripts/quality/lib/files.mjs && node --check scripts/quality/lib/plantuml.mjs && node --check scripts/quality/check-markdown.mjs && node --check scripts/quality/check-contracts.mjs && node --check scripts/quality/check-secrets.mjs && node --check scripts/quality/check-static-site.mjs && node --check scripts/quality/check-diagrams.mjs && node --check scripts/quality/render-diagrams.mjs && node --check scripts/cicd/probe.mjs && node --check scripts/cicd/render.mjs && node --check scripts/quality/check-cicd.mjs",
     "cicd:probe": "node scripts/cicd/probe.mjs",
     "gen:cicd": "node scripts/cicd/render.mjs",
     "check:docs": "node scripts/quality/check-markdown.mjs",
     "check:contracts": "node scripts/quality/check-contracts.mjs",
     "check:secrets": "node scripts/quality/check-secrets.mjs",
     "check:site": "node scripts/quality/check-static-site.mjs",
+    "check:cicd": "node scripts/quality/check-cicd.mjs",
     "check:diagrams": "node scripts/quality/check-diagrams.mjs",
     "gen:diagrams": "node scripts/quality/render-diagrams.mjs"
   },
