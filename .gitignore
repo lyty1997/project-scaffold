@@ -25,6 +25,9 @@ coverage/
 scripts/dev/dev-workflow.env
 .claude/settings.local.json
 
+# CI/CD 探测结果：环境快照而非决策，不入库（决策在 docs/contracts/cicd-answers.json）
+.cicd/
+
 # Logs
 *.log
 npm-debug.log*
