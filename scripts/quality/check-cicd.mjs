@@ -5,7 +5,7 @@
 //    因为 pull_request_target 与错误的 secrets 写法是真实风险，不该因「不是生成的」而放过。
 // 2. 漂移与完整性 —— workflow 用 managed 标记识别；release-please config 按台账存在性
 //    识别并做字节比对；manifest 只校验 key 与 SemVer、不和 bootstrap 值做字节比对。
-//    这与被废弃的 check:diagrams:fresh 不同：YAML/JSON 序列化不依赖字体度量，跨机器确定。
+//    YAML/JSON 序列化不依赖字体度量，和当前 Archify HTML 一样可做跨机器确定性新鲜度检查。
 //
 // 台账不存在时直接跳过并 exit 0（同 check-static-site.mjs 的既有先例）。
 

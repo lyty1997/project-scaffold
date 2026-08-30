@@ -112,54 +112,9 @@ __PROJECT_NAME__.preview/          # 新增 worktree，专门用于 checkout 待
 
 ## 端到端迭代流程
 
-```plantuml
-@startuml
-title 本地渲染端与远端托管端协同预览闭环（示例拓扑，非强制 Windows+Linux 组合）
-participant "用户" as User
-participant "本地渲染端\nClaude Desktop" as Win
-participant "GitHub\norigin" as Hub
-participant "远端托管端\nClaude Code CLI" as Linux
-participant "远端预览\nworktree 与静态服务器" as Preview
+[![本地渲染端与远端托管端协同预览闭环静态预览](../diagrams/dev-workflow-loop.archify.png)](../diagrams/dev-workflow-loop.archify.html)
 
-note over Win, Linux
-  本图仅示意"本地渲染端 + 远端托管端"两个角色的分工，
-  不代表每个项目都必须是 Windows+Linux 组合；
-  两个角色也可能是同一操作系统的两台机器，甚至同一台机器的两个会话。
-end note
-
-Linux -> Preview : 启动预览服务，指定分支
-activate Preview
-
-User -> Win : 打开预览 URL 查看渲染效果
-Win -> Preview : navigate 与截图
-Preview --> Win : 渲染截图与元素快照
-Win --> User : 展示当前效果
-User -> Win : 标注或描述修改意见
-Win -> Win : 在本地源码中修改
-Win -> Hub : commit 并 push 到 feature 分支
-
-User -> Linux : 请求同步并重启预览
-activate Linux
-Linux -> Hub : git fetch
-Linux -> Preview : pull feature 分支并重启服务
-deactivate Linux
-
-User -> Win : 刷新查看最新效果
-Win -> Preview : navigate 与截图
-Preview --> Win : 最新渲染结果
-Win --> User : 确认是否符合预期
-
-== 反复迭代直至满意 ==
-
-User -> Linux : 确认合并
-activate Linux
-Linux -> Hub : 合并 feature 分支到 dev
-deactivate Linux
-deactivate Preview
-@enduml
-```
-
-![本地渲染端与远端托管端协同预览闭环](../diagrams/dev-workflow-loop.svg)
+[打开交互时序图](../diagrams/dev-workflow-loop.archify.html) · [查看 Typed JSON 图表源](../diagrams/dev-workflow-loop.sequence.json)
 
 **捷径**：图中"User → 远端托管端：请求同步并重启预览"这一步，如果本地渲染端就是发起改动的一方，不必真的去找一个远端托管端会话——直接在本地渲染端跑 `sync.ps1 -RestartPreview` 即可，它会在推送成功后自己通过 SSH 触发远端托管端的 `preview.sh restart`，等价于图中 `Win → Hub`、`User → Linux`、`Linux → Hub`、`Linux → Preview` 这几步揉在一起，少一次人工切换。
 

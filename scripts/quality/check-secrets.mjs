@@ -14,8 +14,13 @@ const SECRET_PATTERNS = [
   { name: "Slack token", pattern: /xox[baprs]-[0-9A-Za-z-]{10,}/ },
   // 带引号赋值：keyword: "值" / keyword = '值'
   { name: "quoted secret assignment", pattern: new RegExp(`${SECRET_KEYWORD}\\s*[:=]\\s*["'][^"']{8,}["']`, "i") },
-  // 不带引号赋值：keyword=值（值足够长、无空白/引号/注释符），覆盖 shell / env / PowerShell / Python
-  { name: "unquoted secret assignment", pattern: new RegExp(`${SECRET_KEYWORD}\\s*[:=]\\s*[^\\s"'#;,)]{12,}`, "i") },
+  // 不带引号赋值：keyword=值（值足够长、无空白/引号/注释符，且必须结束于行尾或注释）。
+  // 末尾边界避免把 `token = document.createElement(...)`、`token = path.resolve(...)`
+  // 这类普通源码表达式截断到左括号前后误报，同时仍覆盖 shell / env / PowerShell / 配置文件。
+  {
+    name: "unquoted secret assignment",
+    pattern: new RegExp(`${SECRET_KEYWORD}\\s*[:=]\\s*[^\\s"'#;,)]{12,}(?=\\s*(?:$|#|//))`, "i"),
+  },
   // URL 内嵌凭证：形如 协议://用户:口令@主机
   { name: "credential in URL", pattern: /[a-z][a-z0-9+.-]*:\/\/[^/\s:@]+:[^/\s:@]+@/i },
 ];

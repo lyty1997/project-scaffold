@@ -1,0 +1,246 @@
+{
+  "schema_version": 1,
+  "diagram_type": "sequence",
+  "meta": {
+    "title": "本地渲染端与远端托管端协同预览闭环",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "column_fit": "spread",
+    "viewBox": [1380, 780],
+    "legend": {
+      "mode": "hidden"
+    },
+    "views": [
+      {
+        "id": "local-edit",
+        "label": "本地查看与修改",
+        "focus": ["user", "local", "workspace", "preview", "hub"],
+        "note": "本地渲染端示例为 Claude Desktop，预览由 worktree 与静态服务器承载；角色不绑定具体操作系统。"
+      },
+      {
+        "id": "remote-sync",
+        "label": "远端同步预览",
+        "focus": ["user", "remote", "hub", "preview"],
+        "note": "远端托管端示例为 Claude Code CLI；它拉取 feature 分支并重启预览，不直接编辑本地源码。"
+      },
+      {
+        "id": "merge-after-review",
+        "label": "确认后合并",
+        "focus": ["user", "local", "remote", "hub"],
+        "note": "反复查看与修改，直到使用者确认再合并到 dev。"
+      }
+    ]
+  },
+  "participants": [
+    {
+      "id": "user",
+      "type": "external",
+      "label": "用户"
+    },
+    {
+      "id": "local",
+      "type": "frontend",
+      "label": "本地渲染端"
+    },
+    {
+      "id": "workspace",
+      "type": "database",
+      "label": "本地源码"
+    },
+    {
+      "id": "hub",
+      "type": "cloud",
+      "label": "GitHub origin"
+    },
+    {
+      "id": "remote",
+      "type": "backend",
+      "label": "远端托管端"
+    },
+    {
+      "id": "preview",
+      "type": "cloud",
+      "label": "远端预览"
+    }
+  ],
+  "segments": [
+    {
+      "from": 150,
+      "to": 195,
+      "label": "启动预览"
+    },
+    {
+      "from": 200,
+      "to": 420,
+      "label": "本地查看与修改"
+    },
+    {
+      "from": 425,
+      "to": 515,
+      "label": "远端同步"
+    },
+    {
+      "from": 520,
+      "to": 645,
+      "label": "刷新与确认"
+    },
+    {
+      "from": 650,
+      "to": 720,
+      "label": "确认合并"
+    }
+  ],
+  "messages": [
+    {
+      "id": "start-preview",
+      "from": "remote",
+      "to": "preview",
+      "y": 170,
+      "label": "启动指定分支的预览服务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "open-preview",
+      "from": "user",
+      "to": "local",
+      "y": 210,
+      "label": "打开预览 URL"
+    },
+    {
+      "id": "capture-preview",
+      "from": "local",
+      "to": "preview",
+      "y": 242,
+      "label": "navigate 与截图",
+      "variant": "emphasis"
+    },
+    {
+      "id": "preview-snapshot",
+      "from": "preview",
+      "to": "local",
+      "y": 274,
+      "label": "渲染截图与元素快照",
+      "variant": "return"
+    },
+    {
+      "id": "show-result",
+      "from": "local",
+      "to": "user",
+      "y": 306,
+      "label": "展示当前效果",
+      "variant": "return"
+    },
+    {
+      "id": "review-comment",
+      "from": "user",
+      "to": "local",
+      "y": 338,
+      "label": "标注或描述修改意见"
+    },
+    {
+      "id": "edit-source",
+      "from": "local",
+      "to": "workspace",
+      "y": 370,
+      "label": "修改本地源码",
+      "variant": "emphasis"
+    },
+    {
+      "id": "push-feature",
+      "from": "local",
+      "to": "hub",
+      "y": 402,
+      "label": "commit 并 push feature 分支",
+      "variant": "emphasis"
+    },
+    {
+      "id": "request-sync",
+      "from": "user",
+      "to": "remote",
+      "y": 434,
+      "label": "请求同步并重启预览"
+    },
+    {
+      "id": "fetch-feature",
+      "from": "remote",
+      "to": "hub",
+      "y": 466,
+      "label": "git fetch"
+    },
+    {
+      "id": "restart-preview",
+      "from": "remote",
+      "to": "preview",
+      "y": 498,
+      "label": "pull feature 并重启服务",
+      "variant": "emphasis"
+    },
+    {
+      "id": "refresh-preview",
+      "from": "user",
+      "to": "local",
+      "y": 530,
+      "label": "刷新查看最新效果"
+    },
+    {
+      "id": "capture-latest",
+      "from": "local",
+      "to": "preview",
+      "y": 562,
+      "label": "navigate 与截图",
+      "variant": "emphasis"
+    },
+    {
+      "id": "latest-result",
+      "from": "preview",
+      "to": "local",
+      "y": 594,
+      "label": "最新渲染结果",
+      "variant": "return"
+    },
+    {
+      "id": "confirm-result",
+      "from": "local",
+      "to": "user",
+      "y": 626,
+      "label": "确认是否符合预期",
+      "variant": "return"
+    },
+    {
+      "id": "approve-merge",
+      "from": "user",
+      "to": "remote",
+      "y": 658,
+      "label": "确认合并",
+      "variant": "emphasis"
+    },
+    {
+      "id": "merge-dev",
+      "from": "remote",
+      "to": "hub",
+      "y": 690,
+      "label": "合并 feature 分支到 dev",
+      "variant": "emphasis"
+    }
+  ],
+  "activations": [
+    {
+      "participant": "preview",
+      "from": 164,
+      "to": 634,
+      "type": "cloud"
+    },
+    {
+      "participant": "remote",
+      "from": 428,
+      "to": 506,
+      "type": "backend"
+    },
+    {
+      "participant": "remote",
+      "from": 652,
+      "to": 698,
+      "type": "backend"
+    }
+  ]
+}

@@ -39,13 +39,14 @@ npm run quality
 git config core.hooksPath .githooks
 ```
 
-当前首版不依赖第三方包，`quality` 使用 Node.js 内置能力检查：
+当前基础 `quality` 无需安装第三方 npm 包，使用 Node.js 内置能力检查；仓库另外 vendored 一份固定版本、MIT 许可的 Archify Skill，并通过 `.claude/skills` 与 `.agents/skills` 分别供 Claude、Codex 原生发现，用于独立图表门禁：
 
 - 质量脚本自身语法自检（`node --check`）。
 - Markdown 内部链接和 `docs/README.md` 索引完整性。
 - 契约词表和禁用旧名回潮。
 - 常见密钥形态。
 - 静态站点入口和资源引用。
+- `npm run check:diagrams` 校验 Archify Typed JSON、交互 HTML 新鲜度和原生 PNG 尺寸；`npm run review:diagrams` 使用真实浏览器做视觉复核并调用 Viewer 原生导出刷新文档主图。
 
 ## 许可证
 

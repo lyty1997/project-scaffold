@@ -12,33 +12,9 @@ __PROJECT_NAME__ 的首版目标是建立一个可维护的 __PROJECT_TAGLINE__�
 
 以下是占位示例，请替换成你项目的实际架构：
 
-```plantuml
-@startuml
-package "访问者" {
-  [访问者] as User
-}
-package "应用" {
-  [前端应用] as Frontend
-  [后端 / API] as Backend
-  [数据存储] as Storage
-}
-package "工程规范" {
-  [docs 真相源] as Docs
-  [quality 门禁] as Quality
-}
+[![架构概览交互图静态预览](../diagrams/architecture-overview.archify.png)](../diagrams/architecture-overview.archify.html)
 
-User --> Frontend
-Frontend --> Backend
-Backend --> Storage
-Docs --> Frontend
-Docs --> Backend
-Quality --> Docs
-Quality --> Frontend
-Quality --> Backend
-@enduml
-```
-
-![架构概览组件图](../diagrams/architecture-overview.svg)
+[打开交互图](../diagrams/architecture-overview.archify.html) · [查看 Typed JSON 图表源](../diagrams/architecture-overview.architecture.json)
 
 请根据实际情况补充说明当前是否有运行时后端、数据库、登录、评论系统或用户数据采集等能力，以及各能力所处的阶段。
 
@@ -50,6 +26,7 @@ Quality --> Backend
 - `backend/` 或 `apps/api/`：后端服务与 API 实现。
 - `docs/`：定位、架构、内容模型、产品服务演进和契约词表的真相源。
 - `codex-rules/`：Agent 执行任务时的操作规范。
+- `.claude/skills/archify/`：固定版本的图表创作、验证与交互 HTML 渲染能力。
 - `scripts/quality/`：CI 和本地质量门禁。
 - `.github/`：PR 模板、CODEOWNERS 和 CI。
 

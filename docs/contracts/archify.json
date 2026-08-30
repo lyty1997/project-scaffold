@@ -1,0 +1,28 @@
+{
+  "schema_version": 2,
+  "upstream": {
+    "repository": "https://github.com/tt-a1i/archify",
+    "commit": "4ac500a498267f18bda42b3c82b51edb8f9c1baf",
+    "package_version": "2.16.0-dev.0"
+  },
+  "vendored_path": ".claude/skills/archify",
+  "skill_entrypoints": {
+    "claude": {
+      "path": ".claude/skills/archify/SKILL.md",
+      "mode": "canonical"
+    },
+    "codex": {
+      "path": ".agents/skills/archify/SKILL.md",
+      "metadata_path": ".agents/skills/archify/agents/openai.yaml",
+      "mode": "bridge",
+      "target": ".claude/skills/archify/SKILL.md"
+    }
+  },
+  "vendored_tree_sha256": "86f11b405010dfa7626441297e2c1b938b06c68af291e93e4321446fbac902a2",
+  "network_policy": "disabled",
+  "local_changes": [
+    "remove-remote-google-fonts",
+    "disable-automatic-update-check",
+    "enforce-native-document-png"
+  ]
+}

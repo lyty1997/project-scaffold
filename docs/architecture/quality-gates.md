@@ -19,14 +19,15 @@
 
 引入框架后，应在保留上述检查的基础上增加项目实际需要的格式化、lint、typecheck、测试和可访问性检查。
 
-## PlantUML
+## Archify 图表
 
-Markdown 中的 PlantUML 源码是图表真相源，渲染后的 `docs/diagrams/*.svg` 只用于不支持 PlantUML 的阅读平台。
+`docs/diagrams/*.{architecture,workflow,sequence,dataflow,lifecycle}.json` 是图表真相源；同名 `.archify.html` 是交互成品，`.archify.png` 是 Viewer 原生导出的 canonical 完整图，不是整页截图。完整版本、离线边界、产物约定和视觉验收见 [Archify 图表系统](diagram-system.md)。
 
-- `PUML_JAR=/path/to/plantuml.jar npm run check:diagrams`：真实编译所有 PlantUML 代码块；有图但未设置 `PUML_JAR` 时失败，无图时跳过。
-- `PUML_JAR=/path/to/plantuml.jar npm run gen:diagrams`：刷新源码块后紧跟的 SVG；这是本地生成器，不属于 `quality`。
-- CI 的独立 `diagrams` job 会下载校验过 SHA256 的固定版本 JAR，只检查源码能否编译。
-- 不比较 SVG 字节新鲜度：PlantUML 布局受 JVM 字体度量影响，同版本在不同机器上也可能产生不同字节。
+- `npm run check:diagrams`：先验证 `.claude/skills` 与 `.agents/skills` 的 Archify 双原生入口、Codex UI 元数据和唯一 canonical 实现，再用仓库 vendored Archify 对全部 JSON 执行 `showcase` 校验，检查离线集成边界，并确认 HTML 没有相对当前 JSON 和固定渲染器漂移。
+- `npm run gen:diagrams`：原子生成或刷新全部交互 HTML。
+- `npm run review:diagrams`：依赖本机 Chrome/Chromium，做四档桌面包含性检查和深浅主题临时截图，再调用 HTML Viewer 原生 PNG 导出刷新 Markdown 主图；人工查看两类图片后才可报告视觉通过。
+- CI 的独立 `diagrams` job 只使用 Node.js 22 和仓库内固定 Skill，不下载 Java、JAR 或其他运行时依赖。
+- HTML 可以做确定性新鲜度检查；PNG 检查原生导出尺寸与 canonical 回执边界，但受浏览器与系统字体影响，不比较跨机器字节。
 
 ## GitHub Actions 语义检查
 
@@ -48,7 +49,7 @@ v1.7.12，并校验 Linux x86_64 归档 SHA256
 Please workflow 与布尔 `dry_run` 部署 workflow 交给同一个真实二进制检查；fixture 位于
 `scripts/quality/fixtures/actionlint/`，不会被仓库级自动发现误扫。
 
-当前 CI 职责因此分为三组：`quality` 双 OS 矩阵、`diagrams` PlantUML 编译、
+当前 CI 职责因此分为三组：`quality` 双 OS 矩阵、`diagrams` Archify 校验与 HTML 新鲜度检查、
 `workflow-lint` GitHub Actions 语义检查。
 
 ## 本地提交

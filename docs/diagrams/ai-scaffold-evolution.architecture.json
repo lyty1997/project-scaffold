@@ -1,0 +1,160 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "基础模型能力提升后的脚手架演进",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [1140, 660],
+    "legend": {
+      "mode": "hidden"
+    },
+    "views": [
+      {
+        "id": "context-evolution",
+        "label": "规则与上下文变薄",
+        "focus": ["model", "thin-rules", "context", "invariants"],
+        "note": "模型能力提升可以减少常驻规则，并提高按任务装配上下文的精度。"
+      },
+      {
+        "id": "verification-evolution",
+        "label": "验证与治理变长",
+        "focus": ["model", "verification", "evaluation", "invariants"],
+        "note": "能力提升应转化为更长的真实验证链和基于评测的规则治理。"
+      },
+      {
+        "id": "collaboration-boundary",
+        "label": "并行协作仍受边界约束",
+        "focus": ["model", "collaboration", "invariants"],
+        "note": "并行度可以提高，但所有权、资源和交付证据不能消失。"
+      }
+    ]
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [60, 60],
+    "cols": 3,
+    "gapX": 180,
+    "gapY": 55,
+    "cellW": 220,
+    "cellH": 70
+  },
+  "components": [
+    {
+      "id": "model",
+      "type": "cloud",
+      "label": "基础模型能力提升",
+      "row": 2,
+      "col": 0,
+      "size": [180, 70]
+    },
+    {
+      "id": "thin-rules",
+      "type": "security",
+      "label": "更薄的常驻规则",
+      "sublabel": "保留目标与不变量",
+      "row": 0,
+      "col": 1,
+      "size": [190, 70]
+    },
+    {
+      "id": "context",
+      "type": "database",
+      "label": "更精准的上下文装配",
+      "sublabel": "按任务检索事实和历史",
+      "row": 1,
+      "col": 1,
+      "size": [210, 70]
+    },
+    {
+      "id": "verification",
+      "type": "security",
+      "label": "更长的自验证闭环",
+      "sublabel": "从修改走到真实环境证据",
+      "row": 2,
+      "col": 1,
+      "size": [210, 70]
+    },
+    {
+      "id": "evaluation",
+      "type": "backend",
+      "label": "基于评测的规则治理",
+      "sublabel": "失败归因、去重与删旧",
+      "row": 3,
+      "col": 1,
+      "size": [210, 70]
+    },
+    {
+      "id": "collaboration",
+      "type": "backend",
+      "label": "受控的并行协作",
+      "sublabel": "明确所有权、资源与交付证据",
+      "row": 4,
+      "col": 1,
+      "size": [220, 70]
+    },
+    {
+      "id": "invariants",
+      "type": "database",
+      "label": "始终保留的工程不变量",
+      "sublabel": "项目事实、权限边界、测试与证据",
+      "row": 2,
+      "col": 2,
+      "size": [230, 76]
+    }
+  ],
+  "connections": [
+    {
+      "id": "model-rules",
+      "from": "model",
+      "to": "thin-rules"
+    },
+    {
+      "id": "model-context",
+      "from": "model",
+      "to": "context"
+    },
+    {
+      "id": "model-verification",
+      "from": "model",
+      "to": "verification",
+      "variant": "emphasis"
+    },
+    {
+      "id": "model-evaluation",
+      "from": "model",
+      "to": "evaluation"
+    },
+    {
+      "id": "model-collaboration",
+      "from": "model",
+      "to": "collaboration"
+    },
+    {
+      "id": "rules-invariants",
+      "from": "thin-rules",
+      "to": "invariants"
+    },
+    {
+      "id": "context-invariants",
+      "from": "context",
+      "to": "invariants"
+    },
+    {
+      "id": "verification-invariants",
+      "from": "verification",
+      "to": "invariants",
+      "variant": "emphasis"
+    },
+    {
+      "id": "evaluation-invariants",
+      "from": "evaluation",
+      "to": "invariants"
+    },
+    {
+      "id": "collaboration-invariants",
+      "from": "collaboration",
+      "to": "invariants"
+    }
+  ]
+}

@@ -1,0 +1,157 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "架构概览占位示例",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "viewBox": [980, 540],
+    "views": [
+      {
+        "id": "request-path",
+        "label": "应用请求路径",
+        "focus": ["visitor", "frontend", "backend", "storage"],
+        "note": "占位示例中的访问、调用与数据读写路径。"
+      },
+      {
+        "id": "governance-path",
+        "label": "工程约束路径",
+        "focus": ["docs", "quality", "frontend", "backend"],
+        "note": "文档真相源与质量门禁如何约束示例应用。"
+      }
+    ],
+    "legend": {
+      "mode": "hidden"
+    }
+  },
+  "layout": {
+    "mode": "grid",
+    "origin": [60, 80],
+    "cols": 4,
+    "gapX": 80,
+    "gapY": 100,
+    "cellW": 150,
+    "cellH": 70
+  },
+  "components": [
+    {
+      "id": "visitor",
+      "type": "external",
+      "label": "访问者",
+      "row": 1,
+      "col": 0
+    },
+    {
+      "id": "frontend",
+      "type": "frontend",
+      "label": "前端应用",
+      "row": 1,
+      "col": 1
+    },
+    {
+      "id": "backend",
+      "type": "backend",
+      "label": "后端 / API",
+      "row": 1,
+      "col": 2
+    },
+    {
+      "id": "storage",
+      "type": "database",
+      "label": "数据存储",
+      "row": 1,
+      "col": 3
+    },
+    {
+      "id": "docs",
+      "type": "database",
+      "label": "docs 真相源",
+      "row": 0,
+      "col": 1
+    },
+    {
+      "id": "quality",
+      "type": "security",
+      "label": "quality 门禁",
+      "row": 2,
+      "col": 1
+    }
+  ],
+  "boundaries": [
+    {
+      "kind": "region",
+      "label": "应用",
+      "wraps": ["frontend", "backend", "storage"],
+      "pad": 28
+    },
+    {
+      "kind": "security-group",
+      "label": "工程规范",
+      "wraps": ["docs", "quality"],
+      "pad": 28
+    }
+  ],
+  "connections": [
+    {
+      "id": "visitor-frontend",
+      "from": "visitor",
+      "to": "frontend",
+      "label": "访问",
+      "variant": "emphasis"
+    },
+    {
+      "id": "frontend-backend",
+      "from": "frontend",
+      "to": "backend",
+      "label": "调用",
+      "variant": "emphasis",
+      "labelAt": [500, 324]
+    },
+    {
+      "id": "backend-storage",
+      "from": "backend",
+      "to": "storage",
+      "label": "读写",
+      "variant": "emphasis"
+    },
+    {
+      "id": "docs-frontend",
+      "from": "docs",
+      "to": "frontend",
+      "label": "约束",
+      "labelAt": [350, 154]
+    },
+    {
+      "id": "docs-backend",
+      "from": "docs",
+      "to": "backend",
+      "label": "约束"
+    },
+    {
+      "id": "quality-docs",
+      "from": "quality",
+      "to": "docs",
+      "label": "校验文档",
+      "variant": "security",
+      "fromSide": "left",
+      "toSide": "left",
+      "via": [[20, 450], [20, 110]],
+      "labelAt": [45, 324]
+    },
+    {
+      "id": "quality-frontend",
+      "from": "quality",
+      "to": "frontend",
+      "label": "校验前端",
+      "variant": "security",
+      "labelAt": [357, 370]
+    },
+    {
+      "id": "quality-backend",
+      "from": "quality",
+      "to": "backend",
+      "label": "校验后端",
+      "variant": "security"
+    }
+  ]
+}

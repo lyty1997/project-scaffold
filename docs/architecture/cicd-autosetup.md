@@ -42,9 +42,9 @@ CD 深度按已确认的范围：**部署流水线 + Release 自动化 + 回滚�
 
 实测 Node v22.22.0 无内置 YAML 解析器（`node:yaml` → `ERR_UNKNOWN_BUILTIN_MODULE`），而 `npm run quality` 承诺零第三方依赖。结论：生成器**只写不读 YAML**——决策存成 JSON 台账，YAML 由渲染器单向产出。
 
-这与仓库既有范式同构：PlantUML 源码是真相源、SVG 是产物；`contract-terms.json` 是真相源、扫描只做校验。
+这与仓库既有范式同构：Archify Typed JSON 是图表真相源、交互 HTML 是确定性产物；`contract-terms.json` 是命名真相源、扫描只做校验。
 
-顺带白送一个能力：漂移检测可以做成"重新渲染 + 字节比对"。这与被废弃的 `check:diagrams:fresh` 不同——YAML 序列化不依赖 JVM 字体度量，同一份 JSON 在任何机器上必然产出同样字节，跨机器稳定。
+顺带白送一个能力：漂移检测可以做成"重新渲染 + 字节比对"。YAML 和 Archify HTML 都由仓库固定的确定性渲染器生成，可以跨机器检查；浏览器截图仍受系统字体与渲染环境影响，不做字节比较。
 
 ### 2.3 项目适配核心只写三块，外部引擎复用
 
@@ -55,7 +55,7 @@ workflow YAML/表达式语义检查不自研，分别复用 release-please 与 a
 | 能力 | 采用 | 理由 |
 | --- | --- | --- |
 | Release 自动化 | `googleapis/release-please-action` v5.0.0（workflow 固定到提交 `45996ed1f6d02564a971a2fa1b5860e934307cf7`） | 语言无关，`simple` 可适配 C/C++；以 Action 运行，目标仓库零 npm 依赖，且是"先开 Release PR 待人合并"模式，保留人工闸门 |
-| workflow 正确性校验 | `actionlint` v1.7.12 官方二进制（Linux x86_64 归档 SHA256 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`） | 检查 YAML、表达式类型、runner label、`needs` 环、`permissions` 取值等；照抄现有 `diagrams` job 的"固定版本 + SHA256 + 环境变量指路径 + 不进 quality"范式 |
+| workflow 正确性校验 | `actionlint` v1.7.12 官方二进制（Linux x86_64 归档 SHA256 `8aca8db96f1b94770f1b0d72b6dddcb1ebb8123cb3712530b08cc387b349a3d8`） | 检查 YAML、表达式类型、runner label、`needs` 环、`permissions` 取值等；沿用独立 `workflow-lint` job 的"固定版本 + SHA256 + 环境变量指路径 + 不进 quality"范式 |
 | 构建/发布原语 | `aminya/setup-cpp`、`pypa/cibuildwheel`、`actions/deploy-pages`、`docker/build-push-action`、`wrangler` 等 | 官方 building block，不自研构建脚本 |
 
 明确**不引入**并记录理由，避免以后重复调研：
@@ -88,64 +88,9 @@ GitLab Auto DevOps 的教训：它的 Auto Test 功能因为"猜不准项目的�
 
 数据流严格单向，每一步都有可核验产物：
 
-```plantuml
-@startuml
-title CI/CD 自动搭建的单向数据流
+[![CI/CD 自动搭建的单向数据流静态预览](../diagrams/cicd-autosetup-flow.archify.png)](../diagrams/cicd-autosetup-flow.archify.html)
 
-start
-
-partition "探测" {
-  :读本地信号\nCMakeLists.txt, pyproject.toml, package.json, Dockerfile 等;
-  :读远端只读信号\n可见性, 套餐, Pages, environments, secrets;
-  :权限体检\n从 X-Oauth-Scopes 响应头读 token scope;
-}
-
-if (preflight 通过?) then (是)
-else (缺 workflow scope 或非 admin)
-  :停下来引导人工授权;
-  stop
-endif
-
-partition "决策" {
-  :展示事实清单;
-  :就探测不出来的项询问使用者\n构建命令, 测试命令, 部署目标;
-  :写入台账 cicd-answers.json;
-}
-
-partition "生成" {
-  :渲染器读台账;
-  :按设计不变量装配结构化对象;
-  :序列化为 workflow YAML\n头部写 managed 标记与台账 hash;
-}
-
-partition "校验" {
-  fork
-    :零依赖门禁\n随 quality 一起跑;
-  fork again
-    :actionlint\n独立 job, 依赖外部二进制;
-  fork again
-    :临时分支加 draft PR 真机实测\n部署步骤 dry_run 为 true;
-  end fork
-  :逐 job 逐 step 断言真绿;
-}
-
-if (真绿?) then (是)
-else (否)
-  :取失败日志定位并修正后重来;
-  stop
-endif
-
-partition "落地" {
-  :远端 apply\n写 secrets, 开 Pages, 建 environment;
-  :回写台账与进度文档;
-  :本地提交, 不自动 push;
-}
-
-stop
-@enduml
-```
-
-![CI/CD 自动搭建的单向数据流](../diagrams/cicd-autosetup-flow.svg)
+[打开交互工作流](../diagrams/cicd-autosetup-flow.archify.html) · [查看 Typed JSON 图表源](../diagrams/cicd-autosetup-flow.workflow.json)
 
 ## 四、组件职责
 
@@ -312,7 +257,7 @@ GitHub App installation token 需要先增加生成短期 token 的专用步骤�
 
 形状照抄既有的 `sync-shared-rules`（读台账 → 逐目标实际探查 → 按各自机制适配 → 实测校验 → 写回并本地提交 → 更新台账），它已经是本仓库验证过的"探查 + 现场适配"范式。
 
-SKILL.md 结尾必须写明**什么才算验证通过**（照抄 `plantuml-in-markdown` 的"用户只说看起来不错不算通过"），以及可勾选的收工清单。
+SKILL.md 结尾必须写明**什么才算验证通过**（沿用 [Archify 图表系统](diagram-system.md) 的"确定性回执不能代替真实视觉复核"原则），以及可勾选的收工清单。
 
 ## 五、端到端流程
 

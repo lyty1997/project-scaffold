@@ -1,0 +1,313 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "CI/CD 自动搭建的单向数据流",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "views": [
+      {
+        "id": "probe-decide",
+        "label": "探测与决策台账",
+        "focus": ["probe", "preflight", "answers"],
+        "note": "先读取本地、远端和权限事实，再让使用者确认无法探测的项目级取舍。"
+      },
+      {
+        "id": "validation-fanout",
+        "label": "三路验证汇合",
+        "focus": ["render", "quality-check", "actionlint", "draft-rehearsal", "green-gate"],
+        "note": "基础门禁、workflow 语义和远端演练全部通过才算真绿。"
+      },
+      {
+        "id": "apply-close",
+        "label": "远端落地与收尾",
+        "focus": ["green-gate", "remote-apply"],
+        "note": "真绿后才写远端配置，最后回写文档并只做本地提交。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "decision",
+      "label": "探测与决策"
+    },
+    {
+      "id": "generation",
+      "label": "台账驱动生成"
+    },
+    {
+      "id": "baseline",
+      "label": "零依赖基础门禁"
+    },
+    {
+      "id": "semantics",
+      "label": "workflow 语义门禁"
+    },
+    {
+      "id": "remote",
+      "label": "远端演练与落地"
+    },
+    {
+      "id": "blocked",
+      "label": "人工授权阻塞",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "discover",
+      "label": "探测",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "decide-generate",
+      "label": "决策与生成",
+      "fromCol": 2,
+      "toCol": 2,
+      "variant": "emphasis"
+    },
+    {
+      "id": "verify",
+      "label": "并行验证与真绿判定",
+      "fromCol": 3,
+      "toCol": 4,
+      "variant": "security"
+    },
+    {
+      "id": "land",
+      "label": "落地",
+      "fromCol": 5,
+      "toCol": 5,
+      "variant": "dashed"
+    }
+  ],
+  "mainPath": [
+    "probe",
+    "preflight",
+    "answers",
+    "render",
+    "quality-check",
+    "green-gate",
+    "remote-apply"
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["probe"],
+    "allowedTerminals": ["authorization-stop", "remote-apply"],
+    "requiredEdges": [
+      {
+        "from": "render",
+        "to": "quality-check"
+      },
+      {
+        "from": "render",
+        "to": "actionlint"
+      },
+      {
+        "from": "render",
+        "to": "draft-rehearsal"
+      }
+    ],
+    "requiredPaths": [
+      {
+        "from": "probe",
+        "to": "remote-apply"
+      },
+      {
+        "from": "render",
+        "to": "green-gate"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "probe",
+      "lane": "decision",
+      "col": 0,
+      "type": "database",
+      "label": "读取本地、远端与权限信号",
+      "width": 230
+    },
+    {
+      "id": "preflight",
+      "lane": "decision",
+      "col": 1,
+      "type": "security",
+      "label": "执行 preflight",
+      "width": 170
+    },
+    {
+      "id": "authorization-stop",
+      "lane": "blocked",
+      "col": 2,
+      "type": "external",
+      "label": "停止并引导人工授权",
+      "width": 200
+    },
+    {
+      "id": "answers",
+      "lane": "decision",
+      "col": 2,
+      "type": "database",
+      "label": "确认取舍并写入决策台账",
+      "width": 220
+    },
+    {
+      "id": "render",
+      "lane": "generation",
+      "col": 2,
+      "type": "backend",
+      "label": "渲染 managed workflow",
+      "width": 210
+    },
+    {
+      "id": "quality-check",
+      "lane": "baseline",
+      "col": 3,
+      "type": "security",
+      "label": "运行零依赖门禁",
+      "width": 180
+    },
+    {
+      "id": "actionlint",
+      "lane": "semantics",
+      "col": 3,
+      "type": "security",
+      "label": "运行 actionlint",
+      "width": 180
+    },
+    {
+      "id": "draft-rehearsal",
+      "lane": "remote",
+      "col": 3,
+      "type": "cloud",
+      "label": "临时分支与 draft PR 演练",
+      "width": 220
+    },
+    {
+      "id": "green-gate",
+      "lane": "decision",
+      "col": 4,
+      "type": "security",
+      "label": "逐 job / step 断言真绿",
+      "width": 210
+    },
+    {
+      "id": "repair",
+      "lane": "generation",
+      "col": 3,
+      "type": "backend",
+      "label": "根据失败日志修正根因",
+      "width": 210
+    },
+    {
+      "id": "remote-apply",
+      "lane": "remote",
+      "col": 5,
+      "type": "cloud",
+      "label": "远端 apply，回写文档并本地提交",
+      "width": 250
+    }
+  ],
+  "edges": [
+    {
+      "id": "probe-preflight",
+      "from": "probe",
+      "to": "preflight",
+      "label": "事实清单",
+      "role": "main"
+    },
+    {
+      "id": "preflight-answers",
+      "from": "preflight",
+      "to": "answers",
+      "label": "权限与前置条件通过",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "preflight-stop",
+      "from": "preflight",
+      "to": "authorization-stop",
+      "label": "scope 缺失或非 admin",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "answers-render",
+      "from": "answers",
+      "to": "render",
+      "label": "台账已确认",
+      "role": "main"
+    },
+    {
+      "id": "render-quality",
+      "from": "render",
+      "to": "quality-check",
+      "label": "本地基础检查",
+      "role": "main"
+    },
+    {
+      "id": "render-actionlint",
+      "from": "render",
+      "to": "actionlint",
+      "label": "workflow 语义检查",
+      "role": "async"
+    },
+    {
+      "id": "render-rehearsal",
+      "from": "render",
+      "to": "draft-rehearsal",
+      "label": "dry_run=true",
+      "role": "async"
+    },
+    {
+      "id": "quality-green",
+      "from": "quality-check",
+      "to": "green-gate",
+      "label": "通过",
+      "role": "main"
+    },
+    {
+      "id": "actionlint-green",
+      "from": "actionlint",
+      "to": "green-gate",
+      "label": "通过",
+      "role": "return"
+    },
+    {
+      "id": "rehearsal-green",
+      "from": "draft-rehearsal",
+      "to": "green-gate",
+      "label": "逐步骤成功",
+      "role": "return"
+    },
+    {
+      "id": "green-repair",
+      "from": "green-gate",
+      "to": "repair",
+      "label": "任一路失败",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "repair-render",
+      "from": "repair",
+      "to": "render",
+      "label": "重新生成与验证",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "green-apply",
+      "from": "green-gate",
+      "to": "remote-apply",
+      "label": "真绿",
+      "variant": "emphasis",
+      "role": "main"
+    }
+  ]
+}

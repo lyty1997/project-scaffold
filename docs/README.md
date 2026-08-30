@@ -5,8 +5,10 @@
 ## 文档索引
 
 - [项目进度](progress.md)
+- [技术分享：AI 编码脚手架——从一次对话到可复用的工程闭环](sharing/ai-coding-scaffold.md)
 - [架构概览](architecture/overview.md)
 - [质量门禁](architecture/quality-gates.md)
+- [Archify 图表系统](architecture/diagram-system.md)
 - [术语表](architecture/glossary.md)
 - [待决策问题](architecture/open-decisions.md)
 - [跨机协同开发预览工作流](architecture/dev-workflow.md)
@@ -16,6 +18,7 @@
 - [契约词表](contracts/contract-terms.json)
 - [契约扫描规则](contracts/contract-rules.json)
 - [站点检查规则](contracts/site-checks.json)
+- [Archify 固定版本契约](contracts/archify.json)
 - [技术栈参考配方](architecture/stack-recipes/README.md)：[Python](architecture/stack-recipes/python.md)、[TypeScript](architecture/stack-recipes/typescript.md)、[迁移一致性门禁](architecture/stack-recipes/migration-ledger-check.md)
 
 ## 按问题找文档
@@ -30,6 +33,7 @@
 | 本地开发怎么跨机预览、怎么同步 | [跨机协同开发预览工作流](architecture/dev-workflow.md) |
 | 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
 | `npm run quality`、图表检查和本地钩子具体做什么 | [质量门禁](architecture/quality-gates.md) |
+| 图表用什么源格式、怎样生成交互成品并做视觉验收 | [Archify 图表系统](architecture/diagram-system.md) |
 | CI/CD 如何探测、生成、校验和按项目接入发版 | [CI/CD 自动搭建](architecture/cicd-autosetup.md) |
 | Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
 

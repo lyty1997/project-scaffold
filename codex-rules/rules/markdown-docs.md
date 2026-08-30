@@ -10,9 +10,9 @@
 
 ## 图表
 
-- 统一使用 PlantUML；不使用 Mermaid、截图或无源码的 SVG/PNG。极简目录树可用 ASCII。
-- 每个 PlantUML 代码块后紧跟对应的 `docs/diagrams/*.svg` 图片引用；代码块是可编辑真相源。
-- 新增或修改图表必须真实编译，并刷新展示用 SVG。命令、CI 行为及不做字节一致性检查的原因见 [质量门禁](../../docs/architecture/quality-gates.md)。
+- Codex 从 `.agents/skills/archify/SKILL.md` 原生发现 `archify`，执行内容以项目内唯一的 [Archify Skill 实现](../../.claude/skills/archify/SKILL.md) 为准；不新增 PlantUML、Mermaid、无源码截图或手写 SVG/PNG。极简目录树可用 ASCII。
+- Typed JSON 是唯一可编辑真相源；同名 `.archify.html` 是交互产物，`.archify.png` 必须由 Viewer 原生导出且不含 Viewer chrome。Markdown 同时链接三者，不复制 JSON 正文；整页截图只作临时视觉证据。
+- 新增或修改图表必须完成 `showcase` 9/9 校验、HTML 确定性生成、四档桌面包含性检查和深浅主题人工复核。命令、固定版本与离线边界见 [Archify 图表系统](../../docs/architecture/diagram-system.md)。
 - 图表保持简单可读，并配套文字说明。
 
 ## 归档

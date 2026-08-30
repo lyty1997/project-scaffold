@@ -19,5 +19,5 @@ type: `feat|fix|docs|style|refactor|test|chore`  scope 按项目模块自定（�
 ## push / merge 后 — 必须观察 CI
 - push 到 `main`/`dev`，或合并 PR 后，必须主动观察 `.github/workflows/ci.yml` 的运行结果，不能推完/合完就视为任务结束
 - 有 PR 时用 `gh pr checks <PR号> --watch` 跟踪；直接 push 到分支时用 `gh run watch`（或先 `gh run list --branch <分支名>` 找到对应 run 再 `gh run watch <run-id>`）
-- CI 未通过（`quality` matrix 任一 OS 失败、或 `diagrams` job 失败）：定位失败原因 → 本地修复并重跑 `npm run quality`（涉及图表改动再跑 `PUML_JAR=... npm run check:diagrams`）验证 → 重新推送 → 再次观察，直到全部转绿
+- CI 未通过（`quality` matrix 任一 OS 失败、或 `diagrams` job 失败）：定位失败原因 → 本地修复并重跑 `npm run quality`（涉及图表改动再跑 `npm run check:diagrams`，并用 `npm run review:diagrams -- <source-file>` 完成真实浏览器复核）→ 重新推送 → 再次观察，直到全部转绿
 - 不允许在 CI 红色或状态未知的情况下汇报任务完成

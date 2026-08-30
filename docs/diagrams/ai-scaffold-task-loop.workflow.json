@@ -1,0 +1,284 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "AI 编码任务最短闭环",
+    "locale": "zh-CN",
+    "quality_profile": "showcase",
+    "legend": {
+      "mode": "hidden"
+    },
+    "views": [
+      {
+        "id": "happy-path",
+        "label": "可执行任务主路径",
+        "focus": ["receive", "load-context", "classify", "design-gate", "update-design", "implement", "validate", "progress", "report"],
+        "note": "从接收任务到设计、实现、验证和交付证据。"
+      },
+      {
+        "id": "decision-stop",
+        "label": "待决定事项暂停",
+        "focus": ["classify", "clarify", "wait-decision"],
+        "note": "只有使用者能决定的事项不会被 Agent 擅自补全。"
+      },
+      {
+        "id": "repair-loop",
+        "label": "真实失败修复循环",
+        "focus": ["implement", "validate"],
+        "note": "检查失败返回实现步骤定位根因，直到真实通过。"
+      }
+    ]
+  },
+  "lanes": [
+    {
+      "id": "intake",
+      "label": "任务理解"
+    },
+    {
+      "id": "decision",
+      "label": "决策与设计"
+    },
+    {
+      "id": "execution",
+      "label": "实现与验证"
+    },
+    {
+      "id": "handoff",
+      "label": "证据与交付"
+    },
+    {
+      "id": "blocked",
+      "label": "等待使用者决定",
+      "variant": "exception"
+    }
+  ],
+  "phases": [
+    {
+      "id": "understand",
+      "label": "读取事实",
+      "fromCol": 0,
+      "toCol": 1
+    },
+    {
+      "id": "decide",
+      "label": "决策门",
+      "fromCol": 2,
+      "toCol": 3,
+      "variant": "security"
+    },
+    {
+      "id": "execute",
+      "label": "小步实现与验收",
+      "fromCol": 4,
+      "toCol": 5,
+      "variant": "emphasis"
+    }
+  ],
+  "mainPath": [
+    "receive",
+    "load-context",
+    "classify",
+    "design-gate",
+    "update-design",
+    "implement",
+    "validate",
+    "progress",
+    "report"
+  ],
+  "semanticChecks": {
+    "allowedRoots": ["receive"],
+    "allowedTerminals": ["report", "wait-decision"],
+    "requiredPaths": [
+      {
+        "from": "receive",
+        "to": "report"
+      },
+      {
+        "from": "validate",
+        "to": "report"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "receive",
+      "lane": "intake",
+      "col": 0,
+      "type": "external",
+      "label": "接收任务",
+      "width": 150
+    },
+    {
+      "id": "load-context",
+      "lane": "intake",
+      "col": 1,
+      "type": "database",
+      "label": "读取项目上下文",
+      "width": 170
+    },
+    {
+      "id": "classify",
+      "lane": "decision",
+      "col": 2,
+      "type": "backend",
+      "label": "区分信息类型",
+      "width": 180
+    },
+    {
+      "id": "design-gate",
+      "lane": "decision",
+      "col": 3,
+      "type": "security",
+      "label": "检查文档先行范围",
+      "width": 190
+    },
+    {
+      "id": "update-design",
+      "lane": "decision",
+      "col": 4,
+      "type": "database",
+      "label": "更新设计或契约",
+      "width": 170
+    },
+    {
+      "id": "implement",
+      "lane": "execution",
+      "col": 4,
+      "type": "backend",
+      "label": "小步实现",
+      "width": 160
+    },
+    {
+      "id": "validate",
+      "lane": "execution",
+      "col": 5,
+      "type": "security",
+      "label": "运行相称检查",
+      "width": 210
+    },
+    {
+      "id": "progress",
+      "lane": "handoff",
+      "col": 5,
+      "type": "database",
+      "label": "更新 progress",
+      "width": 180
+    },
+    {
+      "id": "report",
+      "lane": "intake",
+      "col": 5,
+      "type": "external",
+      "label": "汇报结果",
+      "width": 170
+    },
+    {
+      "id": "clarify",
+      "lane": "blocked",
+      "col": 3,
+      "type": "security",
+      "label": "写清事实、选项与影响",
+      "width": 200
+    },
+    {
+      "id": "wait-decision",
+      "lane": "blocked",
+      "col": 4,
+      "type": "external",
+      "label": "暂停依赖该决定的工作",
+      "width": 200
+    }
+  ],
+  "edges": [
+    {
+      "id": "receive-context",
+      "from": "receive",
+      "to": "load-context",
+      "role": "main"
+    },
+    {
+      "id": "context-classify",
+      "from": "load-context",
+      "to": "classify",
+      "label": "查证并分类",
+      "role": "main"
+    },
+    {
+      "id": "classify-design",
+      "from": "classify",
+      "to": "design-gate",
+      "label": "无待决定阻塞",
+      "role": "main"
+    },
+    {
+      "id": "classify-clarify",
+      "from": "classify",
+      "to": "clarify",
+      "label": "存在待决定事项",
+      "variant": "security",
+      "role": "error"
+    },
+    {
+      "id": "clarify-wait",
+      "from": "clarify",
+      "to": "wait-decision",
+      "label": "请求使用者决定",
+      "variant": "security",
+      "role": "branch"
+    },
+    {
+      "id": "design-update",
+      "from": "design-gate",
+      "to": "update-design",
+      "label": "触及文档先行范围",
+      "variant": "security",
+      "role": "main"
+    },
+    {
+      "id": "design-implement",
+      "from": "design-gate",
+      "to": "implement",
+      "label": "无需先改设计",
+      "role": "branch"
+    },
+    {
+      "id": "update-implement",
+      "from": "update-design",
+      "to": "implement",
+      "label": "设计已同步",
+      "role": "main"
+    },
+    {
+      "id": "implement-validate",
+      "from": "implement",
+      "to": "validate",
+      "label": "提交本轮结果",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "validate-repair",
+      "from": "validate",
+      "to": "implement",
+      "label": "检查失败，修复根因",
+      "variant": "security",
+      "role": "error",
+      "route": "bottom-channel"
+    },
+    {
+      "id": "validate-progress",
+      "from": "validate",
+      "to": "progress",
+      "label": "全部通过",
+      "variant": "emphasis",
+      "role": "main"
+    },
+    {
+      "id": "progress-report",
+      "from": "progress",
+      "to": "report",
+      "label": "交付证据",
+      "role": "main"
+    }
+  ]
+}

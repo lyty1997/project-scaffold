@@ -35,11 +35,8 @@ jobs:
         shell: bash
 
   diagrams:
-    name: Diagram compile check
+    name: Archify diagram check
     runs-on: ubuntu-latest
-    env:
-      PUML_VERSION: "1.2026.1"
-      PUML_SHA256: "89c116168a2a0f7cf5292e11617ba22abd743f891914f1fec5bc9c7d257b3092"
 
     steps:
       - name: Checkout
@@ -52,24 +49,9 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Set up Java
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: "21"
-
-      - name: Download pinned plantuml.jar
-        run: |
-          curl -sSL -o plantuml.jar \
-            "https://github.com/plantuml/plantuml/releases/download/v${PUML_VERSION}/plantuml-${PUML_VERSION}.jar"
-          echo "${PUML_SHA256}  plantuml.jar" | sha256sum -c -
-        shell: bash
-
-      - name: Check diagrams compile
+      - name: Check Archify diagrams
         run: npm run check:diagrams
         shell: bash
-        env:
-          PUML_JAR: ${{ github.workspace }}/plantuml.jar
 
   workflow-lint:
     name: Workflow lint
