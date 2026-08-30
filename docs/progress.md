@@ -12,7 +12,7 @@
 - 实现：保留 `.claude/skills/archify/` 作为唯一 vendored 实现，新增 `.agents/skills/archify/SKILL.md` 作为 Codex 原生发现桥接入口，并增加 `agents/openai.yaml` 的显示名称、简介和默认 `$archify` 提示。桥接入口强制完整读取 canonical Skill、按其目录解析脚本与引用，并显式继承文档 PNG 必须走 Viewer 原生 **Export → PNG** 的约束；没有复制 5.9 MB 渲染器与资源。
 - 跨平台：Codex 官方支持 symlink Skill，但 Git 在未启用 symlink 的 Windows checkout 中可能把目录链接退化为普通文本，因此入口采用普通 `SKILL.md` 文件。`docs/contracts/archify.json` 升级为 schema v2 并记录 Claude/Codex 双入口、Codex UI 元数据和 canonical 目标；`check:diagrams` 会拒绝缺失入口、symlink/非普通文件、错误名称、错误目标或丢失 `$archify` 元数据。
 - 环境边界：当前 Codex 会话把仓库 `.agents` 挂载为只读空目录，两个新增文件因此以普通文件模式写入 Git 索引并设置 `skip-worktree`，防止挂载遮蔽被误记为删除；门禁仅在工作树路径被遮蔽时从索引读取同一字节。文件从索引检出到隔离临时目录后，`skill-creator` 校验通过。
-- 验证：`npm run check:diagrams` 通过 7 份图表的 `showcase` 9/9、HTML 新鲜度、原生 PNG 尺寸、离线边界和双 Skill 入口检查；`npm run quality` 全绿。全部源码改动仍位于本地 `dev` 分支，未 commit、未 push。
+- 验证：`npm run check:diagrams` 通过 7 份图表的 `showcase` 9/9、HTML 新鲜度、原生 PNG 尺寸、离线边界和双 Skill 入口检查；`npm run quality` 全绿。实现提交已由 `dev` fast-forward 合并到 `main`；dev CI run `33318203756` 与 main CI run `33318297445` 均成功。
 - 数据与外部服务：未新增用户数据收集、遥测、运行时第三方服务或 MCP 依赖。
 
 ## 2026-08-30 CST / 文档主图改用 Archify Viewer 原生 PNG
