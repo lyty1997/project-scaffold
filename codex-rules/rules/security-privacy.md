@@ -1,13 +1,15 @@
-# 安全与隐私规范
+# Security and Privacy
 
-## 凭证
+English | [Chinese](security-privacy-zh.md)
 
-- 不提交、打印或写入 API Key、Secret、token、密码、私钥、cookie、session 或真实服务凭证。
-- `.env` 与环境文件默认不入库；仅提交不含真实值的 `.env.example`。
-- 密钥扫描不能替代人工审查。
+## Credentials
 
-## 数据与公开内容
+- Do not commit, print, or write API keys, secrets, tokens, passwords, private keys, cookies, sessions, or real service credentials.
+- Exclude `.env` and environment files by default. Commit only `.env.example` files with no real values.
+- Secret scanning does not replace human review.
 
-- 不公开个人隐私、客户信息、未授权截图、内部沟通、未公开商业计划或客户数据。
-- 引入表单、评论、订阅、登录、分析或第三方脚本前，先记录收集字段、用途、存储、保留和删除方式。
-- 引用外部资料时保留来源，区分事实与观点，不大段复制受版权保护内容。
+## Data and public content
+
+- Do not publish personal private data, customer information, unauthorized screenshots, internal communications, non-public business plans, or customer data.
+- Before adding forms, comments, subscriptions, login, analytics, or third-party scripts, record the collected fields, purpose, storage, retention, and deletion process.
+- Preserve sources when citing external material, distinguish facts from opinions, and do not reproduce long passages of copyrighted content.

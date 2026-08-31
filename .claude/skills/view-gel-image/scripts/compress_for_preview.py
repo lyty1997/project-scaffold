@@ -1,12 +1,13 @@
-"""把 16-bit TIFF（.tif/.jpg 壳）转 8-bit 归一化 PNG，长边默认 1280。
+"""Convert 16-bit TIFF data (including .tif/.jpg wrappers) to normalized 8-bit PNG.
 
-Claude 多模态读原始 16-bit TIFF 尺寸过大/位深不支持，这里只做预览压缩。
-不做任何算法上的 ROI/增强，只做线性归一化 + 下采样。
+The default long edge is 1280 pixels. This script creates a compact preview for
+source images that are too large or use an unsupported bit depth. It performs
+only linear normalization and downsampling, with no ROI or enhancement logic.
 
-用法：
-    python scripts/compress_for_preview.py              # 默认 test_images/batch5
-    python scripts/compress_for_preview.py <dir>        # 指定目录
-    python scripts/compress_for_preview.py <file>       # 指定单张
+Usage:
+    python scripts/compress_for_preview.py              # default: test_images/batch5
+    python scripts/compress_for_preview.py <dir>        # process a directory
+    python scripts/compress_for_preview.py <file>       # process one image
     LONG_EDGE=1536 python scripts/compress_for_preview.py ...
 """
 
@@ -28,7 +29,7 @@ LONG_EDGE = int(os.environ.get("LONG_EDGE", "1280"))
 
 
 def _to_gray_u8(raw: np.ndarray) -> np.ndarray:
-    """支持 16-bit / 8-bit / RGB；线性归一化到 uint8。"""
+    """Linearly normalize 16-bit, 8-bit, or RGB input to uint8 grayscale."""
     src = raw[..., :3].mean(axis=2) if raw.ndim == 3 else raw
     arr = np.asarray(src, dtype=np.float32)
     lo = float(arr.min())
@@ -55,7 +56,7 @@ def _collect_inputs(target: Path) -> list[Path]:
         return [target]
     if target.is_dir():
         return sorted(p for p in target.iterdir() if p.suffix.lower() in IMG_EXTS)
-    raise FileNotFoundError(f"输入路径不存在：{target}")
+    raise FileNotFoundError(f"Input path does not exist: {target}")
 
 
 def process(src: Path, out_dir: Path) -> Path:
@@ -79,11 +80,11 @@ def main() -> None:
     else:
         target = DEFAULT_INPUT
     inputs = _collect_inputs(target)
-    print(f"输入：{target}  ({len(inputs)} 张, long_edge={LONG_EDGE})")
+    print(f"Input: {target} ({len(inputs)} image(s), long_edge={LONG_EDGE})")
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     for p in inputs:
         process(p, OUT_DIR)
-    print(f"\n产物 → {OUT_DIR.relative_to(PROJECT_ROOT)}")
+    print(f"\nOutput -> {OUT_DIR.relative_to(PROJECT_ROOT)}")
 
 
 if __name__ == "__main__":

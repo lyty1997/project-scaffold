@@ -1,79 +1,63 @@
-# CI/CD 搭建与维护
+# CI/CD Setup and Maintenance
 
-设计真相源：[CI/CD 自动搭建](../../docs/architecture/cicd-autosetup.md)。本文只写 Agent 必须遵守的行为约束。
+English | [Chinese](../rules-zh/cicd-workflow-zh.md)
 
-## 一、什么时候必须主动提出搭 CI/CD
+The design source of truth is [Automated CI/CD Setup](../../docs/architecture/cicd-autosetup.md). This file contains only mandatory Agent behavior.
 
-不要等用户想起来。命中以下任一情形，先提出建议再继续手上的活：
+## 1. When to propose CI/CD proactively
 
-- 项目刚定下技术栈，或第一次落地可构建的源码（`CMakeLists.txt` / `pyproject.toml` / `package.json` 有构建脚本 / `Dockerfile` 等）。
-- 引入第一个第三方依赖，或第一次出现可发布的产物（二进制、wheel、镜像、静态站点）。
-- 用户提到部署、发版、上线、回滚、"发给别人用"。
-- 仓库已有源码但 `docs/contracts/cicd-answers.json` 不存在。
+Do not wait for the user to remember. Recommend CI/CD before continuing when any of the following becomes true:
 
-用户明确说暂时不搭时，把决定和理由写进 [待决策问题](../../docs/architecture/open-decisions.md)，不要让它悬着，也不要反复追问。
+- The project has just selected a technology stack or added buildable source for the first time, such as `CMakeLists.txt`, `pyproject.toml`, a build script in `package.json`, or a `Dockerfile`.
+- The project adds its first third-party dependency or first releasable artifact, such as a binary, wheel, image, or static site.
+- The user mentions deployment, release, launch, rollback, or distributing the project to others.
+- The repository contains source code but no `docs/contracts/cicd-answers.json` ledger.
 
-## 二、区分框架维护与目标项目落地
+If the user explicitly defers CI/CD, record the decision and reason in [Open Decisions](../../docs/architecture/open-decisions.md). Do not leave it implicit or ask repeatedly.
 
-维护脚手架自身的探测器、渲染器、质量脚本或基线 `.github/workflows/ci.yml` 时，先更新
-[CI/CD 自动搭建设计](../../docs/architecture/cicd-autosetup.md)，再修改实现并运行
-`npm run quality`、`npm run check:workflows` 与 `npm run check:workflows:fixtures`。
-这类工作不要求先存在目标项目台账，
-也不把面向目标仓库的 `npm run cicd:probe` 当作代码开发阻塞项。
+## 2. Distinguish framework maintenance from target-project delivery
 
-把 CI/CD 落到使用本脚手架生成的具体项目时，必须走 `setup-cicd` skill 的闭环。
+When maintaining the scaffold's detector, renderer, quality scripts, or baseline `.github/workflows/ci.yml`, update the [Automated CI/CD Setup design](../../docs/architecture/cicd-autosetup.md) first, then change the implementation and run `npm run quality`, `npm run check:workflows`, and `npm run check:workflows:fixtures`. Framework maintenance does not require an existing target-project ledger and is not blocked on running the target-facing `npm run cicd:probe` command.
 
-禁止手写或直接修改带 `managed-by` 标记的 workflow，以及台账驱动生成的
-`release-please-config.json`。理由：安全骨架（最小权限、钉 SHA、secrets 写法、显式
-shell、假绿防护）由渲染器固化；目标项目要改就改台账再生成。
-`.release-please-manifest.json` 是例外：bootstrap 后由 Release PR 更新，生成器只校验、
-不覆盖。
-已有手写 workflow/config 不因写入台账自动变成生成器所有；同名冲突、symlink 和旧
-managed 产物必须先列给使用者确认，生成器不得自行覆盖或删除。
+When applying CI/CD to a concrete project created from this scaffold, complete the full `setup-cicd` Skill workflow.
 
-正确路径：`npm run cicd:probe` → 与用户确认探测不出来的项 → 写
-`docs/contracts/cicd-answers.json` → `npm run gen:cicd` → `npm run quality` →
-`npm run check:workflows` → 实测转绿。
+Never hand-write or directly edit a workflow carrying the `managed-by` marker or the ledger-generated `release-please-config.json`. The renderer owns the safety structure: least privilege, SHA-pinned actions, safe secret syntax, explicit shells, and false-green defenses. Change the target-project ledger and regenerate instead. `.release-please-manifest.json` is the exception: after bootstrap, Release PRs update it and the generator validates without overwriting it.
 
-## 三、绝不臆测的四件事
+Adding a hand-written workflow or config to the ledger does not transfer ownership automatically. Present same-name conflicts, symlinks, and stale managed artifacts to the user before proceeding; the generator must not overwrite or delete them on its own.
 
-探测器只负责给事实，下面四件必须由用户拍板：
+The supported path is: `npm run cicd:probe` → confirm facts the detector cannot discover → write `docs/contracts/cicd-answers.json` → `npm run gen:cicd` → `npm run quality` → `npm run check:workflows` → verify a real green run.
 
-- **构建与测试命令**：从项目已声明的脚本里读，或问用户。不得由 Agent 发明。
-- **部署目标**：Pages / Cloudflare / Vercel / 容器 / 包发布 / 自建，各自的凭证与回滚方式完全不同。
-- **发布节奏**：什么触发发布、要不要人工闸门。
-- **Release 参数**：release type、当前版本、版本号真相源、历史起点、tag 规则和 token
-  模式必须由使用者确认；脚手架的 `package.json` 不能被当成所有项目的产品版本源。
-  第二增量只支持已建立版本源映射的 `node` 与 `simple`，不能把其他类型原样透传。
+## 3. Four decisions that must never be guessed
 
-探测不到构建系统就停下来问，不要猜——GitLab Auto DevOps 的 Auto Test 就是因为猜命令而被弃用。
+The detector reports facts only. The user must decide:
 
-## 四、远端写入前必须先体检
+- **Build and test commands:** read them from declared project scripts or ask the user. The Agent must not invent them.
+- **Deployment target:** Pages, Cloudflare, Vercel, containers, package publication, and self-hosting require different credentials and rollback strategies.
+- **Release cadence:** what triggers a release and whether it requires a human gate.
+- **Release parameters:** the user must confirm the release type, current version, version source of truth, history starting point, tag rules, and token mode. The scaffold's `package.json` is not automatically every project's product-version source. The second increment supports only `node` and `simple` with an established version-source mapping; do not pass through other types unchecked.
 
-把 CI/CD 落到目标项目时，在写台账或生成物之前先跑 `npm run cicd:probe` 看阻塞项。
-框架维护仍按第二节豁免。三条已知硬约束：
+If no build system can be detected, stop and ask instead of guessing. GitLab Auto DevOps abandoned Auto Test precisely because guessed commands were unreliable.
 
-- token 缺 `workflow` scope 时，推送 `.github/workflows/*` 会被 GitHub 拒绝。需要用户执行 `gh auth refresh -h github.com -s workflow`（要开浏览器授权，属于必须暂停等用户的点）。
-- 免费计划下 private 仓库不支持 environments、分支保护、rulesets、Pages。不支持的项要显式说明"因套餐跳过"，不许静默不配。
-- `gh` 没有 `gh ruleset create`。rulesets、分支保护、environments、Pages 启用一律走 `gh api --input`；写 secret 走 stdin 而非 `--body`，避免密钥进 shell history。
+## 4. Run preflight checks before remote writes
 
-`gh api` 对 403/404 一律 `exit 1` 且错误 JSON 走 stdout，判定要解析响应体的 `.status`，不能只看退出码。也不要用 `gh auth status` 判断认证——它超时时仍返回 0。
+For target-project CI/CD delivery, run `npm run cicd:probe` and inspect blockers before writing the ledger or generated artifacts. Framework maintenance remains exempt as described in section 2. Three hard constraints are already known:
 
-## 五、"绿了"的判据
+- A token without the `workflow` scope cannot push `.github/workflows/*`. The user must run `gh auth refresh -h github.com -s workflow`; browser authorization is a required pause point.
+- Private repositories on the free plan do not support environments, branch protection, rulesets, or Pages. Explicitly state that unsupported controls were skipped because of the plan; never omit them silently.
+- `gh` has no `gh ruleset create`. Enable rulesets, branch protection, environments, and Pages through `gh api --input`. Send secrets through stdin instead of `--body` to keep them out of shell history.
 
-`gh run watch` 退出 0 不算数。必须逐 job 逐 step 断言：按 SHA 找到 run（找不到判负）、`conclusion == "success"` 且 `status == "completed"`、期望的 job 全部出现且全部成功（`skipped` / `cancelled` / `null` 一律判负）、证据 step 存在且成功。
+`gh api` exits 1 for both 403 and 404 and writes error JSON to stdout, so parse the response body's `.status` rather than relying on the exit code. Do not use `gh auth status` as the authentication verdict because it can still exit 0 after a timeout.
 
-API 调用失败是 UNKNOWN，必须重试或上报，绝不能因为拿不到数据就默认放行。不允许在 CD 红色或状态未知时汇报任务完成。
+## 5. Definition of green
 
-## 六、改动纪律
+An exit code of 0 from `gh run watch` is not sufficient. Assert every job and step: find the run by SHA and fail if none exists; require `status == "completed"` and `conclusion == "success"`; require every expected job to appear and succeed, treating `skipped`, `cancelled`, and `null` as failures; and require the evidence step to exist and succeed.
 
-- 带 `managed-by` 标记的 workflow 与 `release-please-config.json` 不要手工编辑。要改就改
-  台账再 `npm run gen:cicd`，否则 `npm run quality` 会报漂移；manifest 按上面的所有权
-  边界由 Release PR 演进。
-- manifest 缺失但 config 或 release workflow 已存在时属于运行状态丢失，必须恢复；
-  改名/停用后的旧产物要先经使用者确认清理，不能靠生成器静默删除。
-- `kind: deploy` 的每个 step 都要显式写 `deployStep: true`（真实发布）或
-  `deployStep: false`（安全准备/验证）；不得靠一个受保护步骤替未分类的新发布步骤充当
-  `dry_run` 哨兵。
-- 台账变更、部署目标增减、回滚方式变化，都要同步更新 `docs/`。
-- 每个部署目标都必须写明回滚方式；包发布本质不可回滚，就照实写"只能发新版本并 yank"，不要编造回滚能力。
+An API failure is UNKNOWN. Retry or report it; never treat missing evidence as a pass. Do not report completion while CD is red or its state is unknown.
+
+## 6. Change discipline
+
+- Do not hand-edit workflows with a `managed-by` marker or `release-please-config.json`. Change the ledger and run `npm run gen:cicd`, or `npm run quality` will report drift. Release PRs evolve the manifest within the ownership boundary above.
+- A missing manifest alongside an existing config or release workflow is lost runtime state and must be restored. Stale artifacts left by a rename or disable operation require user confirmation before deletion; the generator must not remove them silently.
+- Every step in a `kind: deploy` workflow must declare `deployStep: true` for a real deployment or `deployStep: false` for safe preparation or verification. One protected step cannot act as a `dry_run` sentinel for a new, unclassified deployment step.
+- Synchronize `docs/` whenever the ledger, deployment targets, or rollback process changes.
+- Document a rollback method for every deployment target. Package publication is inherently irreversible; state that recovery requires a new version and a yank instead of inventing rollback support.

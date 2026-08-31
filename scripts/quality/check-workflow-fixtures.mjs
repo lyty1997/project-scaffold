@@ -1,5 +1,5 @@
-// 持久化验证 actionlint 入口没有把失败吞掉。
-// fixture 故意放在 .github/workflows 外，避免仓库级自动发现把 invalid.yml 当成真实 workflow。
+// Persistently verify that the actionlint wrapper does not swallow failures.
+// Fixtures live outside .github/workflows so repository discovery cannot treat invalid.yml as a real workflow.
 
 import assert from "node:assert/strict";
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -16,7 +16,7 @@ const valid = runActionlint([fixture("valid.yml")], { stdio: "pipe" });
 assert.equal(
   valid.status,
   0,
-  `合法 fixture 应通过 actionlint：\n${valid.stderr || valid.stdout || valid.error?.message || ""}`,
+  `The valid fixture should pass actionlint:\n${valid.stderr || valid.stdout || valid.error?.message || ""}`,
 );
 
 const invalid = runActionlint([fixture("invalid.yml")], { stdio: "pipe" });
@@ -24,7 +24,7 @@ const invalidOutput = `${invalid.stdout ?? ""}${invalid.stderr ?? ""}`;
 assert.equal(
   invalid.status,
   1,
-  `非法 fixture 应产生 lint finding（退出码 1），实际为 ${invalid.status}：\n${invalidOutput}`,
+  `The invalid fixture should produce a lint finding with exit code 1, received ${invalid.status}:\n${invalidOutput}`,
 );
 assert.match(invalidOutput, /unexpected key "branch"/);
 
@@ -50,7 +50,7 @@ try {
   assert.equal(
     generated.status,
     0,
-    `生成的 Release Please workflow 必须通过 actionlint：\n${generated.stderr || generated.stdout || ""}`,
+    `The generated Release Please workflow must pass actionlint:\n${generated.stderr || generated.stdout || ""}`,
   );
 
   const generatedDeployWorkflow = resolve(temporaryDirectory, "deploy-dry-run.yml");
@@ -65,7 +65,7 @@ try {
   assert.equal(
     generatedDeploy.status,
     0,
-    `生成的布尔 dry_run workflow 必须通过 actionlint：\n${generatedDeploy.stderr || generatedDeploy.stdout || ""}`,
+    `The generated Boolean dry_run workflow must pass actionlint:\n${generatedDeploy.stderr || generatedDeploy.stdout || ""}`,
   );
 } finally {
   rmSync(temporaryDirectory, { recursive: true, force: true });

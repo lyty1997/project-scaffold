@@ -1,19 +1,21 @@
-# 术语表
+# Glossary
 
-状态：active
-最近更新：__PROJECT_NAME__ 项目初始化时请更新此日期
+English | [Chinese](glossary-zh.md)
 
-## 核心术语
+Status: active
+Last updated: update this date when initializing __PROJECT_NAME__
 
-在这里定义本项目里容易产生歧义、需要跨文档统一叫法的核心概念。建议至少覆盖：项目/产品的品牌名解释、核心业务实体名词解释。以下前两条是需要你按项目替换的占位示例，后两条（真相源、契约词表）是脚手架方法论本身的通用术语，可原样保留：
+## Core terms
 
-- __BRAND_NAME__：示例——请在这里说明这个品牌名指代什么（例如"个人项目、技术分享和未来产品服务的公开网站品牌"），以及它和 __PROJECT_NAME__ 的关系。
-- 示例：__在这里定义你项目里容易产生歧义或需要跨文档统一叫法的词__（例如某个业务栏目名、某个核心功能模块名，说明它的边界和不包含什么）。
-- 真相源：定义项目事实的文档或配置。当前 `docs/` 是定位、架构和内容模型的真相源。
-- 契约词表：跨文档、代码、页面共享的稳定命名集合，位于 `docs/contracts/contract-terms.json`。
+Define here the core concepts that are easy to interpret inconsistently within this project and therefore need a shared name across documents. At minimum, cover the meaning of the project or product brand name and the project's core business entities. The first two entries below are placeholder examples that you should replace for your project. The final two entries—source of truth and contract term registry—are general concepts from the scaffold's methodology and can remain unchanged:
 
-## 表达规则
+- __BRAND_NAME__: example—explain here what this brand name refers to (for example, "the public website brand for personal projects, technical writing, and future product services") and how it relates to __PROJECT_NAME__.
+- Example: __define here a term in your project that is easy to interpret inconsistently or that needs a shared name across documents__ (for example, the name of a content section or a core feature module, including its boundaries and what it does not include).
+- Source of truth: a document or configuration that defines project facts. Currently, `docs/` is the source of truth for positioning, architecture, and the content model.
+- Contract term registry: the stable set of names shared across documents, code, and pages, located at `docs/contracts/contract-terms.json`.
 
-- 已上线能力：可以用确定语气描述。
-- 计划能力：使用“计划”“探索”“后续可能”等表达。
-- 待确认事项：写入 `docs/architecture/open-decisions.md`。
+## Wording rules
+
+- Released capabilities may be described in definitive language.
+- Planned capabilities use wording such as "planned," "exploring," or "may be added later."
+- Items awaiting confirmation belong in `docs/architecture/open-decisions.md`.

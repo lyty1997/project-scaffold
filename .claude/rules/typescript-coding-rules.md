@@ -1,55 +1,67 @@
-# TypeScript 编码质量与安全规范
+# TypeScript Code Quality and Security
 
-## 一、类型安全
+English | [Chinese](../rules-zh/typescript-coding-rules-zh.md)
 
-### 编译器配置（强制）
-`tsconfig.json` 必须启用：`strict` / `noUncheckedIndexedAccess` / `exactOptionalPropertyTypes` / `noImplicitOverride` / `noFallthroughCasesInSwitch` / `forceConsistentCasingInFileNames` / `verbatimModuleSyntax` / `noPropertyAccessFromIndexSignature`
+## 1. Type safety
 
-### 静态纪律
-- 禁止 `any`（用 `unknown` + 收窄）、`@ts-ignore`（用 `@ts-expect-error` + 注释）、`as` 断言（用 type guard / zod；`as const` 和测试 mock 除外）
-- 函数返回值必须显式标注；泛型必须有约束 `<T extends X>`
-- 联合类型 >3 分支 → discriminated union + `assertNever` exhaustive check
-- 业务 ID / 金额 / 时间戳 → branded type 防混用
+### Required compiler settings
 
-### 运行时校验（系统边界）
-- 外部输入（API / 用户输入 / 环境变量 / 文件解析）必须 zod schema 校验
-- 类型单源派生：`type Foo = z.infer<typeof FooSchema>`
-- 环境变量禁止直接 `process.env.XXX`，必须走统一校验层
+Enable `strict`, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`, `noFallthroughCasesInSwitch`, `forceConsistentCasingInFileNames`, `verbatimModuleSyntax`, and `noPropertyAccessFromIndexSignature` in `tsconfig.json`.
 
-## 二、错误处理
-- 禁止空 `catch {}`；`catch(err: unknown)` 必须收窄后处理或重新抛出
-- 业务错误继承 `AppError` 基类（携带 `code` + `message`），禁止裸抛字符串
-- 可预期失败用 Result / discriminated union 返回，不用异常
-- HTTP status code 映射集中一处，禁止业务逻辑中硬编码
+### Static discipline
 
-## 三、不可变性与防御性
-- 函数参数对象/数组标注 `Readonly<T>`；配置常量用 `as const`
-- 禁止原地修改参数，用 spread / `structuredClone` 返回新对象
-- 数组优先 `map`/`filter`/`toSorted`/`toSpliced`，避免 `sort`/`splice` 原地修改
-- `?.` 后必须处理 `undefined`；`Map.get()` / 索引访问必须判空
-- `switch` 必须有 `default` 或 exhaustive check
+- Do not use `any`; use `unknown` and narrow it. Replace `@ts-ignore` with an explained `@ts-expect-error`. Avoid `as` assertions in favor of type guards or zod, except for `as const` and test mocks.
+- Annotate function return types explicitly and constrain generics with `<T extends X>`.
+- When a union has more than three branches, use a discriminated union and an `assertNever` exhaustiveness check.
+- Use branded types to prevent mixing business IDs, monetary values, and timestamps.
 
-## 四、资源安全
-- 事件监听器 / `setInterval` / `setTimeout` 必须在作用域结束时清理
-- 数据库连接 / Stream 在 `finally` 或 `using` 中释放；Stream 必须监听 `error`
-- 可取消异步操作用 `AbortController`；Node.js 文件操作用 `fs/promises`
+### Runtime validation at system boundaries
 
-## 五、并发安全
-- 禁止 fire-and-forget：async 调用必须 `await` 或 `.catch()`
-- `Promise.all` 会短路 → 需全部结果时用 `Promise.allSettled`
-- 共享状态并发修改用队列（`p-limit` / `p-queue`）；React 异步操作用 `AbortController` 在卸载时取消
+- Validate external API input, user input, environment variables, and parsed files with a zod schema.
+- Derive types from one source: `type Foo = z.infer<typeof FooSchema>`.
+- Do not read `process.env.XXX` directly; use one validated configuration layer.
 
-## 六、安全漏洞防护
-- 禁止 `eval()` / `new Function()` / `innerHTML`；HTML 必须用框架转义
-- URL 用 `URLSearchParams` 构造；SQL 用参数化查询；禁止字符串拼接
-- 敏感信息禁止硬编码，走环境变量 + zod 校验；日志禁止输出密钥/token
+## 2. Error handling
 
-## 七、ESLint 规则集（强制启用）
-`@typescript-eslint/strict-type-checked` + `@typescript-eslint/stylistic-type-checked`，额外启用：`no-floating-promises` / `no-misused-promises` / `restrict-template-expressions` / `no-unnecessary-condition` / `prefer-nullish-coalescing` / `switch-exhaustiveness-check`
+- Do not use an empty `catch {}`. Narrow `catch (err: unknown)`, then handle or rethrow it.
+- Business errors inherit from an `AppError` carrying `code` and `message`; never throw a bare string.
+- Return a Result or discriminated union for expected failures instead of using exceptions.
+- Centralize HTTP status mapping; do not hard-code it throughout business logic.
 
-## 八、测试规范
-- 框架：`vitest`（优先）或 `jest`；覆盖率：核心模块 ≥ 80%
-- 位置：`tests/` 目录，结构镜像 `src/`，文件名 `*.test.ts`
-- 异步测试必须 `await` 断言；外部服务用 mock / testcontainers 隔离
+## 3. Immutability and defensive handling
 
-发现错误时，逐条修复后再继续，不要忽略警告。
+- Mark object and array parameters `Readonly<T>` and use `as const` for configuration constants.
+- Do not mutate parameters in place; return a new object through spread or `structuredClone`.
+- Prefer `map`, `filter`, `toSorted`, and `toSpliced` over mutating `sort` and `splice`.
+- Handle `undefined` after optional chaining and check every `Map.get()` or indexed lookup.
+- Every `switch` needs a `default` or exhaustive check.
+
+## 4. Resource safety
+
+- Remove event listeners, intervals, and timeouts when their scope ends.
+- Release database connections and streams in `finally` or `using`; every stream handles `error`.
+- Use `AbortController` for cancellable async work and `fs/promises` for Node.js file operations.
+
+## 5. Concurrency safety
+
+- Do not fire and forget: every async call is awaited or has `.catch()`.
+- `Promise.all` short-circuits; use `Promise.allSettled` when every result matters.
+- Serialize concurrent shared-state changes with a queue such as `p-limit` or `p-queue`. Cancel React async work with `AbortController` during unmount.
+
+## 6. Vulnerability prevention
+
+- Do not use `eval()`, `new Function()`, or `innerHTML`; rely on framework HTML escaping.
+- Build URLs with `URLSearchParams` and use parameterized SQL instead of concatenated strings.
+- Keep sensitive values in validated environment configuration and never log keys or tokens.
+
+## 7. Required ESLint rules
+
+Enable `@typescript-eslint/strict-type-checked` and `@typescript-eslint/stylistic-type-checked`, plus `no-floating-promises`, `no-misused-promises`, `restrict-template-expressions`, `no-unnecessary-condition`, `prefer-nullish-coalescing`, and `switch-exhaustiveness-check`.
+
+## 8. Testing
+
+- Prefer `vitest`, or use `jest`; core modules target at least 80% coverage.
+- Mirror `src/` under `tests/` and use `*.test.ts` filenames.
+- Await assertions in async tests and isolate external services with mocks or testcontainers.
+
+Fix each reported error before continuing; do not ignore warnings.

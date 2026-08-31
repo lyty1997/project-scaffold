@@ -1,7 +1,9 @@
-# 工具失败处理
+# Tool Failure Handling
 
-1. 读取完整错误输出，判断属于命令、路径、项目、依赖、权限、沙箱、网络还是外部服务问题。
-2. 先修正已识别的原因，再重跑；禁止原样重复失败调用。
-3. 本地可修复的问题直接修复并验证；需要权限或网络时按环境规则请求授权。
-4. 改用替代工具前说明原工具为何不适用，保留等价验证范围。
-5. 仍无法完成时，汇报缺失的步骤、证据、风险和用户可执行的下一步。
+English | [Chinese](tool-failure-zh.md)
+
+1. Read the complete error output and determine whether the cause is the command, path, project, dependency, permission, sandbox, network, or external service.
+2. Correct the identified cause before retrying. Do not repeat the same failing call unchanged.
+3. Fix and verify locally resolvable problems. Request authorization according to the environment rules when permission or network access is required.
+4. Before switching tools, explain why the original tool is unsuitable and preserve equivalent verification coverage.
+5. If completion remains impossible, report the missing step, available evidence, risk, and a concrete next action the user can take.

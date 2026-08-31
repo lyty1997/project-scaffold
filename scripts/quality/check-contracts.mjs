@@ -22,8 +22,9 @@ function compileMatcher(term, match = "word") {
   if (match === "regex") return new RegExp(term);
   if (match === "literal") return new RegExp(escaped);
   if (match === "markdown_code") return new RegExp(`\`${escaped}\``);
-  // word：Unicode 感知的词边界，ASCII 与中文（及多词短语）统一按"字母/数字/下划线"判定边界，
-  // 避免中文契约词退化成子串匹配（例如 `草稿` 命中 `草稿箱` 造成误判）。
+  // word uses Unicode-aware boundaries, treating ASCII, CJK, and multi-word
+  // phrases consistently around letters, digits, and underscores. This prevents
+  // CJK contract terms from degrading into false-positive substring matches.
   return new RegExp(`(?<![\\p{L}\\p{N}_])${escaped}(?![\\p{L}\\p{N}_])`, "u");
 }
 
@@ -66,15 +67,16 @@ function validateContractFiles(terms, rules) {
 
 function checkForbiddenAndScopedTerms(rules) {
   const errors = [];
-  // 编译规则里的正则；用户在 JSON 里写错正则（尤其 match:"regex"）时收集为清晰错误，
-  // 而不是让整个门禁抛未捕获异常、只剩一段栈信息。
+  // Compile configured regular expressions and collect a clear error when JSON
+  // contains an invalid pattern, especially for match:"regex", rather than
+  // terminating the entire gate with an uncaught stack trace.
   const compileRules = (list, kind) =>
     asArray(list)
       .map((rule) => {
         try {
           return { ...rule, matcher: compileMatcher(rule.term, rule.match) };
         } catch (error) {
-          errors.push(`${RULES_PATH}: ${kind} 规则词 \`${rule.term}\` 的正则无法编译：${error.message}`);
+          errors.push(`${RULES_PATH}: ${kind} rule for \`${rule.term}\` has an invalid regular expression: ${error.message}`);
           return null;
         }
       })
@@ -89,12 +91,12 @@ function checkForbiddenAndScopedTerms(rules) {
       for (const rule of forbidden) {
         if (!rule.matcher.test(line)) continue;
         if (pathMatches(relativePath, asArray(rule.allowed_paths))) continue;
-        errors.push(`${filePath}:${index + 1}: 禁用契约词 \`${rule.term}\`，应使用 \`${rule.use ?? "<unspecified>"}\`；原因：${rule.reason ?? "未说明"}`);
+        errors.push(`${filePath}:${index + 1}: forbidden contract term \`${rule.term}\`; use \`${rule.use ?? "<unspecified>"}\`. Reason: ${rule.reason ?? "not specified"}`);
       }
       for (const rule of scoped) {
         if (!rule.matcher.test(line)) continue;
         if (pathMatches(relativePath, asArray(rule.allowed_paths))) continue;
-        errors.push(`${filePath}:${index + 1}: 契约词 \`${rule.term}\` 不允许出现在该路径；原因：${rule.reason ?? "未说明"}`);
+        errors.push(`${filePath}:${index + 1}: contract term \`${rule.term}\` is not allowed at this path. Reason: ${rule.reason ?? "not specified"}`);
       }
     }
   }
@@ -111,7 +113,7 @@ function checkTermSources(terms) {
       const sourcePath = resolve(ROOT, source);
       if (!existsSync(sourcePath)) continue;
       if (!matcher.test(readText(sourcePath))) {
-        errors.push(`${source}: 缺少 canonical 契约词 \`${term}\``);
+        errors.push(`${source}: missing canonical contract term \`${term}\``);
       }
     }
   }
@@ -133,7 +135,7 @@ function checkEnums(terms) {
       const text = readText(sourcePath);
       for (const member of members) {
         if (!compileMatcher(member, "word").test(text)) {
-          errors.push(`${source}: 枚举 \`${enumName}\` 缺少成员 \`${member}\``);
+          errors.push(`${source}: enum \`${enumName}\` is missing member \`${member}\``);
         }
       }
     }
@@ -159,4 +161,3 @@ if (errors.length > 0) {
 }
 
 console.log("Contract term checks passed.");
-

@@ -1,60 +1,72 @@
 # __PROJECT_NAME__
 
-__BRAND_NAME__ 是__PROJECT_TAGLINE__。在这里写清楚你的项目实际做什么：目标用户是谁、第一版聚焦什么、后续打算如何演进。
+English | [Chinese](README-zh.md)
 
-## 本项目的核心定位
+__BRAND_NAME__ is __PROJECT_TAGLINE__. Replace this paragraph with an accurate description of what the project does, who it serves, what the first release focuses on, and how later releases may evolve.
 
-- 核心定位：在这里概括项目要解决的问题和产品形态。
-- 关键能力入口：在这里列出面向用户/团队的主要功能或页面入口。
-- 后续演进方向：新能力上线前，先在 `docs/` 中完成定位、边界和信息架构设计，再落地实现。
+## Project focus
 
-## 工程规范入口
+- Core purpose: summarize the problem and product shape here.
+- Primary entry points: list the main features or pages available to users or the team.
+- Future evolution: design the positioning, boundaries, and information architecture in `docs/` before shipping a new capability.
 
-- Claude Code 指引：[CLAUDE.md](CLAUDE.md)
-- 项目规范：[AGENTS.md](AGENTS.md)
-- 文档入口：[docs/README.md](docs/README.md)
-- 项目进度：[docs/progress.md](docs/progress.md)
-- Codex 规则：[codex-rules/global-AGENTS.md](codex-rules/global-AGENTS.md)
-- 质量门禁脚本：[scripts/quality](scripts/quality)
+## Engineering documentation
 
-## 本地检查
+- Claude Code guidance: [CLAUDE.md](CLAUDE.md)
+- Project rules: [AGENTS.md](AGENTS.md)
+- Documentation index: [docs/README.md](docs/README.md)
+- Project progress: [docs/progress.md](docs/progress.md)
+- Codex rules: [codex-rules/global-AGENTS.md](codex-rules/global-AGENTS.md)
+- Quality-gate scripts: [scripts/quality](scripts/quality)
 
-首次使用本脚手架时，先执行一次占位符替换：
+## Local checks
+
+Replace the scaffold placeholders before using this repository for a new project:
 
 ```bash
 npm run init
-# 或
+# or
 node scripts/init.mjs
 ```
 
-再运行质量门禁：
+Then run the quality gates:
 
 ```bash
 npm run quality
 ```
 
-提交前门禁与 CI 一致，克隆后执行一次即可启用本地 pre-commit 钩子：
+The local pre-commit gate mirrors CI. Enable the repository hooks once after cloning:
 
 ```bash
 git config core.hooksPath .githooks
 ```
 
-当前基础 `quality` 无需安装第三方 npm 包，使用 Node.js 内置能力检查；仓库另外 vendored 一份固定版本、MIT 许可的 Archify Skill，并通过 `.claude/skills` 与 `.agents/skills` 分别供 Claude、Codex 原生发现，用于独立图表门禁：
+The base `quality` command uses only built-in Node.js capabilities and requires no third-party npm packages. Diagram work uses complementary Archify and PlantUML workflows: the repository vendors the reviewed Archify implementation and the PlantUML authoring Skill, while CI downloads a checksum-verified PlantUML JAR only for the independent diagram job.
 
-- 质量脚本自身语法自检（`node --check`）。
-- Markdown 内部链接和 `docs/README.md` 索引完整性。
-- 契约词表和禁用旧名回潮。
-- 常见密钥形态。
-- 静态站点入口和资源引用。
-- 便携单文件文档的图片扫描、路径边界、内嵌字节与断链剥离正负 fixture。
-- `npm run check:diagrams` 校验 Archify Typed JSON、交互 HTML 新鲜度和原生 PNG 尺寸；`npm run review:diagrams` 使用真实浏览器做视觉复核并调用 Viewer 原生导出刷新文档主图。
+- JavaScript syntax checks with `node --check`.
+- Markdown internal-link, bilingual-pair, and `docs/README.md` / `docs/README-zh.md` index checks.
+- Contract vocabulary and retired-name checks.
+- Common secret-pattern checks.
+- Static-site entry-point and asset-reference checks.
+- Positive and negative fixtures for portable single-file documents, including image discovery, path boundaries, embedded-byte integrity, and removal of broken local links.
+- `npm run check:archify` validates Archify Typed JSON, HTML freshness, and native PNG boundaries; `npm run review:archify` performs its real-browser visual review.
+- `npm run check:plantuml` securely compiles Markdown-inline PlantUML and checks each generated SVG; `npm run check:diagrams` aggregates both tools.
 
-需要把带本地图的 Markdown 单独复制出去时，安装 Pandoc 2.12+ 后生成自包含 HTML；输出位于已忽略的 `build/portable-docs/`，移动一个 HTML 即可阅读：
+PlantUML commands require a local JAR; Archify remains self-contained:
+
+```bash
+export PUML_JAR=/absolute/path/to/plantuml-1.2026.1.jar
+npm run check:diagrams
+```
+
+The selection rules and artifact contracts are documented in [Diagram System: Archify + PlantUML](docs/architecture/diagram-system.md).
+
+To move a Markdown document with local images outside the repository, install Pandoc 2.12 or later and generate a self-contained HTML file. Output is written under the ignored `build/portable-docs/` directory, so one HTML file is sufficient for delivery:
 
 ```bash
 npm run export:portable-docs -- docs/sharing/ai-coding-scaffold.md
 ```
 
-## 许可证
+## License
 
-本项目以 [Apache License 2.0](LICENSE) 授权。相比 MIT，它在保留宽松使用的同时增加了专利授权、变更声明与 `NOTICE` 传递等更明确的条款。`LICENSE` 附录里的版权年份和归属者由 `npm run init` 自动填写。
+This project is licensed under the [Apache License 2.0](LICENSE). Compared with MIT, it remains permissive while adding an explicit patent grant, change notices, and clearer notice-preservation terms. `npm run init` fills in the copyright year and holder in the license appendix.

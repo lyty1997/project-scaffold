@@ -1,44 +1,49 @@
-# 待决策问题
+# Open Decisions
 
-状态：active
-最近更新：__PROJECT_NAME__ 起步阶段
+English | [Chinese](open-decisions-zh.md)
 
-本文件集中记录 __PROJECT_NAME__（__PROJECT_SLUG__）还未拍板的技术和产品决策，避免决策散落在代码或聊天记录里。决策一旦确定，应把结论迁移到对应的正式设计文档，并从本文件删除。
+Status: active
+Last updated: initial phase of __PROJECT_NAME__
 
-## 技术选型
+This document centralizes the technical and product decisions that have not yet been made for __PROJECT_NAME__ (__PROJECT_SLUG__), so they do not become scattered across code or chat history. Once a decision is made, move the conclusion into the appropriate formal design document and remove it from this file.
 
-- 前端框架选型：React、Vue、Next.js、SvelteKit 或其他方案，需结合团队熟悉度和渲染需求（SSR/SSG/CSR）确定。
-- 后端框架与语言选型：例如 Node.js（Express/Nest）、Python（FastAPI/Django）、Go、Java 等，需结合团队能力和性能要求确定。
-- 数据库选型：关系型（PostgreSQL/MySQL）、文档型（MongoDB）或其他，以及是否需要缓存层（Redis 等）。
-- 认证方案：自建账号体系、第三方登录（OAuth）、还是托管认证服务（如 Auth0/Clerk 等），需明确会话管理和权限模型。
-- 部署目标：Vercel、自建服务器、云厂商（AWS/GCP/Azure 等）或其他 PaaS，需结合成本和运维能力确定。
-- 是否需要跨机协同预览工作流（多台开发机之间同步代码并提供可访问的预览环境）。
+## Technology choices
 
-## 内容与产品
+- Frontend framework: choose React, Vue, Next.js, SvelteKit, or another option based on team familiarity and rendering requirements (SSR/SSG/CSR).
+- Backend framework and language: choose an option such as Node.js (Express/Nest), Python (FastAPI/Django), Go, or Java based on team capabilities and performance requirements.
+- Database: choose a relational database (PostgreSQL/MySQL), a document database (MongoDB), or another option, and decide whether a caching layer such as Redis is needed.
+- Authentication: choose a first-party account system, third-party sign-in (OAuth), or a managed authentication service such as Auth0 or Clerk, and define session management and the authorization model.
+- Deployment target: choose Vercel, a self-hosted server, a cloud provider such as AWS/GCP/Azure, or another PaaS based on cost and operational capacity.
+- Whether the cross-machine collaborative preview workflow is needed to synchronize code between development machines and provide an accessible preview environment.
 
-- 第一批内容/功能模块的范围、优先级和信息架构。
-- 产品服务入口何时上线，以及是否在首屏展示。
-- 是否提供讨论、评论或反馈表单等用户交互能力。
+## Content and product
 
-## 工程基建
+- Scope, priority, and information architecture for the first set of content or feature modules.
+- When the product or service entry point should launch and whether it should appear above the fold.
+- Whether to provide user interaction such as discussions, comments, or a feedback form.
 
-- Release 自动化的项目级决策：启用 release-please 前，必须确认发布包路径、`release-type`、
-  当前版本、是否需要及具体 `bootstrap-sha`、版本号真相源及需同步的版本文件、tag 规则；脚手架不得把自身
-  `package.json` 预设为所有下游项目的产品版本源。
-- Release Please 凭证模式：当前生成器支持默认 `GITHUB_TOKEN`（零新增长期凭证，但
-  机器人 PR 的 CI 需要有写权限的人手工批准，其他后续 workflow 不会自动触发）或
-  fine-grained PAT（可自动触发，但属于长期 secret，需轮换）。GitHub App installation
-  token 更适合短期凭证，但需要另行设计 App 参数和 token 生成步骤，当前尚未支持。必须
-  在具体项目启用 Release 前由使用者确认；使用 PAT 时只记录 secret 名与来源，不写凭证值。
-- Breaking change 的提交表达：扩展提交钩子以允许 `feat(scope)!:` / `fix(scope)!:`，
-  或维持当前主题格式并要求在正文写 `BREAKING CHANGE:`。该选择会同时影响本地钩子、
-  Release Please 版本计算和贡献文档，确认前不修改提交约定。
-- 测试框架与范围：确定技术栈后选定测试运行器（如 `node --test`、Vitest、Pytest 等），把占位的 `npm test` 换成真实命令，并考虑是否新增 `check:test` 门禁纳入 `npm run quality`。
-- 依赖与锁文件策略：引入第一个第三方依赖时，约定锁文件（`package-lock.json` 等）是否入库、CI 是否改用 `npm ci` 保证可复现构建；在此之前保持零依赖。
-- CI job 拆分时机：一旦引入数据库等需要外部服务的依赖，`.github/workflows/ci.yml` 应把现有单一 `quality` job 拆成"无外部依赖的快 job"（继续跑 `npm run quality`）和"起 docker/服务容器的慢 job"（跑迁移、集成测试），两者独立失败、互不拖慢；后者建议验证"迁移可回滚再重新迁移"的闭环（up → down → up），而不是只跑一遍 migrate 就算过。
-- 数据库迁移引入后，若同时维护"迁移顺序设计文档台账"，考虑加一道机器校验：以实际迁移文件名为真相源，扫描核对台账文档是否同步，避免人工登记的编号和文件系统漂移。参考实现见 [迁移一致性门禁参考脚本](stack-recipes/migration-ledger-check.md)（按需启用，不强制）。
+## Engineering infrastructure
 
-## 隐私与运营
+- Project-level release automation decisions: before enabling Release Please, confirm the release package path, `release-type`,
+  current version, whether a `bootstrap-sha` is needed and its exact value, the source of truth for versions and any version files
+  that must remain synchronized, and tag rules. The scaffold must not assume that its own
+  `package.json` is the product-version source for every downstream project.
+- Release Please credential mode: the current generator supports either the default `GITHUB_TOKEN` (no new
+  long-lived credential, but CI for bot-authored PRs requires manual approval by someone with write access and other
+  downstream workflows do not trigger automatically) or a fine-grained PAT (which can trigger them automatically,
+  but is a long-lived secret that must be rotated). A GitHub App installation token is a better fit for short-lived
+  credentials, but requires a separate design for App parameters and token generation and is not currently supported.
+  The user must confirm this choice before Release Please is enabled in a specific project. When using a PAT, record
+  only the secret name and provenance, never the credential value.
+- Breaking-change commit syntax: either extend the commit hook to allow `feat(scope)!:` / `fix(scope)!:`,
+  or retain the current subject format and require `BREAKING CHANGE:` in the body. This choice affects the local hook,
+  Release Please version calculation, and contribution documentation, so do not change the commit convention before it is confirmed.
+- Test framework and scope: after selecting the technology stack, choose a test runner such as `node --test`, Vitest, or Pytest; replace the placeholder `npm test` with a real command; and consider adding a `check:test` gate to `npm run quality`.
+- Dependency and lockfile policy: when adding the first third-party dependency, decide whether to commit a lockfile such as `package-lock.json` and whether CI should use `npm ci` for reproducible builds. Until then, keep the project dependency-free.
+- When to split CI jobs: once the project introduces a database or another dependency on an external service, split the single `quality` job in `.github/workflows/ci.yml` into a fast job with no external dependencies (which continues to run `npm run quality`) and a slow job that starts Docker or service containers and runs migrations and integration tests. The jobs should fail independently without slowing each other down. The latter should preferably validate a complete "migrate, roll back, then migrate again" loop (up → down → up) instead of considering a single migration sufficient.
+- After database migrations are introduced, if the project also maintains a design-document ledger for migration order, consider adding a machine check that treats actual migration filenames as the source of truth and verifies that the ledger stays synchronized. This prevents manually recorded sequence numbers from drifting away from the filesystem. See the [migration ledger consistency check reference script](stack-recipes/migration-ledger-check.md) for an optional implementation; it is not mandatory.
 
-- 是否引入访问分析；如引入，需要确定供应商、数据保留周期和隐私声明。
-- 是否收集用户数据（账号信息、邮箱等）；如收集，需要确定字段、用途、存储和删除方式。
+## Privacy and operations
+
+- Whether to introduce traffic analytics; if so, choose the provider, data-retention period, and privacy disclosure.
+- Whether to collect user data such as account details or email addresses; if so, define the fields, purpose, storage, and deletion method.

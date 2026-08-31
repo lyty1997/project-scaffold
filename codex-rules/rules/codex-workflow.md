@@ -1,29 +1,31 @@
-# Codex 工作流
+# Codex Workflow
 
-适用于复杂实现、跨文件或跨层改动；简单只读问答遵守根 [AGENTS.md](../../AGENTS.md) 即可。
+English | [Chinese](codex-workflow-zh.md)
 
-## 决策门
+Use this workflow for complex implementations and cross-file or cross-layer changes. For a simple read-only answer, the root [AGENTS.md](../../AGENTS.md) is sufficient.
 
-- 先检查相关设计、`docs/architecture/open-decisions.md`、现有实现和工具输出。
-- 将信息分成：用户明确要求、已查证事实、待用户决定。不得用惯例或个人偏好补全第三类。
-- 客观事实优先从仓库、实验或权威原始资料查证。
-- 待决策项要列出已知事实、选项、影响和需要用户确认的问题；确认前只继续不依赖它的工作。
-- 决策写入对应设计或契约；未决事项集中写为“待确认”，不得提前进入代码或公开文案。
+## Decision gate
 
-## 执行
+- Inspect the relevant design, `docs/architecture/open-decisions.md`, current implementation, and tool output first.
+- Separate information into explicit user requirements, verified facts, and choices the user must make. Do not fill the third category with convention or personal preference.
+- Verify objective facts from the repository, experiments, or authoritative primary sources whenever possible.
+- For a pending decision, state the known facts, options, effects, and question requiring confirmation. Continue only work that does not depend on the answer.
+- Record decisions in the corresponding design or contract. Keep unresolved matters in the open-decisions document and do not place them prematurely in code or public copy.
 
-以下变化先改设计，再改实现：
+## Execution
 
-- 页面结构、导航、路由、内容栏目、公开文案或 SEO。
-- 产品、收费、订阅、评论、讨论、反馈或其他用户交互。
-- 用户数据、访问分析、表单、第三方脚本及其隐私边界。
-- 构建框架、CMS、后端、数据库、部署或其他基础设施。
+Update the design before implementing any of the following:
 
-实现时保持最小可验证闭环，暴露真实失败原因；不以营销文案、多余兜底或无依据的复杂设施掩盖问题。
+- Page structure, navigation, routes, content sections, public copy, or SEO.
+- Products, pricing, subscriptions, comments, discussions, feedback, or another user interaction.
+- User data, analytics, forms, third-party scripts, or their privacy boundaries.
+- Build frameworks, CMSs, backends, databases, deployment, or other infrastructure.
 
-## 验证与收尾
+Keep implementation to the smallest verifiable loop and expose real failure causes. Do not hide problems behind marketing copy, redundant fallbacks, or unsupported infrastructure.
 
-- 运行项目已有的格式化、lint、typecheck、测试和相关专项检查；基础门禁见 [质量门禁](../../docs/architecture/quality-gates.md)。
-- UI 改动必须实际渲染；无法完成某项验证时说明原因和风险。
-- 更新 `docs/progress.md`，记录完成项、验证证据和遗留项。
-- 最终汇报修改文件、验证结果、待确认事项，以及是否新增数据采集或第三方服务。
+## Verification and handoff
+
+- Run the project's formatter, lint, typecheck, tests, and relevant focused checks. See [Quality Gates](../../docs/architecture/quality-gates.md) for the baseline.
+- Verify UI changes with an actual render. If a check cannot be completed, report the reason and risk.
+- Update both `docs/progress.md` and `docs/progress-zh.md` with completed work, verification evidence, and remaining issues.
+- In the final report, include changed files, verification results, pending decisions, and whether the change adds data collection or a third-party service.

@@ -1,0 +1,48 @@
+# __PROJECT_NAME__ - 项目规范
+
+[English](AGENTS.md) | 中文
+
+## 核心定位与真相源
+
+__PROJECT_NAME__ 是__PROJECT_TAGLINE__。公开内容必须可信、可追溯、可维护，不以包装掩盖未实现能力。
+
+- `docs/`：定位、架构、内容模型、产品服务、部署和公开表达的设计真相源。
+- `AGENTS.md`：所有 Agent 始终遵守的项目级约束。
+- `codex-rules/`：Codex 按任务选读的执行细则，不替代 `docs/`。
+- `package.json` 与 `.github/workflows/`：命令和 CI 当前行为的实现真相源。
+
+**先定位，后实现；先内容可信，后视觉表现。** 若把本脚手架用于新项目且仍有双下划线包裹的大写占位符，先运行 `npm run init` 完成初始化。
+
+## 最短工作闭环
+
+1. 阅读 `docs/README-zh.md` 及任务相关设计文档；通过 [Codex 中文规则索引](codex-rules/global-AGENTS-zh.md) 只加载相关细则。
+2. 检查工作区和现有实现，区分用户明确要求、可查证事实与必须由用户决定的事项。
+3. 触及下列“文档先行”范围时，先更新对应设计、契约或待决策记录，再实现。
+4. 小步完成可验证闭环；不引入当前设计不需要的基础设施或掩盖根因的多余兜底。
+5. 运行与风险相称的检查，同时更新 `docs/progress.md` 与 `docs/progress-zh.md`，汇报改动、验证和遗留问题。
+
+## 决策与边界
+
+- 不臆测用户的意图、偏好、优先级、验收标准、业务事实或授权。能查证的先查证；仍不确定或只能由用户取舍时，说明已知事实、不确定项、可选方案及影响，并暂停依赖该决定的工作。
+- 定位、信息架构、内容模型、公开页面与文案、路由、SEO、产品服务、用户交互与数据、第三方脚本、部署或技术栈发生变化时，必须先改 `docs/`。技术选型先记录到 `docs/architecture/open-decisions-zh.md`，并同步英文真相源。
+- 事实、观点、计划和待确认事项要明确区分；未发布能力不得写成已交付事实。
+- 不提交、打印或写入凭证、真实隐私数据、客户数据及未公开商业计划。
+- 不执行破坏性或不可逆操作，除非用户明确要求并确认风险。
+
+## 编辑与验证
+
+- 修改前检查工作区；保留用户已有改动。手工编辑使用 `apply_patch`。
+- 代码改动后运行已有的格式化、lint、typecheck、测试及相关专项检查；基础全量门禁为 `npm run quality`。
+- UI 改动按[网站前端规范](codex-rules/rules/frontend-web-rules-zh.md)做实际渲染验证。
+- 新增或解决 bug 时，按需查阅并精炼更新 `codex-rules/known-issues.md` 与 `codex-rules/known-issues-zh.md`，只记录仍可复用的“现象 / 原因 / 修法”。
+- 完成时说明是否新增用户数据收集或第三方服务；默认不得自行引入。
+
+## 语言与入口
+
+仓库文档、用户可见 UI、Agent 指令、代码注释、CLI 输出和提交主题默认使用英文；对话遵循用户明确使用的语言。每份现有中文文档都作为同步维护的 `-zh.md` 译本保留；详细配对与例外规则见[语言与本地化](docs/architecture/localization-zh.md)。
+
+- [中文文档入口](docs/README-zh.md)
+- [英文文档入口](docs/README.md)
+- [Codex 中文规则索引](codex-rules/global-AGENTS-zh.md)
+- [质量门禁](docs/architecture/quality-gates-zh.md)
+- [已知注意事项](codex-rules/known-issues-zh.md)

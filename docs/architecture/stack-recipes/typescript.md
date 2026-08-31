@@ -1,8 +1,10 @@
-# TypeScript 技术栈参考配方
+# TypeScript Technology Stack Reference Recipe
 
-可选，仅在 [待决策问题](../open-decisions.md) 确定前端/后端技术栈选 TypeScript 后才需要落地。规则依据见 [`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules/typescript-coding-rules.md)。落地后这是本仓库第一次引入第三方 npm 依赖，记得同步更新 `docs/architecture/open-decisions.md`"依赖与锁文件策略"一节。
+English | [Chinese](typescript-zh.md)
 
-## `tsconfig.json`：strict 全家桶
+Optional. Apply this recipe only after [Open Decisions](../open-decisions.md) selects TypeScript for the frontend or backend stack. See [`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules/typescript-coding-rules.md) for the governing rules. This becomes the repository's first third-party npm dependency, so also update the "Dependency and lockfile policy" section in `docs/architecture/open-decisions.md`.
+
+## `tsconfig.json`: the complete strict option set
 
 ```json
 {
@@ -22,7 +24,7 @@
 }
 ```
 
-## `eslint.config.js`：flat config
+## `eslint.config.js`: flat config
 
 ```js
 import tseslint from "typescript-eslint";
@@ -45,17 +47,18 @@ export default tseslint.config(
     },
   },
   {
-    // 纯 Node 工具脚本不在 app 的 tsconfig 类型图里，单独关闭类型感知规则。
+    // Plain Node.js utility scripts are not part of the application's tsconfig
+    // type graph, so disable type-aware rules for them separately.
     files: ["scripts/**/*.{mjs,js}"],
     ...tseslint.configs.disableTypeChecked,
   },
 );
 ```
 
-## 测试：单测与 DB 集成测试物理隔离
+## Tests: physically separate unit tests from database integration tests
 
 ```ts
-// vitest.config.ts —— 默认命令跑这份，不碰真实数据库
+// vitest.config.ts — used by the default command; never touches a real database
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
@@ -64,24 +67,24 @@ export default defineConfig({
 ```
 
 ```ts
-// vitest.db.config.ts —— 单独命令跑，需要真实数据库
+// vitest.db.config.ts — run by a separate command; requires a real database
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
     include: ["tests/db-integration/**"],
-    fileParallelism: false, // 同库文件间串行，避免并发 seed 冲突
+    fileParallelism: false, // Serialize files that share a database to avoid concurrent seed conflicts.
     testTimeout: 20_000,
     hookTimeout: 20_000,
   },
 });
 ```
 
-`package.json` 对应两条独立命令：`test`（默认，跑 `vitest.config.ts`）和 `test:db`（跑 `vitest.db.config.ts`，CI 里放进需要起数据库服务的独立 job）。
+`package.json` exposes two independent commands: `test`, which runs `vitest.config.ts` by default, and `test:db`, which runs `vitest.db.config.ts` in a separate CI job that starts a database service.
 
-## 提交信息机器门禁：两种选择
+## Machine-enforced commit messages: two options
 
-脚手架自带的 `.githooks/commit-msg`（见 [Git 工作流规范](../../../.claude/rules/git-workflow.md)）是零依赖 shell 实现，直接可用，无需额外配置。如果你的项目已经引入 npm 生态的 git hook 管理（如 husky），也可以换成等价的 `commitlint`：
+The scaffold's `.githooks/commit-msg` hook—see the [Git workflow rules](../../../.claude/rules/git-workflow.md)—is a dependency-free shell implementation that works without additional configuration. If your project already uses an npm-based Git hook manager such as Husky, you can replace it with an equivalent Commitlint configuration:
 
 ```js
 // commitlint.config.cjs
@@ -90,11 +93,11 @@ module.exports = {
   rules: {
     "type-enum": [2, "always", ["feat", "fix", "docs", "style", "refactor", "test", "chore"]],
     "scope-enum": [2, "always", ["core", "web", "api", "shared", "docs", "infra", "tests"]],
-    "body-max-line-length": [0], // 中文提交正文经常超长，不限制行长
+    "body-max-line-length": [0], // Do not impose a body line-length limit.
   },
 };
 ```
 
-两者二选一即可，不要同时装两套校验同一件事。
+Choose one mechanism; do not install two systems that validate the same property.
 
-注意：本仓库约定提交主题行中英双语、英文在前（`<type>(<scope>): <English 主题> / <中文主题>`，用 ` / ` 分隔英文与中文两段）。这条"双语结构"目前只有自带的 shell 钩子在校验；`@commitlint/config-conventional` 只管 type/scope，不校验双语结构。若换用 commitlint 又想保留双语门禁，需要另加一条匹配 ` / ` 分隔的 `subject` 自定义规则，或继续用 shell 钩子。
+The repository requires an English Conventional Commit subject in the form `<type>(<scope>): <English subject>`. The built-in shell hook validates this structure. `@commitlint/config-conventional` validates type and scope as well, but replacing the shell hook must preserve any repository-specific subject constraints through an equivalent custom rule.

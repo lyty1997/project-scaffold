@@ -1,45 +1,48 @@
-# __PROJECT_NAME__ - 项目规范
+# __PROJECT_NAME__ - Project Rules
 
-## 核心定位与真相源
+English | [Chinese](AGENTS-zh.md)
 
-__PROJECT_NAME__ 是__PROJECT_TAGLINE__。公开内容必须可信、可追溯、可维护，不以包装掩盖未实现能力。
+## Purpose and sources of truth
 
-- `docs/`：定位、架构、内容模型、产品服务、部署和公开表达的设计真相源。
-- `AGENTS.md`：所有 Agent 始终遵守的项目级约束。
-- `codex-rules/`：Codex 按任务选读的执行细则，不替代 `docs/`。
-- `package.json` 与 `.github/workflows/`：命令和 CI 当前行为的实现真相源。
+__PROJECT_NAME__ is __PROJECT_TAGLINE__. Public content must be credible, traceable, and maintainable; presentation must never conceal an unimplemented capability.
 
-**先定位，后实现；先内容可信，后视觉表现。** 若把本脚手架用于新项目且仍有双下划线包裹的大写占位符，先运行 `npm run init` 完成初始化。
+- `docs/`: source of truth for positioning, architecture, content models, products and services, deployment, and public claims.
+- `AGENTS.md`: project-level constraints that every Agent must always follow.
+- `codex-rules/`: task-specific execution guidance for Codex; it does not replace `docs/`.
+- `package.json` and `.github/workflows/`: source of truth for current commands and CI behavior.
 
-## 最短工作闭环
+**Establish the purpose before implementation; establish credible content before visual presentation.** When this scaffold is used to create a new project and uppercase placeholders wrapped in double underscores remain, run `npm run init` before continuing.
 
-1. 阅读 `docs/README.md` 及任务相关设计文档；通过 [Codex 规则索引](codex-rules/global-AGENTS.md) 只加载相关细则。
-2. 检查工作区和现有实现，区分用户明确要求、可查证事实与必须由用户决定的事项。
-3. 触及下列“文档先行”范围时，先更新对应设计、契约或待决策记录，再实现。
-4. 小步完成可验证闭环；不引入当前设计不需要的基础设施或掩盖根因的多余兜底。
-5. 运行与风险相称的检查，更新 `docs/progress.md`，汇报改动、验证和遗留问题。
+## Minimal end-to-end workflow
 
-## 决策与边界
+1. Read `docs/README.md` and the design documents relevant to the task. Use the [Codex rule index](codex-rules/global-AGENTS.md) to load only the applicable detailed rules.
+2. Inspect the worktree and current implementation. Distinguish explicit user requirements, verifiable facts, and choices that only the user can make.
+3. When the change falls within a documentation-first area below, update the relevant design, contract, or pending-decision record before implementation.
+4. Complete the smallest verifiable loop. Do not introduce infrastructure the current design does not require or add redundant fallbacks that hide a root cause.
+5. Run checks proportional to the risk, update `docs/progress.md` and `docs/progress-zh.md`, and report changes, verification, and remaining issues.
 
-- 不臆测用户的意图、偏好、优先级、验收标准、业务事实或授权。能查证的先查证；仍不确定或只能由用户取舍时，说明已知事实、不确定项、可选方案及影响，并暂停依赖该决定的工作。
-- 定位、信息架构、内容模型、公开页面与文案、路由、SEO、产品服务、用户交互与数据、第三方脚本、部署或技术栈发生变化时，必须先改 `docs/`。技术选型先记录到 `docs/architecture/open-decisions.md`。
-- 事实、观点、计划和待确认事项要明确区分；未发布能力不得写成已交付事实。
-- 不提交、打印或写入凭证、真实隐私数据、客户数据及未公开商业计划。
-- 不执行破坏性或不可逆操作，除非用户明确要求并确认风险。
+## Decisions and boundaries
 
-## 编辑与验证
+- Do not invent the user's intent, preferences, priorities, acceptance criteria, business facts, or authorization. Verify what can be verified. If a remaining uncertainty requires a user choice, state the known facts, options, and consequences, then pause work that depends on that choice.
+- Changes to positioning, information architecture, content models, public pages or copy, routes, SEO, products and services, user interactions or data, third-party scripts, deployment, or the technology stack require a prior `docs/` update. Record technology choices in `docs/architecture/open-decisions.md` first.
+- Clearly distinguish facts, opinions, plans, and items awaiting confirmation. Never describe an unreleased capability as delivered.
+- Do not commit, print, or write credentials, real private data, customer data, or non-public business plans.
+- Do not perform destructive or irreversible operations unless the user explicitly requests them and confirms the risk.
 
-- 修改前检查工作区；保留用户已有改动。手工编辑使用 `apply_patch`。
-- 代码改动后运行已有的格式化、lint、typecheck、测试及相关专项检查；基础全量门禁为 `npm run quality`。
-- UI 改动按 [网站前端规范](codex-rules/rules/frontend-web-rules.md) 做实际渲染验证。
-- 新增或解决 bug 时，按需查阅并精炼更新 `codex-rules/known-issues.md`，只记录仍可复用的“现象 / 原因 / 修法”。
-- 完成时说明是否新增用户数据收集或第三方服务；默认不得自行引入。
+## Editing and verification
 
-## 语言与入口
+- Inspect the worktree before editing and preserve the user's existing changes. Use `apply_patch` for manual edits.
+- After code changes, run the existing formatter, lint, typecheck, tests, and relevant focused checks. The complete baseline gate is `npm run quality`.
+- For UI changes, follow the [frontend web rules](codex-rules/rules/frontend-web-rules.md) and verify an actual render.
+- When adding or resolving a bug, review and refine `codex-rules/known-issues.md` as needed. Keep only reusable symptom / cause / fix guidance there.
+- At completion, state whether the change adds user-data collection or a third-party service. Do not introduce either by default.
 
-与用户对话、`docs/` 和用户可见 UI 默认使用简体中文；代码注释以中文为主，标准英文术语保持原文。
+## Language and entry points
 
-- [文档入口](docs/README.md)
-- [Codex 规则索引](codex-rules/global-AGENTS.md)
-- [质量门禁说明](docs/architecture/quality-gates.md)
-- [已知注意事项](codex-rules/known-issues.md)
+English is the default language for repository documentation, user-visible UI, Agent-facing instructions, code comments, CLI output, and commit subjects. Follow the user's explicit conversation language. Maintain each existing Chinese document as a synchronized `-zh.md` translation; the detailed pairing and exception rules are defined in [Language and Localization](docs/architecture/localization.md).
+
+- [Documentation index](docs/README.md)
+- [Chinese documentation index](docs/README-zh.md)
+- [Codex rule index](codex-rules/global-AGENTS.md)
+- [Quality gates](docs/architecture/quality-gates.md)
+- [Known issues](codex-rules/known-issues.md)

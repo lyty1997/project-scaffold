@@ -1,47 +1,49 @@
-# 产品路线图
+# Product Roadmap
 
-> 说明：如果你的项目不涉及内容发布（例如纯工具型产品、内部系统），这份文件可以改名为 `docs/product/roadmap.md`，或者直接删除——产品路线图不是每个项目都需要按“内容”维度组织，按功能模块或用户旅程组织同样合理。
+English | [Chinese](content-roadmap-zh.md)
 
-状态：draft
-最近更新：__在这里写最近一次更新日期__
+> Note: If your project does not publish content—for example, if it is a pure utility product or an internal system—you can rename this file to `docs/product/roadmap.md` or delete it. Not every product roadmap needs to be organized around "content"; organizing it by feature area or user journey is equally valid.
 
-## M0：__在这里写第一个可用版本的定位（例如“最小可用入口”“核心闭环验证”）__
+Status: draft
+Last updated: __enter the most recent update date here__
 
-> 可选示例：如果你的项目确实有”内容”并且需要区分发布阶段，可以像下面这样声明一个内容阶段枚举；如果没有这个需求，删掉这一行即可**并同步删除 `docs/contracts/contract-terms.json` 里的 `content_stage` 枚举**——那边的枚举检查依赖这里出现这几个词，两处不同步删除会导致 `npm run check:contracts` 报错。
+## M0: __describe the positioning of the first usable release here, for example, "minimum viable entry point" or "core-loop validation"__
+
+> Optional example: If your project does have "content" and needs distinct publication stages, you can declare a content-stage enum as shown below. If you do not need it, delete the next line and **also delete the `content_stage` enum from `docs/contracts/contract-terms.json`**. The enum check there depends on all of these values appearing here, and deleting only one side will make `npm run check:contracts` fail.
 >
-> 内容阶段枚举：draft、planned、published、archived。
+> Content-stage enum: draft, planned, published, archived.
 
-目标：
+Goals:
 
-- __在这里写第一个可用版本要做到什么，例如：向谁展示什么、解决什么最小问题。__
-- __在这里写 M0 阶段要沉淀的核心信息或能力。__
-- __在这里写 M0 阶段要建立的基础保障机制（例如质量门禁、契约一致性），避免后续文档和实现漂移。__
+- __Describe what the first usable release must accomplish, such as what it presents, to whom, and the smallest problem it solves.__
+- __Describe the core information or capability that M0 must establish.__
+- __Describe the foundational safeguards M0 must establish, such as quality gates or contract consistency, to prevent later documentation and implementation drift.__
 
-首批范围方向（示例，替换为你项目的实际内容）：
+Examples for the initial scope (replace them with your project's actual content):
 
-- __示例：从零开始建立可执行的工程规范。__
-- __示例：说明产品/项目如何从当前阶段演进到下一阶段。__
-- __示例：说明对外内容/文案中如何区分事实、计划和待确认事项。__
+- __Example: establish executable engineering conventions from scratch.__
+- __Example: explain how the product or project evolves from its current stage to the next.__
+- __Example: explain how public content and copy distinguish facts, plans, and items awaiting confirmation.__
 
-## M1：__在这里写第二阶段要完善的结构或能力，例如“核心模型与列表/详情页结构化”__
+## M1: __describe the structure or capability to complete in the second phase, for example, "structured core model and list/detail pages"__
 
-计划能力：
+Planned capabilities:
 
-- __在这里列出本阶段要建立的数据模型或领域模型。__
-- __在这里列出本阶段要支持的关键页面或功能路径。__
-- __在这里列出本阶段要补充的基础能力（例如 SEO、可观测性、权限模型等）。__
+- __List the data model or domain model to establish in this phase.__
+- __List the key pages or feature paths to support in this phase.__
+- __List foundational capabilities to add in this phase, such as SEO, observability, or an authorization model.__
 
-## M2：__在这里写第三阶段要拓展的边界，例如“扩展服务与用户互动入口”__
+## M2: __describe the boundary to expand in the third phase, for example, "extended services and user-interaction entry points"__
 
-计划能力：
+Planned capabilities:
 
-- __在这里写计划新增的服务/功能页面。__
-- __在这里写计划新增的用户交互入口（如反馈、讨论、订阅等），并注意先在 open-decisions 类文档中明确隐私与数据边界。__
-- __在这里写需要补充的合规/说明性内容（隐私说明、服务边界、支持方式等）。__
+- __Describe the planned service or feature pages.__
+- __Describe planned user-interaction entry points such as feedback, discussions, or subscriptions, and first define privacy and data boundaries in the Open Decisions document.__
+- __Describe required compliance or explanatory content, such as a privacy notice, service boundaries, or support options.__
 
-## 非目标
+## Non-goals
 
-> 这是一个通用模式：明确写出“当前明确不做的事情”，用于防止范围蔓延、对齐团队预期。请替换为你项目的实际边界。
+> This is a general pattern: explicitly list what is out of scope now to prevent scope creep and align team expectations. Replace these entries with the actual boundaries of your project.
 
-- __在这里写清楚当前明确不做的事情，避免范围蔓延，例如：不引入登录、支付、评论、复杂后端等。__
-- __在这里写清楚当前不对外承诺的能力，例如：不宣称未上线的产品能力已经交付。__
+- __State clearly what is explicitly out of scope now—for example, no authentication, payments, comments, or complex backend—to prevent scope creep.__
+- __State clearly which capabilities are not currently promised publicly—for example, do not claim that unreleased product capabilities have been delivered.__

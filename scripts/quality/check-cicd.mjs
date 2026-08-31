@@ -1,13 +1,14 @@
-// CI/CD 门禁：零依赖，随 npm run quality 一起跑。
+// Zero-dependency CI/CD gate, included in npm run quality.
 //
-// 分两类校验，作用范围不同：
-// 1. 安全红线 —— 对 .github/workflows 下**所有** workflow 生效（含手写的），
-//    因为 pull_request_target 与错误的 secrets 写法是真实风险，不该因「不是生成的」而放过。
-// 2. 漂移与完整性 —— workflow 用 managed 标记识别；release-please config 按台账存在性
-//    识别并做字节比对；manifest 只校验 key 与 SemVer、不和 bootstrap 值做字节比对。
-//    YAML/JSON 序列化不依赖字体度量，和当前 Archify HTML 一样可做跨机器确定性新鲜度检查。
+// Two check classes have different scopes:
+// 1. Security boundaries apply to every workflow under .github/workflows,
+//    including hand-written files. pull_request_target and malformed secret
+//    references are real risks regardless of generator ownership.
+// 2. Drift and completeness identify workflows by the managed marker, compare
+//    release-please config bytes when the ledger declares it, and validate only
+//    manifest keys and SemVer. YAML/JSON generation is deterministic across machines.
 //
-// 台账不存在时直接跳过并 exit 0（同 check-static-site.mjs 的既有先例）。
+// When the decision ledger is absent, skip with exit 0 as check-static-site.mjs does.
 
 import { existsSync, lstatSync, readFileSync, readdirSync } from "node:fs";
 import { basename, extname, relative, resolve } from "node:path";
@@ -41,15 +42,15 @@ function listWorkflowFiles() {
     directoryStats = lstatSync(WORKFLOW_DIRECTORY);
   } catch (error) {
     if (error.code === "ENOENT") return [];
-    errors.push(`.github/workflows: 无法读取目录状态：${error.message}`);
+    errors.push(`.github/workflows: could not inspect directory status: ${error.message}`);
     return [];
   }
   if (directoryStats.isSymbolicLink()) {
-    errors.push(".github/workflows: 不得是符号链接目录");
+    errors.push(".github/workflows: must not be a symbolic-link directory");
     return [];
   }
   if (!directoryStats.isDirectory()) {
-    errors.push(".github/workflows: 必须是目录");
+    errors.push(".github/workflows: must be a directory");
     return [];
   }
   const paths = [];
@@ -58,9 +59,9 @@ function listWorkflowFiles() {
     const path = resolve(WORKFLOW_DIRECTORY, entry.name);
     const stats = lstatSync(path);
     if (stats.isSymbolicLink()) {
-      errors.push(`.github/workflows/${entry.name}: workflow 不得是符号链接`);
+      errors.push(`.github/workflows/${entry.name}: workflow must not be a symbolic link`);
     } else if (!stats.isFile()) {
-      errors.push(`.github/workflows/${entry.name}: workflow 必须是普通文件`);
+      errors.push(`.github/workflows/${entry.name}: workflow must be a regular file`);
     } else {
       paths.push(path);
     }
@@ -186,7 +187,7 @@ function decodeYamlDoubleQuotedScalars(content) {
     try {
       return decodeYamlDoubleQuotedScalar(token);
     } catch {
-      // 非法转义由 actionlint 报 YAML 语法错；这里保留原文，避免扫描器自造语义。
+      // Let actionlint report invalid YAML escapes; preserve the source text so this scanner does not invent semantics.
       return token;
     }
   });
@@ -213,21 +214,21 @@ function inspectRegularFile(path, shown) {
     stats = lstatSync(path);
   } catch (error) {
     if (error.code === "ENOENT") return { exists: false };
-    errors.push(`${shown}: 无法读取文件状态：${error.message}`);
+    errors.push(`${shown}: could not inspect file status: ${error.message}`);
     return { exists: true, invalid: true };
   }
   if (stats.isSymbolicLink()) {
-    errors.push(`${shown}: 不得是符号链接`);
+    errors.push(`${shown}: must not be a symbolic link`);
     return { exists: true, invalid: true };
   }
   if (!stats.isFile()) {
-    errors.push(`${shown}: 必须是普通文件`);
+    errors.push(`${shown}: must be a regular file`);
     return { exists: true, invalid: true };
   }
   return { exists: true, content: readFileSync(path, "utf8") };
 }
 
-// ---- 第一类：安全红线，对所有 workflow 生效 ----
+// ---- Class 1: security boundaries for every workflow ----
 for (const filePath of listWorkflowFiles()) {
   const shown = repoRelative(filePath);
   const workflowContent = readFileSync(filePath, "utf8");
@@ -260,24 +261,24 @@ for (const filePath of listWorkflowFiles()) {
 
   if (/\bpull_request_target\b/.test(policyText)) {
     errors.push(
-      `${shown}: 禁止 pull_request_target —— 它在 fork PR 上下文里能拿到仓库 secrets`,
+      `${shown}: pull_request_target is forbidden because fork PR code can access repository secrets`,
     );
   }
   if (
     /(?:^|[\s,[\]{}:?-])[&*][^\s,\[\]{}]+/m.test(structuralText)
   ) {
     errors.push(
-      `${shown}: workflow 不允许 YAML alias 或 anchor；零依赖安全扫描无法可靠展开后审计真实结构`,
+      `${shown}: YAML aliases and anchors are not allowed because the zero-dependency security scanner cannot reliably audit their expanded structure`,
     );
   }
   if (/(?:^|[\n{,])\s*\?\s+/m.test(structuralText)) {
     errors.push(
-      `${shown}: workflow 不允许 YAML 显式 mapping key；请使用普通 key，确保安全扫描与 GitHub 语义一致`,
+      `${shown}: explicit YAML mapping keys are not allowed; use ordinary keys so security scanning matches GitHub semantics`,
     );
   }
   if (/(?:^|\n)\s*!{1,2}(?:<[^>]+>|[^\s]+)\s+/m.test(structuralText)) {
     errors.push(
-      `${shown}: workflow 不允许 YAML 显式 tag key；请使用普通 key，避免改写安全关键字段的解析语义`,
+      `${shown}: explicit YAML tag keys are not allowed; use ordinary keys so parsing semantics cannot rewrite security-critical fields`,
     );
   }
   const unquotedTriggerText = triggerText
@@ -285,17 +286,17 @@ for (const filePath of listWorkflowFiles()) {
     .replace(/'(?:[^']|'')*'/g, "");
   if (/\*[^\s,\]}]+/.test(unquotedTriggerText)) {
     errors.push(
-      `${shown}: on 触发器不允许 YAML alias；零依赖安全扫描无法审计别名展开后的真实事件`,
+      `${shown}: the on trigger must not use a YAML alias because the zero-dependency scanner cannot audit expanded events`,
     );
   }
   if (/\$\{\{secrets\./.test(semanticText)) {
     errors.push(
-      `${shown}: secrets 引用要写成 \${{ secrets.NAME }}（花括号内留空格），当前写法会被密钥扫描误判为泄漏`,
+      `${shown}: secret references must use \${{ secrets.NAME }} with spaces inside the braces; the current form is flagged by the secret scanner`,
     );
   }
   if (/\$\{\{\s*secrets\s*\[/.test(semanticText)) {
     errors.push(
-      `${shown}: secrets 不允许 bracket 写法，必须使用可静态登记来源的 \${{ secrets.NAME }}`,
+      `${shown}: bracket notation is not allowed for secrets; use statically auditable \${{ secrets.NAME }}`,
     );
   }
   let unsafeContinueOnError = false;
@@ -315,7 +316,7 @@ for (const filePath of listWorkflowFiles()) {
   }
   if (unsafeContinueOnError) {
     errors.push(
-      `${shown}: continue-on-error 只能省略或显式为 false；true、表达式与别名都可能制造假绿`,
+      `${shown}: continue-on-error must be omitted or explicitly false; true, expressions, and aliases can create false-green results`,
     );
   }
 
@@ -324,25 +325,25 @@ for (const filePath of listWorkflowFiles()) {
     const active = stripYamlComment(line);
     if (active.trim() === "") continue;
     if (/["']\$\{\{\s*secrets\./.test(active)) {
-      errors.push(`${at}: secrets 引用外面不要加引号，当前写法会被密钥扫描误判为泄漏`);
+      errors.push(`${at}: do not quote secret references; the current form is flagged by the secret scanner`);
     }
   }
 }
 
-// ---- 第二类：台账驱动的完整性与漂移 ----
+// ---- Class 2: ledger-driven completeness and drift ----
 const answers = readAnswers();
 
 if (answers === null) {
-  // 台账不存在：还没决定要不要搭 CI/CD，这是合法状态。
-  // 但如果已经有 managed 生成物却没有台账，那是真相源丢失，必须报错。
+  // A missing ledger is valid before the CI/CD decision is made. A managed
+  // artifact without its ledger means the source of truth was lost and must fail.
   const orphans = listWorkflowFiles().filter((path) => readFileSync(path, "utf8").includes(MANAGED_MARKER));
   for (const orphan of orphans) {
-    errors.push(`${repoRelative(orphan)}: 带 managed 标记但找不到 ${ANSWERS_RELATIVE}，真相源丢失，无法校验`);
+    errors.push(`${repoRelative(orphan)}: has a managed marker but ${ANSWERS_RELATIVE} is missing; the source of truth is lost and validation cannot continue`);
   }
   for (const path of [RELEASE_PLEASE_CONFIG_PATH, RELEASE_PLEASE_MANIFEST_PATH]) {
     const snapshot = inspectRegularFile(path, repoRelative(path));
     if (snapshot.exists) {
-      errors.push(`${repoRelative(path)}: 找不到 ${ANSWERS_RELATIVE}，Release 决策真相源缺失`);
+      errors.push(`${repoRelative(path)}: ${ANSWERS_RELATIVE} is missing, so the release decision source of truth is unavailable`);
     }
   }
 } else {
@@ -356,25 +357,25 @@ if (answers === null) {
     errors.push(`${ANSWERS_RELATIVE}: ${error}`);
   }
 
-  // 声明的每个 workflow 都要真的存在，且内容与重新渲染的结果逐字节一致。
+  // Every declared workflow must exist and match a fresh rendering byte for byte.
   for (const [file, expected] of files) {
     const target = resolve(WORKFLOW_DIRECTORY, file);
     const snapshot = inspectRegularFile(target, `.github/workflows/${file}`);
     if (!snapshot.exists) {
-      errors.push(`.github/workflows/${file}: 台账声明了但文件不存在，跑 npm run gen:cicd 生成`);
+      errors.push(`.github/workflows/${file}: declared in the ledger but missing; run npm run gen:cicd`);
       continue;
     }
     if (!snapshot.invalid && snapshot.content !== expected) {
-      errors.push(`.github/workflows/${file}: 与台账重新渲染的结果不一致（手工改过或台账已变），跑 npm run gen:cicd 重新生成`);
+      errors.push(`.github/workflows/${file}: differs from a fresh ledger rendering; run npm run gen:cicd to regenerate it`);
     }
   }
 
-  // 生成物不能多出台账里没声明的 managed 文件（改名/删条目后的残留）。
+  // Managed artifacts not declared in the ledger are stale leftovers from renamed or removed entries.
   for (const filePath of listWorkflowFiles()) {
     const name = basename(filePath);
     if (files.has(name)) continue;
     if (readFileSync(filePath, "utf8").includes(MANAGED_MARKER)) {
-      errors.push(`${repoRelative(filePath)}: 带 managed 标记但台账里已无对应条目，属于残留，请删除或补回台账`);
+      errors.push(`${repoRelative(filePath)}: has a managed marker but no ledger entry; remove the stale artifact or restore the entry`);
     }
   }
 
@@ -384,12 +385,12 @@ if (answers === null) {
       RELEASE_PLEASE_CONFIG_NAME,
     );
     if (!configSnapshot.exists) {
-      errors.push(`${RELEASE_PLEASE_CONFIG_NAME}: 已启用 releasePlease 但配置文件不存在，跑 npm run gen:cicd 生成`);
+      errors.push(`${RELEASE_PLEASE_CONFIG_NAME}: releasePlease is enabled but the config is missing; run npm run gen:cicd`);
     } else if (
       !configSnapshot.invalid &&
       configSnapshot.content !== releasePlease.configJson
     ) {
-      errors.push(`${RELEASE_PLEASE_CONFIG_NAME}: 与台账确定性渲染结果不一致，跑 npm run gen:cicd 重新生成`);
+      errors.push(`${RELEASE_PLEASE_CONFIG_NAME}: differs from the deterministic ledger rendering; run npm run gen:cicd`);
     }
 
     const manifestSnapshot = inspectRegularFile(
@@ -407,8 +408,8 @@ if (answers === null) {
       ).exists;
       errors.push(
         configSnapshot.exists || releaseWorkflowExists
-          ? `${RELEASE_PLEASE_MANIFEST_NAME}: config 或 release workflow 已存在但 manifest 缺失，属于运行状态丢失；请从 Git/Release PR 恢复`
-          : `${RELEASE_PLEASE_MANIFEST_NAME}: 首次启用 releasePlease 但 manifest 尚未初始化，跑 npm run gen:cicd`,
+          ? `${RELEASE_PLEASE_MANIFEST_NAME}: config or a release workflow exists but the manifest is missing, indicating lost runtime state; restore it from Git or a Release PR`
+          : `${RELEASE_PLEASE_MANIFEST_NAME}: releasePlease is enabled for the first time but the manifest is not initialized; run npm run gen:cicd`,
       );
     } else if (!manifestSnapshot.invalid) {
       try {
@@ -418,54 +419,54 @@ if (answers === null) {
           ...validateReleasePleaseVersionSources(releasePlease, manifest),
         );
       } catch (error) {
-        errors.push(`${RELEASE_PLEASE_MANIFEST_NAME}: JSON 解析失败：${error.message}`);
+        errors.push(`${RELEASE_PLEASE_MANIFEST_NAME}: failed to parse JSON: ${error.message}`);
       }
     }
   } else {
     for (const path of [RELEASE_PLEASE_CONFIG_PATH, RELEASE_PLEASE_MANIFEST_PATH]) {
       if (inspectRegularFile(path, repoRelative(path)).exists) {
-        errors.push(`${repoRelative(path)}: 台账未启用 releasePlease，属于残留配置，请删除或补回台账`);
+        errors.push(`${repoRelative(path)}: releasePlease is disabled in the ledger; remove this stale config or restore the ledger entry`);
       }
     }
   }
 
-  // workflow 里引用到的每个 secret 都要在台账里登记来源，避免「配了没人知道从哪来」。
+  // Every referenced secret must record its provenance in the ledger.
   const declared = new Set();
   if (answers.secrets !== undefined && !Array.isArray(answers.secrets)) {
-    errors.push(`${ANSWERS_RELATIVE}: secrets 必须是数组`);
+    errors.push(`${ANSWERS_RELATIVE}: secrets must be an array`);
   }
   if (Array.isArray(answers.secrets)) {
     for (const [index, item] of answers.secrets.entries()) {
       if (typeof item?.name !== "string" || !/^[A-Za-z_][A-Za-z0-9_]*$/.test(item.name)) {
-        errors.push(`${ANSWERS_RELATIVE}: secrets[${index}].name 不是合法的 GitHub Actions secret 名`);
+        errors.push(`${ANSWERS_RELATIVE}: secrets[${index}].name is not a valid GitHub Actions secret name`);
         continue;
       }
       if (declared.has(item.name)) {
-        errors.push(`${ANSWERS_RELATIVE}: secret \`${item.name}\` 重复登记`);
+        errors.push(`${ANSWERS_RELATIVE}: secret \`${item.name}\` is registered more than once`);
       }
       declared.add(item.name);
       if (typeof item.source !== "string" || item.source.trim() === "") {
-        errors.push(`${ANSWERS_RELATIVE}: secret \`${item.name}\` 必须登记非空 source`);
+        errors.push(`${ANSWERS_RELATIVE}: secret \`${item.name}\` must register a non-empty source`);
       }
     }
   }
   for (const name of new Set([...secretNames, ...referencedWorkflowSecrets])) {
     if (!declared.has(name)) {
-      errors.push(`${ANSWERS_RELATIVE}: workflow 引用了 secret \`${name}\`，但 secrets 清单里没有登记它的来源`);
+      errors.push(`${ANSWERS_RELATIVE}: workflow references secret \`${name}\`, but its source is not registered in the secrets inventory`);
     }
   }
 
-  // 每个部署目标都要写明回滚方式；包发布这类不可回滚的也必须显式写出来，不允许留空。
+  // Every deployment target must state its rollback method. Irreversible package publication must say so explicitly.
   if (answers.targets !== undefined && !Array.isArray(answers.targets)) {
-    errors.push(`${ANSWERS_RELATIVE}: targets 必须是数组`);
+    errors.push(`${ANSWERS_RELATIVE}: targets must be an array`);
   } else if (Array.isArray(answers.targets)) {
     for (const target of answers.targets) {
       if (typeof target?.kind !== "string") {
-        errors.push(`${ANSWERS_RELATIVE}: targets 里存在缺少 kind 的条目`);
+        errors.push(`${ANSWERS_RELATIVE}: a targets entry is missing kind`);
         continue;
       }
       if (typeof target.rollback !== "string" || target.rollback.trim() === "") {
-        errors.push(`${ANSWERS_RELATIVE}: 部署目标 \`${target.kind}\` 没有写回滚方式（不可回滚的目标也要写明「不可回滚，只能发新版本」）`);
+        errors.push(`${ANSWERS_RELATIVE}: deployment target \`${target.kind}\` has no rollback method; irreversible targets must explicitly state that only a new version can recover`);
       }
     }
   }

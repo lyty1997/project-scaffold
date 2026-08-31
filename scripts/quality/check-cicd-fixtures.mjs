@@ -1,5 +1,6 @@
-// CI/CD 渲染器的持久化回归夹具。
-// 不引入项目测试框架；作为 check:cicd 的一部分验证第二增量的确定性与失败边界。
+// Persistent regression fixtures for the CI/CD renderer. They run within
+// check:cicd without introducing a project test framework and verify deterministic
+// output plus failure boundaries for the current increment.
 
 import assert from "node:assert/strict";
 import {
@@ -38,9 +39,9 @@ function renderedFixture(name) {
   const first = renderAll(answers);
   const second = renderAll(answers);
 
-  assert.deepEqual(first.errors, [], `${name} 应可渲染：${first.errors.join("; ")}`);
-  assert.deepEqual(first, second, `${name} 重复渲染必须完全一致`);
-  assert.ok(first.releasePlease, `${name} 应生成 releasePlease 产物`);
+  assert.deepEqual(first.errors, [], `${name} should render: ${first.errors.join("; ")}`);
+  assert.deepEqual(first, second, `${name} must render identically on repeated runs`);
+  assert.ok(first.releasePlease, `${name} should produce releasePlease artifacts`);
   assert.equal(first.files.size, 1);
 
   const workflow = first.files.get("release-please.yml");
@@ -63,7 +64,7 @@ const deployWorkflow = deployFixture.files.get("deploy-dry-run.yml");
 assert.match(
   deployWorkflow,
   /github\.event_name != 'pull_request' && \(github\.event_name != 'workflow_dispatch' \|\| !inputs\.dry_run\)/,
-  "布尔型 dry_run 必须直接做布尔判断，不能与字符串 'true' 比较",
+  "Boolean dry_run must be tested directly rather than compared with the string 'true'",
 );
 const shouldDeploy = (eventName, dryRun) =>
   eventName !== "pull_request" &&
@@ -77,18 +78,18 @@ const stringDeployStep = structuredClone(deployFixtureAnswers);
 stringDeployStep.workflows[0].jobs[0].steps[0].deployStep = "true";
 assert.ok(
   renderAll(stringDeployStep).errors.some((error) =>
-    error.includes("deployStep: 必须是布尔值"),
+    error.includes("deployStep: must be a boolean"),
   ),
-  "deployStep 字符串不得绕过默认 dry_run 闸门",
+  "A string deployStep must not bypass the default dry_run guard",
 );
 
 const missingDeployStep = structuredClone(deployFixtureAnswers);
 delete missingDeployStep.workflows[0].jobs[0].steps[0].deployStep;
 assert.ok(
   renderAll(missingDeployStep).errors.some((error) =>
-    error.includes("至少要有一个 deployStep: true"),
+    error.includes("requires at least one deployStep: true"),
   ),
-  "kind: deploy 必须至少有一个受 dry_run 保护的真实发布步骤",
+  "kind: deploy must contain at least one real publication step protected by dry_run",
 );
 
 const unclassifiedPublishStep = structuredClone(deployFixtureAnswers);
@@ -99,16 +100,16 @@ unclassifiedPublishStep.workflows[0].jobs[0].steps.push({
 const unclassifiedPublish = renderAll(unclassifiedPublishStep);
 assert.ok(
   unclassifiedPublish.errors.some((error) =>
-    error.includes("每个 step 都必须显式写 true"),
+    error.includes("every step in a kind: deploy workflow must explicitly be true"),
   ),
-  "已有受保护步骤不能替未分类的新发布步骤充当 dry_run 哨兵",
+  "An existing protected step must not classify a new publication step by proxy",
 );
 assert.equal(
   unclassifiedPublish.files
     .get("deploy-dry-run.yml")
     .match(/!inputs\.dry_run/g)?.length,
   2,
-  "即使调用方错误忽略校验结果，未分类步骤也要按真实发布做安全默认 guard",
+  "An unclassified step must receive a safe publication guard even if a caller ignores validation errors",
 );
 
 assert.match(nodeFixture.rendered.releasePlease.configJson, /"release-type": "node"/);
@@ -120,22 +121,22 @@ assert.match(
 assert.match(nodeFixture.workflow, /managed-config-sha256: [0-9a-f]{64}/);
 assert.match(
   nodeFixture.rendered.releasePlease.configJson,
-  /chore\$\{scope\}: release\$\{component\} \$\{version\} \/ 发布/,
-  "Release PR 标题必须保持仓库的中英双语提交结构",
+  /chore\$\{scope\}: release\$\{component\} \$\{version\}/,
+  "Release PR titles must use the repository's English commit subject structure",
 );
 
 assert.deepEqual(
   validateReleasePleaseManifest(nodeFixture.rendered.releasePlease, { ".": "1.2.3" }),
   [],
-  "Release PR 更新后的 manifest 版本必须被接受，不能要求等于 bootstrap 版本",
+  "Manifest versions advanced by a Release PR must be accepted rather than forced back to the bootstrap version",
 );
 assert.ok(
   validateReleasePleaseManifest(nodeFixture.rendered.releasePlease, { ".": "not-semver" }).length > 0,
-  "非法 SemVer 必须失败",
+  "Invalid SemVer must fail",
 );
 assert.ok(
   validateReleasePleaseManifest(nodeFixture.rendered.releasePlease, { other: "1.2.3" }).length > 0,
-  "manifest 与 config package key 漂移必须失败",
+  "Drift between manifest and config package keys must fail",
 );
 
 const duplicateWorkflow = structuredClone(nodeFixture.answers);
@@ -153,82 +154,82 @@ duplicateWorkflow.workflows.push({
   ],
 });
 assert.ok(
-  renderAll(duplicateWorkflow).errors.some((error) => error.includes("与另一 workflow 重复")),
-  "Release workflow 文件名冲突必须失败",
+  renderAll(duplicateWorkflow).errors.some((error) => error.includes("duplicates another workflow")),
+  "A conflicting release workflow filename must fail",
 );
 
 const invalidVersion = structuredClone(nodeFixture.answers);
 invalidVersion.releasePlease.initialManifest["."] = "01.2.3";
 assert.ok(
-  renderAll(invalidVersion).errors.some((error) => error.includes("合法 SemVer")),
-  "bootstrap 版本不是 SemVer 时必须失败",
+  renderAll(invalidVersion).errors.some((error) => error.includes("valid SemVer")),
+  "A bootstrap version that is not SemVer must fail",
 );
 
 const invalidPrereleaseVersion = structuredClone(nodeFixture.answers);
 invalidPrereleaseVersion.releasePlease.initialManifest["."] = "1.2.3-01";
 assert.ok(
   renderAll(invalidPrereleaseVersion).errors.some((error) =>
-    error.includes("合法 SemVer"),
+    error.includes("valid SemVer"),
   ),
-  "SemVer 数字预发布标识不得带前导零",
+  "Numeric SemVer prerelease identifiers must not have leading zeroes",
 );
 
 const missingReleaseType = structuredClone(nodeFixture.answers);
 delete missingReleaseType.releasePlease.config["release-type"];
 assert.ok(
   renderAll(missingReleaseType).errors.some((error) => error.includes("release-type")),
-  "release type 未确认时必须失败，不能由生成器猜",
+  "An unconfirmed release type must fail instead of being guessed by the generator",
 );
 
 const unknownReleaseType = structuredClone(nodeFixture.answers);
 unknownReleaseType.releasePlease.config["release-type"] = "unknown";
 assert.ok(
   renderAll(unknownReleaseType).errors.some((error) =>
-    error.includes("只支持 node 或 simple"),
+    error.includes("supports only node or simple"),
   ),
-  "未建立版本源映射的 release type 必须失败，不能生成一套表面合法的配置",
+  "A release type without a version-source mapping must fail rather than producing superficially valid configuration",
 );
 
 const missingTagDecision = structuredClone(nodeFixture.answers);
 delete missingTagDecision.releasePlease.config["include-v-in-tag"];
 assert.ok(
-  renderAll(missingTagDecision).errors.some((error) => error.includes("不能猜 tag 规则")),
-  "tag 规则未确认时必须失败",
+  renderAll(missingTagDecision).errors.some((error) => error.includes("tag rules cannot be inferred")),
+  "Unconfirmed tag rules must fail",
 );
 
 const invalidBranch = structuredClone(nodeFixture.answers);
 invalidBranch.releasePlease.targetBranch = "main/";
 assert.ok(
   renderAll(invalidBranch).errors.some((error) =>
-    error.includes("合法的 Git 分支名"),
+    error.includes("valid Git branch name"),
   ),
-  "Git 不接受的分支名必须在生成前失败",
+  "A branch name rejected by Git must fail before generation",
 );
 const reservedBranch = structuredClone(nodeFixture.answers);
 reservedBranch.releasePlease.targetBranch = "HEAD";
 assert.ok(
   renderAll(reservedBranch).errors.some((error) =>
-    error.includes("合法的 Git 分支名"),
+    error.includes("valid Git branch name"),
   ),
-  "Git 保留名 HEAD 不能作为目标分支",
+  "The reserved Git name HEAD must not be a target branch",
 );
 
 const invalidSkipPullRequest = structuredClone(nodeFixture.answers);
 invalidSkipPullRequest.releasePlease.config["skip-github-pull-request"] = false;
 assert.ok(
   renderAll(invalidSkipPullRequest).errors.some((error) =>
-    error.includes("不是 manifest config 字段"),
+    error.includes("is not a manifest config field"),
   ),
-  "Action input 不得混入 manifest config",
+  "An Action input must not be mixed into manifest config",
 );
 
 const invalidSkipRelease = structuredClone(nodeFixture.answers);
 invalidSkipRelease.releasePlease.config["skip-github-release"] = "false";
 assert.ok(
   renderAll(invalidSkipRelease).errors.some((error) =>
-    error.includes("必须是布尔值"),
+    error.includes("must be a boolean"),
   ),
-  "skip-github-release 不得靠字符串伪装布尔值",
+  "skip-github-release must not masquerade as a boolean through a string",
 );
 
 const maskedRootReleaseType = structuredClone(nodeFixture.answers);
@@ -236,9 +237,9 @@ maskedRootReleaseType.releasePlease.config["release-type"] = 42;
 maskedRootReleaseType.releasePlease.config.packages["."]["release-type"] = "node";
 assert.ok(
   renderAll(maskedRootReleaseType).errors.some((error) =>
-    error.includes("releasePlease.config.release-type 必须是非空字符串"),
+    error.includes("releasePlease.config.release-type must be a non-empty string"),
   ),
-  "package override 不得掩盖根级 release-type 的 schema 类型错误",
+  "A package override must not hide a root release-type schema error",
 );
 
 const maskedRootSkipRelease = structuredClone(nodeFixture.answers);
@@ -247,9 +248,9 @@ maskedRootSkipRelease.releasePlease.config.packages["."]["skip-github-release"] 
   false;
 assert.ok(
   renderAll(maskedRootSkipRelease).errors.some((error) =>
-    error.includes("releasePlease.config.skip-github-release 必须是布尔值"),
+    error.includes("releasePlease.config.skip-github-release must be a boolean"),
   ),
-  "package override 不得掩盖根级 skip-github-release 的 schema 类型错误",
+  "A package override must not hide a root skip-github-release schema error",
 );
 
 const maskedRootExtraFiles = structuredClone(nodeFixture.answers);
@@ -257,9 +258,9 @@ maskedRootExtraFiles.releasePlease.config["extra-files"] = 42;
 maskedRootExtraFiles.releasePlease.config.packages["."]["extra-files"] = [];
 assert.ok(
   renderAll(maskedRootExtraFiles).errors.some((error) =>
-    error.includes("releasePlease.config.extra-files 必须是数组"),
+    error.includes("releasePlease.config.extra-files must be an array"),
   ),
-  "package override 不得掩盖根级 extra-files 的 schema 类型错误",
+  "A package override must not hide a root extra-files schema error",
 );
 
 const maskedInvalidRootExtraItem = structuredClone(nodeFixture.answers);
@@ -267,9 +268,9 @@ maskedInvalidRootExtraItem.releasePlease.config["extra-files"] = [42];
 maskedInvalidRootExtraItem.releasePlease.config.packages["."]["extra-files"] = [];
 assert.ok(
   renderAll(maskedInvalidRootExtraItem).errors.some((error) =>
-    error.includes("必须是路径字符串或带 type/path 的对象"),
+    error.includes("must be a path string or an object with type/path"),
   ),
-  "package override 不得掩盖根级 extra-files 元素的深层 schema 错误",
+  "A package override must not hide a nested root extra-files schema error",
 );
 
 const maskedInvalidRootVersionFile = structuredClone(simpleFixture.answers);
@@ -277,18 +278,18 @@ maskedInvalidRootVersionFile.releasePlease.config["version-file"] =
   "../outside";
 assert.ok(
   renderAll(maskedInvalidRootVersionFile).errors.some((error) =>
-    error.includes("package 目录内的规范化相对文件路径"),
+    error.includes("normalized relative file path within the package directory"),
   ),
-  "package override 不得掩盖根级 version-file 的越界路径",
+  "A package override must not hide an out-of-bounds root version-file path",
 );
 
 const unknownConfigField = structuredClone(nodeFixture.answers);
 unknownConfigField.releasePlease.config.nonsense = true;
 assert.ok(
   renderAll(unknownConfigField).errors.some((error) =>
-    error.includes("不能未经校验原样透传"),
+    error.includes("cannot pass through without validation"),
   ),
-  "官方 schema 不认识的 config 字段必须在本地失败",
+  "A config field unknown to the official schema must fail locally",
 );
 
 const packageTagOverride = structuredClone(nodeFixture.answers);
@@ -296,18 +297,18 @@ packageTagOverride.releasePlease.config.packages["."]["include-v-in-tag"] =
   "false";
 assert.ok(
   renderAll(packageTagOverride).errors.some((error) =>
-    error.includes("未支持该 package 字段"),
+    error.includes("package field is unsupported"),
   ),
-  "package 级字段不得绕过全局 tag 布尔约束",
+  "A package-level field must not bypass global tag boolean constraints",
 );
 
 const duplicateVersionSource = structuredClone(nodeFixture.answers);
 duplicateVersionSource.releasePlease.versionSources["."].push("package.json");
 assert.ok(
   renderAll(duplicateVersionSource).errors.some((error) =>
-    error.includes("重复登记"),
+    error.includes("registered more than once"),
   ),
-  "版本源重复登记必须失败",
+  "Duplicate version-source registration must fail",
 );
 
 const secretCredential = structuredClone(nodeFixture.answers);
@@ -318,7 +319,7 @@ secretCredential.releasePlease.credential = {
 assert.deepEqual(
   renderAll(secretCredential).secretNames,
   ["RELEASE_PLEASE_TOKEN"],
-  "自定义 token secret 必须进入来源登记校验链",
+  "A custom token secret must enter provenance validation",
 );
 
 const transactionRoot = mkdtempSync(
@@ -357,14 +358,14 @@ try {
           },
         },
       ),
-    /事务写入失败/,
+    /Transactional artifact write failed/,
   );
   assert.equal(readFileSync(firstPath, "utf8"), "first-old\n");
   assert.equal(readFileSync(secondPath, "utf8"), "second-old\n");
   assert.deepEqual(
     readdirSync(transactionRoot).sort(),
     ["first.yml", "second.json"],
-    "事务失败后不得留下 stage/backup 文件",
+    "A failed transaction must not leave stage or backup files",
   );
 } finally {
   rmSync(transactionRoot, { recursive: true, force: true });
@@ -398,7 +399,7 @@ try {
     workflowPath,
     [
       "name: Safe",
-      "# pull_request_target 只在注释中提及，不应改变语义",
+      "# Mentioning pull_request_target in a comment must not change semantics",
       "on: [push]",
       "jobs:",
       "  check:",
@@ -417,7 +418,7 @@ try {
   assert.equal(
     safePolicies.status,
     0,
-    `注释、显式 false 与 block scalar 普通文本不得触发全局 workflow 红线：${safePolicies.error?.message ?? safePolicies.stderr ?? safePolicies.stdout}`,
+    `Comments, explicit false values, and ordinary block-scalar text must not trigger global workflow boundaries: ${safePolicies.error?.message ?? safePolicies.stderr ?? safePolicies.stdout}`,
   );
 
   writeFileSync(
@@ -437,17 +438,22 @@ try {
     "utf8",
   );
   const unsafeLiteral = runSafetyCheck();
+  const unsafeLiteralOutput = [
+    unsafeLiteral.stdout,
+    unsafeLiteral.stderr,
+    unsafeLiteral.error?.message,
+  ].filter(Boolean).join("\n");
   assert.equal(
     unsafeLiteral.status,
     1,
-    "flow-style pull_request_target 与带注释 true 必须被全局红线拦截",
+    "Flow-style pull_request_target and commented true values must be blocked by global policy",
   );
   assert.match(
-    `${unsafeLiteral.stdout}${unsafeLiteral.stderr}`,
+    unsafeLiteralOutput,
     /pull_request_target/,
   );
   assert.match(
-    `${unsafeLiteral.stdout}${unsafeLiteral.stderr}`,
+    unsafeLiteralOutput,
     /continue-on-error/,
   );
 
@@ -483,7 +489,7 @@ try {
   assert.equal(
     unsafeEncoded.status,
     1,
-    "跨行 True 与 Unicode 转义 trigger 必须被全局红线拦截",
+    "Multiline True and Unicode-escaped triggers must be blocked by global policy",
   );
   assert.match(
     `${unsafeEncoded.stdout}${unsafeEncoded.stderr}`,
@@ -495,7 +501,7 @@ try {
   );
   assert.match(
     `${unsafeEncoded.stdout}${unsafeEncoded.stderr}`,
-    /secrets 引用/,
+    /secret references/,
   );
 
   writeFileSync(
@@ -519,7 +525,7 @@ try {
   assert.equal(
     unsafeBlockTrigger.status,
     1,
-    "on 区域的 block scalar 不得隐藏 pull_request_target",
+    "A block scalar in the on section must not hide pull_request_target",
   );
   assert.match(
     `${unsafeBlockTrigger.stdout}${unsafeBlockTrigger.stderr}`,
@@ -548,11 +554,11 @@ try {
   assert.equal(
     unsafeExplicitTrigger.status,
     1,
-    "YAML 显式 mapping key 不得隐藏 on trigger",
+    "An explicit YAML mapping key must not hide an on trigger",
   );
   assert.match(
     `${unsafeExplicitTrigger.stdout}${unsafeExplicitTrigger.stderr}`,
-    /不允许 YAML 显式 mapping key/,
+    /explicit YAML mapping keys are not allowed/,
   );
 
   writeFileSync(
@@ -576,11 +582,11 @@ try {
   assert.equal(
     unsafeTaggedTrigger.status,
     1,
-    "YAML 显式 tag 不得改写 on key 后隐藏 trigger",
+    "An explicit YAML tag must not rewrite the on key and hide a trigger",
   );
   assert.match(
     `${unsafeTaggedTrigger.stdout}${unsafeTaggedTrigger.stderr}`,
-    /不允许 YAML 显式 tag key/,
+    /explicit YAML tag keys are not allowed/,
   );
 
   writeFileSync(
@@ -603,11 +609,11 @@ try {
   assert.equal(
     unsafeAliasTrigger.status,
     1,
-    "on 区域不得通过 YAML alias 引用无法静态审计的 trigger",
+    "The on section must not reference a trigger through an unauditable YAML alias",
   );
   assert.match(
     `${unsafeAliasTrigger.stdout}${unsafeAliasTrigger.stderr}`,
-    /不允许 YAML alias/,
+    /YAML aliases and anchors are not allowed/,
   );
 
   writeFileSync(
@@ -631,11 +637,11 @@ try {
   assert.equal(
     unsafeAliasKey.status,
     1,
-    "YAML alias 作为顶层 on key 时也必须失败",
+    "A YAML alias used as the top-level on key must also fail",
   );
   assert.match(
     `${unsafeAliasKey.stdout}${unsafeAliasKey.stderr}`,
-    /不允许 YAML alias/,
+    /YAML aliases and anchors are not allowed/,
   );
 
   if (process.platform !== "win32") {
@@ -657,8 +663,8 @@ try {
   rmSync(safetyRoot, { recursive: true, force: true });
 }
 
-// 真实执行写盘入口，固定 manifest 的生命周期所有权：
-// bootstrap 时初始化；已有合法状态必须保留；非法状态必须在任何产物写入前失败。
+// Exercise the real write entry point and manifest lifecycle ownership: initialize
+// at bootstrap, preserve valid existing state, and reject invalid state before writing any artifact.
 const lifecycleRoot = mkdtempSync(join(tmpdir(), "project-scaffold-release-lifecycle-"));
 try {
   for (const directory of [
@@ -703,7 +709,7 @@ try {
   assert.equal(
     bootstrap.status,
     0,
-    `bootstrap 写盘应成功：\n${bootstrap.stderr || bootstrap.stdout}`,
+    `Bootstrap writes should succeed:\n${bootstrap.stderr || bootstrap.stdout}`,
   );
   assert.deepEqual(JSON.parse(readFileSync(manifestPath, "utf8")), { ".": "0.1.0" });
 
@@ -718,28 +724,28 @@ try {
   assert.equal(
     rerun.status,
     0,
-    `已有 manifest 时重跑应成功：\n${rerun.stderr || rerun.stdout}`,
+    `A rerun with an existing manifest should succeed:\n${rerun.stderr || rerun.stdout}`,
   );
   assert.deepEqual(
     JSON.parse(readFileSync(manifestPath, "utf8")),
     advancedManifest,
-    "重跑生成器不得把 Release PR 已推进的 manifest 重置到 bootstrap 版本",
+    "Rerunning the generator must not reset a manifest advanced by a Release PR to its bootstrap version",
   );
   assert.equal(
     readFileSync(configPath, "utf8"),
     simpleFixture.rendered.releasePlease.configJson,
-    "config 仍应按台账确定性生成",
+    "Config must remain a deterministic rendering of the ledger",
   );
 
   const managedWorkflow = readFileSync(workflowPath, "utf8");
   writeFileSync(configPath, "sentinel\n", "utf8");
   const unownedConfig = runRenderer();
-  assert.equal(unownedConfig.status, 1, "无法证明归属的 config 必须拒绝覆盖");
+  assert.equal(unownedConfig.status, 1, "A config with unproven ownership must not be overwritten");
   assert.equal(readFileSync(configPath, "utf8"), "sentinel\n");
   assert.equal(
     readFileSync(workflowPath, "utf8"),
     managedWorkflow,
-    "config 所有权预检失败时不得先改 workflow",
+    "A config ownership preflight failure must occur before workflow modification",
   );
   writeFileSync(
     configPath,
@@ -749,11 +755,11 @@ try {
 
   writeFileSync(manifestPath, '{".":"not-semver"}\n', "utf8");
   const rejected = runRenderer();
-  assert.equal(rejected.status, 1, "非法 manifest 必须使写盘入口失败");
+  assert.equal(rejected.status, 1, "An invalid manifest must fail the write entry point");
   assert.equal(
     readFileSync(configPath, "utf8"),
     simpleFixture.rendered.releasePlease.configJson,
-    "manifest 校验失败时不得先覆盖其他产物",
+    "Manifest validation must fail before other artifacts are overwritten",
   );
 
   writeFileSync(
@@ -763,7 +769,7 @@ try {
   );
   rmSync(manifestPath);
   const lostManifest = runRenderer();
-  assert.equal(lostManifest.status, 1, "运行状态丢失时不得用 bootstrap 值重建 manifest");
+  assert.equal(lostManifest.status, 1, "Lost runtime state must not be rebuilt from bootstrap values");
   assert.equal(existsSync(manifestPath), false);
   writeFileSync(
     manifestPath,
@@ -777,7 +783,7 @@ try {
   );
   writeFileSync(staleWorkflowPath, managedWorkflow, "utf8");
   const stale = runRenderer();
-  assert.equal(stale.status, 1, "台账移除后的 managed workflow 不得静默残留");
+  assert.equal(stale.status, 1, "A managed workflow removed from the ledger must not remain silently");
   assert.equal(readFileSync(workflowPath, "utf8"), managedWorkflow);
   rmSync(staleWorkflowPath);
 
@@ -790,11 +796,11 @@ try {
       rmSync(manifestPath);
       symlinkSync(outsideManifest, manifestPath);
       const linkedManifest = runRenderer();
-      assert.equal(linkedManifest.status, 1, "manifest 符号链接必须在写盘前失败");
+      assert.equal(linkedManifest.status, 1, "A manifest symbolic link must fail before writes begin");
       assert.equal(
         existsSync(outsideManifest),
         false,
-        "dangling symlink 的仓库外目标不得被创建",
+        "The external target of a dangling symbolic link must not be created",
       );
       rmSync(manifestPath);
       writeFileSync(
@@ -810,7 +816,7 @@ try {
   const manualWorkflow = "name: Manual workflow\n";
   writeFileSync(workflowPath, manualWorkflow, "utf8");
   const collision = runRenderer();
-  assert.equal(collision.status, 1, "同名手写 workflow 必须拒绝覆盖");
+  assert.equal(collision.status, 1, "A hand-written workflow with the same name must not be overwritten");
   assert.equal(readFileSync(workflowPath, "utf8"), manualWorkflow);
 } finally {
   rmSync(lifecycleRoot, { recursive: true, force: true });
@@ -831,8 +837,8 @@ const duplicateJob = {
   ],
 };
 assert.ok(
-  renderAll(duplicateJob).errors.some((error) => error.includes("job id `check` 重复")),
-  "重复 job id 不能被对象覆盖后静默通过",
+  renderAll(duplicateJob).errors.some((error) => error.includes("job id `check` is duplicated")),
+  "A duplicate job id must not be hidden by object-key replacement",
 );
 
 const ambiguousStep = {
@@ -858,9 +864,9 @@ const ambiguousStep = {
 };
 assert.ok(
   renderAll(ambiguousStep).errors.some((error) =>
-    error.includes("必须且只能声明 uses 或 run"),
+    error.includes("exactly one of uses or run must be declared"),
   ),
-  "同时声明 uses 与 run 的 step 必须在生成前失败",
+  "A step declaring both uses and run must fail before generation",
 );
 
 const dynamicContinueOnError = structuredClone(ambiguousStep);
@@ -872,9 +878,9 @@ dynamicContinueOnError.workflows[0].jobs[0].steps = [
 ];
 assert.ok(
   renderAll(dynamicContinueOnError).errors.some((error) =>
-    error.includes("continue-on-error 只能省略或显式为 false"),
+    error.includes("continue-on-error must be omitted or explicitly false"),
   ),
-  "动态 continue-on-error 可能产生假绿，必须在生成前失败",
+  "Dynamic continue-on-error can create false-green results and must fail before generation",
 );
 
 const duplicateStepId = {
@@ -898,9 +904,9 @@ const duplicateStepId = {
 };
 assert.ok(
   renderAll(duplicateStepId).errors.some((error) =>
-    error.includes("同一 job 内重复"),
+    error.includes("duplicated within the same job"),
   ),
-  "重复 step id 必须在生成前失败",
+  "A duplicate step id must fail before generation",
 );
 
 const nullStep = {
@@ -915,8 +921,8 @@ const nullStep = {
   ],
 };
 assert.ok(
-  renderAll(nullStep).errors.some((error) => error.includes("step 必须是对象")),
-  "空 step 应产生结构化错误，不能让 YAML 序列化器抛 TypeError",
+  renderAll(nullStep).errors.some((error) => error.includes("step must be an object")),
+  "A null step must produce a structured error rather than a YAML serializer TypeError",
 );
 
 const jobSecret = {
@@ -943,7 +949,7 @@ const jobSecret = {
 assert.deepEqual(
   renderAll(jobSecret).secretNames,
   ["JOB_TOKEN"],
-  "job-level env 的 secret 也必须进入来源登记",
+  "A secret in job-level env must also enter provenance registration",
 );
 const bracketReferenceCase = structuredClone(jobSecret);
 bracketReferenceCase.workflows[0].jobs[0].env.VALUE = [
@@ -954,9 +960,9 @@ bracketReferenceCase.workflows[0].jobs[0].env.VALUE = [
 ].join("");
 assert.ok(
   renderAll(bracketReferenceCase).errors.some((error) =>
-    error.includes("不允许 bracket 写法"),
+    error.includes("bracket notation is not allowed"),
   ),
-  "无法静态登记来源的 bracket secret 写法必须失败",
+  "Bracket secret notation with no statically auditable provenance must fail",
 );
 
 console.log("CI/CD fixture checks passed.");

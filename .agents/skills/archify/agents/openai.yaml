@@ -1,4 +1,4 @@
 interface:
   display_name: "Archify"
-  short_description: "生成并验证架构、流程、时序、数据流与生命周期交互图"
+  short_description: "Create and validate interactive architecture, workflow, sequence, data-flow, and lifecycle diagrams"
   default_prompt: "Use $archify to create and validate an interactive diagram from the repository facts."

@@ -13,7 +13,7 @@ function Link(link)
 
   local attributes = {
     { "data-original-href", link.target },
-    { "title", "仓库内链接（便携版不跳转）：" .. link.target },
+    { "title", "Repository-local link (not navigable in the portable copy): " .. link.target },
   }
   return pandoc.Span(
     link.content,

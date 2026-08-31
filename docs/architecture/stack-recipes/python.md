@@ -1,8 +1,10 @@
-# Python 技术栈参考配方
+# Python Technology Stack Reference Recipe
 
-可选，仅在 [待决策问题](../open-decisions.md) 确定后端语言选 Python 后才需要落地。规则依据见 [`.claude/rules/python-coding-rules.md`](../../../.claude/rules/python-coding-rules.md)。
+English | [Chinese](python-zh.md)
 
-## `pyproject.toml`：ruff + mypy + pytest
+Optional. Apply this recipe only after [Open Decisions](../open-decisions.md) selects Python as the backend language. See [`.claude/rules/python-coding-rules.md`](../../../.claude/rules/python-coding-rules.md) for the governing rules.
+
+## `pyproject.toml`: ruff + mypy + pytest
 
 ```toml
 [tool.ruff]
@@ -10,24 +12,26 @@ target-version = "py312"
 line-length = 100
 
 [tool.ruff.lint]
-# B=bugbear, C4=comprehensions, C90=mccabe 复杂度, UP=pyupgrade, T20=print,
-# ARG=未使用参数, RET=return 一致性, S=bandit 安全检查, ASYNC=异步误用,
-# SIM105=用 contextlib.suppress 替代空 try/except, PT=pytest 风格,
-# RUF006=asyncio 裸 create_task（配合并发安全规则）。
+# B=bugbear, C4=comprehensions, C90=mccabe complexity, UP=pyupgrade, T20=print,
+# ARG=unused arguments, RET=return consistency, S=bandit security checks,
+# ASYNC=async misuse, SIM105=use contextlib.suppress instead of an empty
+# try/except, PT=pytest style, RUF006=bare asyncio create_task (paired with
+# the concurrency-safety rules).
 select = ["E", "F", "W", "B", "C4", "C90", "UP", "T20", "ARG", "RET", "S", "ASYNC", "SIM105", "PT", "RUF006"]
 ignore = [
-  "RUF001", "RUF002", "RUF003", # 中文全角标点误报
+  "RUF001", "RUF002", "RUF003", # False positives from non-ASCII punctuation.
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**" = ["S101", "ARG001", "ARG002"] # 测试里允许裸 assert、未用的 fixture 形参
-"scripts/**" = ["T201", "E501"]           # 工具脚本允许 print 和稍长的行
+"tests/**" = ["S101", "ARG001", "ARG002"] # Allow bare assert and unused fixture arguments in tests.
+"scripts/**" = ["T201", "E501"]           # Allow print and somewhat longer lines in utility scripts.
 
 [tool.mypy]
 strict = true
 explicit_package_bases = true
 
-# 无类型桩的三方库集中在这里登记 override，禁止散落 `# type: ignore`。
+# Register third-party libraries without type stubs here. Do not scatter
+# `# type: ignore` comments throughout the codebase.
 [[tool.mypy.overrides]]
 module = ["some_untyped_lib.*"]
 ignore_missing_imports = true
@@ -36,7 +40,8 @@ ignore_missing_imports = true
 addopts = "--strict-config --strict-markers"
 asyncio_mode = "auto"
 filterwarnings = [
-  # 只精确屏蔽已知的第三方噪音，不要用一条通配符静默所有 warning。
+  # Suppress only precisely identified third-party noise. Do not use one
+  # wildcard rule to silence every warning.
   "ignore:some known third-party DeprecationWarning:DeprecationWarning",
 ]
 
@@ -45,7 +50,7 @@ fail_under = 80
 exclude_also = ["if TYPE_CHECKING:", "if __name__ == .__main__.:", "\\.\\.\\."]
 ```
 
-## `.pre-commit-config.yaml`：本地质量门禁
+## `.pre-commit-config.yaml`: local quality gates
 
 ```yaml
 repos:
@@ -68,11 +73,11 @@ repos:
         language: system
 ```
 
-要点：pre-commit 跑在隔离环境时，如果 hook 依赖第三方插件（例如 `mypy` 的 `pydantic.mypy` 插件），必须在对应 hook 的 `additional_dependencies` 里显式声明，否则会在隔离 venv 里因为缺依赖而报 `ImportError`——这个坑很容易在本地手跑正常、CI/pre-commit 隔离环境里才炸。
+Key point: when pre-commit runs in an isolated environment, explicitly declare every third-party plugin required by a hook—for example, mypy's `pydantic.mypy` plugin—in that hook's `additional_dependencies`. Otherwise, the isolated virtual environment raises an `ImportError` even though running the tool directly in the local environment works. This problem often appears only in CI or pre-commit.
 
-## 依赖锁定（pip-tools）
+## Dependency locking with pip-tools
 
-不用 poetry/uv 时，`requirements.txt`（运行时）+ `requirements-dev.txt`（开发依赖，`-r requirements.txt` 引用）+ 锁定结果：
+When not using Poetry or uv, maintain `requirements.txt` for runtime dependencies, `requirements-dev.txt` for development dependencies with `-r requirements.txt`, and a compiled lock:
 
 ```bash
 python -m piptools compile requirements-dev.txt \
@@ -80,16 +85,16 @@ python -m piptools compile requirements-dev.txt \
   --no-emit-index-url --no-emit-trusted-host
 ```
 
-CI 和本地安装都装 `requirements-dev.lock.txt`；改了任意一份 `requirements*.txt` 后必须重新生成 lock 文件并一起提交，不能只改源文件不重新编译。
+Both CI and local development install `requirements-dev.lock.txt`. After changing any `requirements*.txt` file, regenerate and commit the lockfile as part of the same change; never update only the source file without recompiling it.
 
-## `_typos.toml`：标识符拼写检查白名单骨架
+## `_typos.toml`: identifier spelling-check allowlist skeleton
 
 ```toml
 [default.extend-identifiers]
-# 项目里合法但会被 typos 误判的标识符，加到这里。
+# Add identifiers that are valid in this project but that typos flags.
 
 [default.extend-words]
-# 合法但常被拼写检查误判的单词。
+# Add valid words that the spelling checker commonly flags.
 ```
 
-只维护骨架，具体条目按你项目实际遇到的误报逐条添加，不要提前预置一堆用不上的例外。
+Maintain only the skeleton. Add specific entries one at a time in response to real false positives; do not pre-populate a large set of unused exceptions.

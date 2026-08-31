@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
-"""
-PreToolUse hook：Write / Edit 工具执行前的参数校验。
+"""Validate Write and Edit arguments in a PreToolUse hook.
 
-校验项：
-1. Write 必填参数（file_path / content）缺失 → 硬拦截
-2. Edit 必填参数（file_path / old_string / new_string）缺失 → 硬拦截
-
-注：Write 行数限制由 Claude Code 工具自身和 rules 文件约束，不在此拦截。
+Missing required Write arguments (file_path/content) and Edit arguments
+(file_path/old_string/new_string) block the operation. Claude Code itself and
+the project rules enforce Write size limits, so this hook does not duplicate
+that validation.
 """
 from __future__ import annotations
 
@@ -16,49 +14,49 @@ from json import JSONDecodeError
 
 
 def _block(reason: str) -> int:
-    """输出统一阻断结果。"""
+    """Emit a standard blocking response."""
     output = {"decision": "block", "reason": reason}
     sys.stdout.write(json.dumps(output, ensure_ascii=False))
     return 0
 
 
 def _load_payload() -> dict[str, object] | None:
-    """从 stdin 读取 payload，失败时返回阻断原因。"""
+    """Read the stdin payload and emit a blocking reason on failure."""
     raw = sys.stdin.read()
     if not raw.strip():
-        _block("Hook 输入为空，已阻止本次写入，请重试。")
+        _block("The hook input is empty. The write was blocked; retry with a valid payload.")
         return None
 
     try:
         payload = json.loads(raw)
     except JSONDecodeError:
-        _block("Hook 输入不是合法 JSON，已阻止本次写入，请重试。")
+        _block("The hook input is not valid JSON. The write was blocked; retry with a valid payload.")
         return None
 
     if not isinstance(payload, dict):
-        _block("Hook 输入格式错误：顶层必须是 JSON 对象。")
+        _block("Invalid hook input: the top-level value must be a JSON object.")
         return None
 
     return payload
 
 
 def validate_write(tool_input: dict[str, object]) -> str | None:
-    """校验 Write 参数，返回 None 表示通过，否则返回错误原因。"""
+    """Validate Write arguments, returning None or a failure reason."""
     errors: list[str] = []
 
     if not tool_input.get("file_path"):
-        errors.append("file_path 缺失或为空")
+        errors.append("file_path is missing or empty")
 
     if tool_input.get("content") is None:
-        errors.append("content 缺失")
+        errors.append("content is missing")
 
     if errors:
-        return "Write 参数校验失败：\n- " + "\n- ".join(errors)
+        return "Write argument validation failed:\n- " + "\n- ".join(errors)
     return None
 
 
 def validate_edit(tool_input: dict[str, object]) -> str | None:
-    """校验 Edit 参数，返回 None 表示通过，否则返回错误原因。"""
+    """Validate Edit arguments, returning None or a failure reason."""
     errors: list[str] = []
 
     file_path = tool_input.get("file_path")
@@ -66,17 +64,17 @@ def validate_edit(tool_input: dict[str, object]) -> str | None:
     new_string = tool_input.get("new_string")
 
     if not file_path:
-        errors.append("file_path 缺失或为空")
+        errors.append("file_path is missing or empty")
     if old_string is None or old_string == "":
-        errors.append("old_string 缺失或为空")
+        errors.append("old_string is missing or empty")
     if new_string is None:
-        errors.append("new_string 缺失")
+        errors.append("new_string is missing")
 
     if old_string is not None and new_string is not None and old_string == new_string:
-        errors.append("old_string 与 new_string 完全相同，编辑无意义")
+        errors.append("old_string and new_string are identical, so the edit has no effect")
 
     if errors:
-        return "Edit 参数校验失败：\n- " + "\n- ".join(errors)
+        return "Edit argument validation failed:\n- " + "\n- ".join(errors)
     return None
 
 
@@ -89,9 +87,9 @@ def main() -> int:
     tool_input = payload.get("tool_input", {})
 
     if not isinstance(tool_name, str):
-        return _block("Hook 输入格式错误：tool_name 必须是字符串。")
+        return _block("Invalid hook input: tool_name must be a string.")
     if not isinstance(tool_input, dict):
-        return _block("Hook 输入格式错误：tool_input 必须是对象。")
+        return _block("Invalid hook input: tool_input must be an object.")
 
     if tool_name == "Write":
         reason = validate_write(tool_input)

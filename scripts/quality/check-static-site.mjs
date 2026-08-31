@@ -6,7 +6,7 @@ const ROOT = projectRoot();
 const CONFIG_PATH = resolve(ROOT, "docs/contracts/site-checks.json");
 
 if (!existsSync(CONFIG_PATH)) {
-  console.log("未找到 docs/contracts/site-checks.json，跳过静态站点检查。");
+  console.log("docs/contracts/site-checks.json was not found; skipping static-site checks.");
   process.exit(0);
 }
 
@@ -14,7 +14,7 @@ const config = readJson(CONFIG_PATH);
 const entryPath = resolve(ROOT, config.entryFile);
 
 if (!existsSync(entryPath)) {
-  console.log(`未找到 ${config.entryFile}，跳过静态站点检查（尚未搭建对应前端入口）。`);
+  console.log(`${config.entryFile} was not found; skipping static-site checks because the frontend entry is not set up.`);
   process.exit(0);
 }
 
@@ -27,8 +27,9 @@ for (const snippet of config.requiredSnippets ?? []) {
   }
 }
 
-// 覆盖单/双引号与任意相对路径；跳过绝对 URL（http(s)://、//、data:、mailto: 等）、
-// 根相对路径（/... 交给部署时校验）和纯锚点（#...）。
+// Cover single/double quotes and arbitrary relative paths. Skip absolute URLs
+// (http(s)://, //, data:, mailto:, and similar), root-relative paths that must be
+// validated at deployment, and anchor-only references.
 const resourceMatches = html.matchAll(/(?:href|src)\s*=\s*("([^"]+)"|'([^']+)')/gi);
 for (const match of resourceMatches) {
   const url = (match[2] ?? match[3] ?? "").trim();

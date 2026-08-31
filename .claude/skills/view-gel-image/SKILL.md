@@ -1,87 +1,94 @@
 ---
 name: view-gel-image
-description: 用于查看超大/16-bit/非常规格式的图片（凝胶电泳胶图、显微镜 TIFF、扫描大图等），避免 Claude 多模态能力直接 Read 原图爆 context。触发条件：用户要求"看"或"检查"某张 .tif/.tiff/.jpg（实为 TIFF）、> 2 MB 的图片、或已知位深非 8-bit 的栅格图像；以及 Claude 在 Read 图片时报"文件过大"或"位深不支持"。
+description: Safely inspect very large, 16-bit, or unusual raster images such as electrophoresis gels, microscopy TIFF files, and large scans without exhausting the multimodal context on the original. Trigger when the user asks to view a `.tif`, `.tiff`, a `.jpg` that is actually TIFF, an image larger than 2 MB, a known non-8-bit raster, or when direct image reading reports unsupported bit depth or excessive size.
 ---
 
-# view-gel-image — 大图安全预览
+# view-gel-image: Safe Large-Image Preview
 
-## 何时使用
+English | [Chinese](SKILL-zh.md)
 
-1. 用户发来 `.tif` / `.tiff` / 实为 TIFF 的 `.jpg` / 体积 > 2 MB 的 PNG
-2. 已知 16-bit 或非 uint8 位深的图像
-3. Claude Read 图片返回"文件过大" / "位深不支持"
-4. 需要一次看多张图（批量诊断）
+## When to use it
 
-对 8-bit、体积 < 1 MB 的 PNG / JPG 可以直接 Read，不走本 skill。
+1. The input is `.tif`, `.tiff`, a `.jpg` whose actual format is TIFF, or a PNG larger than 2 MB.
+2. The image is known to be 16-bit or otherwise not uint8.
+3. Direct image reading reports excessive size or unsupported bit depth.
+4. Several images need batch diagnosis.
 
-## 核心原则
+An 8-bit PNG or JPEG smaller than 1 MB can normally be viewed directly without this Skill.
 
-**不要直接 `Read` 原图**。原因：
-- 16-bit TIFF 常被伪装成 `.jpg` 扩展名（如 FluxGel 的 batch5/batch6），Claude 多模态解码器读不进来
-- 长边 > 3000 px 的原图进 context 会吃掉大量 token，多看几张就溢出
-- 胶图灰度信息压到 uint8 + 下采样后基本不损失诊断信息（band 位置、ROI 正确性都肉眼可判）
+## Core principle
 
-**正确流程**：压缩 → 输出到临时目录 → `Read` 压缩产物。
+**Do not read the original directly.**
 
-## 黄金工作流（不可跳过）
+- A 16-bit TIFF may use a misleading `.jpg` extension, as seen in FluxGel batch5/batch6, and the multimodal decoder may reject it.
+- An original whose longest side exceeds 3000 px consumes substantial context, especially when several images are inspected together.
+- Converting a gel image to uint8 and downsampling normally preserves enough diagnostic detail to assess band positions and ROI alignment.
 
-### 1. 准备压缩脚本
+Use this sequence: compress, write to a temporary preview location, then read the preview.
 
-项目里优先复用 `scripts/compress_for_preview.py`；没有时从本 skill 的 `scripts/compress_for_preview.py` 复制过去。
+## Required workflow
 
-脚本契约：
-- 输入：单文件路径 **或** 目录（目录下所有图像扩展名文件）
-- 输出：`outputs/preview/<stem>.png`（灰度、uint8、长边默认 1280）
-- 环境变量 `LONG_EDGE` 控制下采样目标（想看更清晰就 `LONG_EDGE=1536`）
-- 处理：16-bit → float → 线性归一化 `(x - min) / (max - min)` → 映射到 `[0, 255]` uint8
+### 1. Prepare the compression script
 
-### 2. 选择压缩范围
+Prefer an existing project `scripts/compress_for_preview.py`. If none exists, copy this Skill's `scripts/compress_for_preview.py` into the project.
 
-- 用户点名几张 → 只压那几张（节省时间）
-- 用户说"所有失败的图" → 先把失败清单 grep 出来，然后按名字一张张压
-- 用户只给目录 → 全目录压，但只 Read 前几张
+Script contract:
 
-### 3. 执行压缩
+- Input: one file or a directory containing supported image extensions.
+- Output: `outputs/preview/<stem>.png`, grayscale uint8 with a default 1280 px long edge.
+- Set `LONG_EDGE=1536` or another value for a larger preview.
+- Conversion: 16-bit → float → linear normalization `(x - min) / (max - min)` → `[0, 255]` uint8.
+
+### 2. Bound the input set
+
+- When the user names images, compress only those images.
+- For “all failed images,” extract the failure list first, then compress the named files.
+- For a directory, compress the directory but initially view only a small representative batch.
+
+### 3. Run compression
 
 ```bash
 python scripts/compress_for_preview.py path/to/image.jpg
-# 或
 python scripts/compress_for_preview.py test_images/batch5/
-# 或改长边
 LONG_EDGE=1536 python scripts/compress_for_preview.py batch4/
 ```
 
-产物路径固定在 `outputs/preview/<stem>.png`。脚本会打印每张图的原尺寸 / 位深 / 产物尺寸 / 文件大小，出问题时先看这段输出。
+Output stays under `outputs/preview/<stem>.png`. The script prints original dimensions, bit depth, output dimensions, and file size for each image; inspect that output first when conversion fails.
 
-### 4. Read 压缩产物
+### 4. View the preview
 
-```
+```text
 Read outputs/preview/Batch5-P1+P2.png
 ```
 
-**每次调用前估算 token 预算**：单张压缩 PNG ~ 300-500 KB，Claude 一次 Read 会把图片做 base64 转码（原始体积 × ~1.33 再加上分 tile）。一次最多并行 Read 4-6 张，再多就分批。
+Estimate the context budget before each call. One compressed PNG is typically 300–500 KB, then grows by roughly 1.33× under base64 plus image tiling. View at most four to six files in parallel and split larger sets into batches.
 
-### 5. 已处理过的图无需重压
+### 5. Reuse a fresh preview
 
-`outputs/preview/<stem>.png` 存在且 mtime 晚于原图 → 直接 Read，跳过压缩。
+When `outputs/preview/<stem>.png` exists and its mtime is newer than the original, view it directly instead of recompressing.
 
-## 常见坑点
+## Common pitfalls
 
-### `.jpg` 其实是 TIFF
-PIL `Image.open` 能识别魔数不看扩展名，`np.array(img)` 直接拿到 uint16 ndarray。**不要** 先假设 `.jpg` 是 8-bit 再报错；都走同一条归一化路径就对了。
+### A `.jpg` may actually be TIFF
 
-### RGBA alpha 污染
-部分 TIFF 有 alpha 通道。`raw[..., :3]` 丢掉 alpha 再取 RGB 均值，不要按 `raw.mean(axis=2)` 把 alpha 也算进去。
+Pillow's `Image.open` detects the magic bytes rather than trusting the extension, and `np.array(img)` can return the uint16 ndarray directly. Use the same normalization path instead of assuming a `.jpg` is 8-bit.
 
-### 归一化被离群值吃掉
-线性 min-max 在有"极亮 wells"时会压缩 gel 内部对比度。若发现压缩后 gel 一片暗看不清 band，可以改成分位数归一化（`lo = P1(arr)`, `hi = P99(arr)`）。脚本目前用全局 min-max，够用但不是最优，换的时候记得标注。
+### RGBA alpha can distort grayscale
 
-### 长边太小看不清 grid
-默认 1280 对 4000x3000 原图下采样 ~3 倍，肉眼能看清 marker / lane 结构但看不清单个 band 边界。要看 band 对齐细节就 `LONG_EDGE=2048`。
+For a TIFF with alpha, drop it with `raw[..., :3]` before taking the RGB mean. Do not include alpha through `raw.mean(axis=2)`.
 
-### 别把压缩图当作算法输入
-本 skill 产物**只给 Claude 看**，不要用它跑 detect_roi / 栅格检测 —— 那些算法参数都按原图尺度调的。
+### Outliers can dominate normalization
 
-## 沉淀参考
+Global min-max normalization can make a gel too dark when a few wells are extremely bright. If bands become unreadable, switch to percentile normalization with `lo = P1(arr)` and `hi = P99(arr)`. The current script uses global min-max because it is usually sufficient; document the change if it is replaced.
 
-这个坑最早在另一个图像处理项目（FluxGel）的已知问题记录里出现（「16-bit TIFF 伪装成 .jpg 扩展名」）；本仓库若遇到同类问题，建议按项目自身的已知问题文档记录。ROI 检测 v1 → v6 的全部迭代也是基于"每次改 → 压 → Read → 看 7 张图"的循环做出来的，是本 skill 的典型应用场景。
+### A small long edge can hide the grid
+
+The 1280 px default downsamples a 4000×3000 original by roughly three times. Marker and lane structure remain visible, but individual band boundaries may not. Use `LONG_EDGE=2048` for band-alignment detail.
+
+### Preview pixels are not algorithm input
+
+The compressed output exists only for visual inspection. Do not feed it to `detect_roi` or grid detection because those parameters are calibrated to original image dimensions.
+
+## Background
+
+This failure mode was first recorded in another image-processing project's known issues when a 16-bit TIFF used a `.jpg` extension. If it appears here, record the reusable conclusion in this project's known-issues documents. The ROI detector's v1 through v6 iterations also used the repeated modify → compress → view several images loop, which is the Skill's intended use.

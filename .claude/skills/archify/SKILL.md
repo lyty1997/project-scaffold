@@ -1,6 +1,6 @@
 ---
 name: archify
-description: Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG, dark/light themes, optional trace motion, and PNG/JPEG/WebP/SVG/WebM export. Accept plain-language requirements or pasted Mermaid flowchart, sequenceDiagram, and stateDiagram input; inspect repository evidence when the diagram must reflect real code. Use when the user asks to visualize system architecture, infrastructure, cloud/security/network topology, technical workflows, API call sequences, request lifecycles, data pipelines, ETL/ELT, data lineage, state machines, or to convert/beautify Mermaid.
+description: Create polished, validated architecture, workflow, sequence, data-flow, and lifecycle/state diagrams as explorable standalone HTML with inline SVG and native exports. Use for interactive system maps and polished document illustrations; when the user explicitly requests PlantUML, edits a PlantUML source, or needs an embedded PlantUML block, use the PlantUML workflow instead.
 license: MIT
 metadata:
   version: "2.16"
@@ -66,6 +66,14 @@ Read Mermaid for topology and meaning, then author fresh Archify JSON; do not me
 - `flowchart` / `graph` → `workflow`, or `architecture` for a component map.
 - `sequenceDiagram` → `sequence`; participants become semantic participants and arrows become messages.
 - `stateDiagram` → `lifecycle`; states and transitions retain meaning, not Mermaid style.
+
+## PlantUML coexistence
+
+Respect an explicit tool choice. When the user asks for PlantUML, edits an existing `.puml` file, or needs a `plantuml` fenced block embedded in Markdown, use the project `plantuml-in-markdown` Skill and its extract, compile, repair, write-back, and compile-all loop.
+
+Use Archify when the requested result is a polished standalone interactive diagram, guided exploration surface, themed presentation artifact, or Viewer-native bitmap export. Use PlantUML when compact Markdown-inline ownership, precise ERD/class/state modeling, or fast batch compilation is the primary requirement.
+
+Do not maintain equivalent Archify JSON and PlantUML source for the same illustration. A document may use both tools for genuinely different views, such as an Archify architecture overview and a focused PlantUML sequence diagram.
 
 ## Authoring invariants
 
