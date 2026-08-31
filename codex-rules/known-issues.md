@@ -10,6 +10,7 @@
 | Git hooks | `.githooks/*` 必须在 Git 索引中为 `100755`。新增后用真实仓库验证 hook 被调用，不能只做语法检查。 |
 | Archify 离线边界 | 上游模板默认请求 Google Fonts，禁网时会拖住 Chrome `loadEventFired`，打开本地图也会产生未声明第三方请求；本仓库 vendored 模板已删除远程字体，并在 Skill 中禁用自动更新检查。升级时必须重放 `.claude/skills/archify/LOCAL_CHANGES.md`。 |
 | Archify 生成物 | Typed JSON 与固定渲染器生成的 HTML 可做字节新鲜度检查；Markdown PNG 必须走 Viewer 原生 canonical 导出，并校验 IHDR 尺寸等于 viewBox × 安全倍率。PNG 字节受 Chrome 和系统字体栈影响，不做跨机器比较；`visual-check` 整页截图只作临时人工复核证据。 |
+| 便携文档导出 | 便携 HTML 是 `build/portable-docs/` 下的忽略产物，不能手改或作为正文真相源。Pandoc 2.x 使用 `--self-contained`，3.x 使用 `--embed-resources`；项目包装器按版本选择并在写盘前校验原图字节和零本地资源引用，不能绕过包装器直接交付 Pandoc 输出。 |
 | workflow 里的 secrets 写法 | 只有 `${{ secrets.NAME }}`（花括号内留空格、外面不加引号）能通过密钥扫描。无空格或加引号都会被判为泄漏。生成器已固化该写法，手写 workflow 时要自己守。 |
 | `gh` 写入能力 | 没有 `gh ruleset create`（只有 check/list/view）。rulesets、分支保护、environments、Pages 启用一律 `gh api --input`。`gh api` 对 403/404 都 `exit 1` 且错误 JSON 走 stdout，要解析 `.status` 而非看退出码；`gh auth status` 超时时仍返回 0，不能当认证判据。 |
 | 推送 workflow 文件 | token 缺 `workflow` scope 时，含 `.github/workflows/*` 改动的 push 会被 GitHub 拒绝。先 `gh auth refresh -h github.com -s workflow`（需浏览器授权）。 |

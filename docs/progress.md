@@ -6,6 +6,16 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-08-31 CST / 带本地插图的 Markdown 支持便携单文件导出
+
+- 问题：仓库 Markdown 通过相对路径引用 `docs/diagrams/*.archify.png`、交互 HTML 和 Typed JSON；这对维护和追溯正确，但单独移动 `.md` 会断图，使用者必须同时搬运原目录结构。
+- 决策：不破坏仓库三联产物，新增按需生成的自包含 HTML。Markdown 与 Viewer 原生 PNG 仍是真相源；便携产物写入已忽略的 `build/portable-docs/`，不提交、不被初始化器替换，也不反向改写仓库链接。便携版保留外部链接和页内锚点，把仓库相对链接降级为带原路径提示的文字。
+- 实现：新增 `scripts/docs/export-portable.mjs`、受控 HTML 模板和 Pandoc Lua link filter；`npm run export:portable-docs` 默认发现全部含本地 Markdown 图片的文档，也可在 `--` 后指定源。生成阶段使用本机 Pandoc 2.12+ 解析 GFM，图片按原字节写成 `data:`，候选通过检查后才原子替换旧文件。当前自动发现并导出架构概览、跨机预览、CI/CD 自动搭建和技术分享 4 份文档。
+- 安全边界：纯 Node 前置扫描拒绝远程/内联图片、路径逃逸、symlink、SVG/主动格式、原始 HTML、空 alt、单图超过 16 MiB或单文档图片总量超过 32 MiB；写盘前检查输入摘要、Pandoc 版本、图片数量，逐张解码比对 MIME 与原图字节，并拒绝脚本、iframe、base/form、`srcset`、本地或不安全 `href/src`、CSS `@import`/外链。正负 fixture 还覆盖代码围栏与行内代码忽略、emoji 前缀索引、单双引号属性绕过、字节漂移和过期摘要。
+- 产物与渲染：四份最终 HTML 为 408,216–2,803,329 字节，连续两次生成 SHA-256 完全一致。Chrome 在 1440×1000 和 390×844 共 8 个视口验证图片全部解码、页面无横向溢出、本地链接与资源请求均为 0；人工查看发现长文章目录占据首屏，修正为视口限高滚动区后复查通过，首张内嵌 Archify 图在桌面和手机上均完整显示。
+- 最终门禁：`npm run quality` 全绿，其中 `check:portable-docs` 确认 4 份生产源可发现且正负 fixture 全部符合预期；`npm run check:diagrams` 继续通过 7 份 Archify 源的 `showcase` 9/9、HTML 新鲜度和原生 PNG 尺寸检查。
+- 数据与外部服务：未新增 npm 依赖、用户数据收集、遥测或运行时第三方服务；Pandoc 仅是本地生成工具，基础 CI 与 `npm run quality` 仍只依赖 Node.js 22。
+
 ## 2026-08-30 CST / 补齐 Archify 的 Claude 与 Codex 双原生集成
 
 - 缺口：前一轮只有 `.claude/skills/archify/` 的 Claude 原生入口，Codex 规则虽能链接该目录，但仓库缺少 Codex 官方扫描的 `.agents/skills` 入口，不能称为完整的双 Agent 集成。

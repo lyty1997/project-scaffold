@@ -9,6 +9,7 @@
 - [架构概览](architecture/overview.md)
 - [质量门禁](architecture/quality-gates.md)
 - [Archify 图表系统](architecture/diagram-system.md)
+- [便携单文件文档](architecture/portable-documents.md)
 - [术语表](architecture/glossary.md)
 - [待决策问题](architecture/open-decisions.md)
 - [跨机协同开发预览工作流](architecture/dev-workflow.md)
@@ -34,6 +35,7 @@
 | 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
 | `npm run quality`、图表检查和本地钩子具体做什么 | [质量门禁](architecture/quality-gates.md) |
 | 图表用什么源格式、怎样生成交互成品并做视觉验收 | [Archify 图表系统](architecture/diagram-system.md) |
+| 怎样把带本地插图的 Markdown 导出成可单独移动的一个文件 | [便携单文件文档](architecture/portable-documents.md) |
 | CI/CD 如何探测、生成、校验和按项目接入发版 | [CI/CD 自动搭建](architecture/cicd-autosetup.md) |
 | Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
 

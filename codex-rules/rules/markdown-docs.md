@@ -14,6 +14,7 @@
 - Typed JSON 是唯一可编辑真相源；同名 `.archify.html` 是交互产物，`.archify.png` 必须由 Viewer 原生导出且不含 Viewer chrome。Markdown 同时链接三者，不复制 JSON 正文；整页截图只作临时视觉证据。
 - 新增或修改图表必须完成 `showcase` 9/9 校验、HTML 确定性生成、四档桌面包含性检查和深浅主题人工复核。命令、固定版本与离线边界见 [Archify 图表系统](../../docs/architecture/diagram-system.md)。
 - 图表保持简单可读，并配套文字说明。
+- 需要把带图 Markdown 单独移出仓库时，按[便携单文件文档](../../docs/architecture/portable-documents.md)运行 `npm run export:portable-docs -- <source.md>`；不要把仓库三联引用改成远程 URL，也不要提交 `build/portable-docs/`。
 
 ## 归档
 

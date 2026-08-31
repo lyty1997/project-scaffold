@@ -16,6 +16,7 @@
 - `docs/` 设计文档骨架：架构概览、术语表、待决策问题、产品路线图、跨机协同预览工作流，都是占位模板，需要你按项目实际情况填写。
 - `docs/contracts/`：契约词表机制（`check-contracts.mjs`）本身是通用的，`contract-terms.json`/`contract-rules.json` 里的具体词条只是示例，需要替换成你项目自己的品牌词、禁用旧名、跨层误用检查规则。`site-checks.json` 是可选的静态入口检查配置，如果你的项目还没有 `public/index.html` 这类静态入口，对应的质量门禁会自动跳过。
 - `scripts/quality/`：零依赖 Node.js 质量门禁——四道内容门禁（Markdown 链接与索引、契约词表、密钥扫描、静态入口检查）外加一道 `check:js` 脚本语法自检，`npm run quality` 一键跑全部，CI（`.github/workflows/ci.yml`）在 Ubuntu 与 Windows 上跑的是同一条命令。
+- `scripts/docs/`：使用本机 Pandoc 2.12+ 把带本地插图的 Markdown 导出为 `build/portable-docs/` 下的便携单文件 HTML；图片内嵌、相对链接降级为路径提示，产物不入库。
 - `.claude/skills/archify/`：固定版本、MIT 许可的项目级交互图表 Skill 唯一实现；`.agents/skills/archify/SKILL.md` 是 Codex 原生发现入口，两者由门禁防漂移。Typed JSON、交互 HTML 与 Viewer 原生导出 PNG 的契约见 `docs/architecture/diagram-system.md`，默认离线且不自动检查更新。
 - `scripts/dev/`：`sync.sh`/`sync.ps1` 双向同步脚本开箱即用；`preview.sh`/`restart-remote.ps1`/`serve.py` 是跨机协同预览工作流的实现，依赖 `scripts/dev/dev-workflow.env`（本地文件，`init.mjs` 会帮你生成）。
 

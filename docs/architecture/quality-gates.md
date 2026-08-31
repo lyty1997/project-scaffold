@@ -12,12 +12,19 @@
 | --- | --- |
 | `check:js` | 对初始化脚本、共享模块和全部质量脚本执行语法检查 |
 | `check:docs` | 检查 Markdown 内部链接，并要求 `docs/README.md` 索引全部 `docs/**/*.md` |
+| `check:portable-docs` | 用纯 Node 正负 fixture 检查便携文档的图片发现、路径边界、输入摘要、原字节内嵌和本地链接剥离；同时确认当前可导出的 Markdown 源合法 |
 | `check:contracts` | 按 `docs/contracts/contract-rules.json` 扫描契约命名；稳定名称与枚举来自 `contract-terms.json` |
 | `check:secrets` | 扫描常见密钥形态；不能替代人工审查 |
 | `check:site` | 按 `docs/contracts/site-checks.json` 检查静态入口、必需片段和相对资源；入口不存在时跳过 |
 | `check:cicd` | 扫描全部 workflow 的项目安全红线；存在 CI/CD 台账时检查 managed 产物完整性与漂移，并运行 release 渲染、失败边界和 manifest 生命周期夹具 |
 
 引入框架后，应在保留上述检查的基础上增加项目实际需要的格式化、lint、typecheck、测试和可访问性检查。
+
+## 便携单文件文档
+
+`npm run export:portable-docs` 使用本机 Pandoc 2.12+，把所有含本地 Markdown 图片的文档导出到已忽略的 `build/portable-docs/`；在 `--` 后传路径可只导出指定文档。生成器在 Pandoc 前拒绝远程图片、路径逃逸、symlink、主动格式和空 alt，写盘前再逐张比较 `data:` 字节并拒绝任何本地资源引用。完整契约见[便携单文件文档](portable-documents.md)。
+
+Pandoc 不进入基础门禁或 CI 依赖。`check:portable-docs` 使用临时正负 fixture 覆盖相同的不变量，因此 Ubuntu 与 Windows 的 `npm run quality` 仍只需要 Node.js 22；实际交付时还要打开生成 HTML 做桌面和移动端渲染检查。
 
 ## Archify 图表
 

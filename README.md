@@ -46,7 +46,14 @@ git config core.hooksPath .githooks
 - 契约词表和禁用旧名回潮。
 - 常见密钥形态。
 - 静态站点入口和资源引用。
+- 便携单文件文档的图片扫描、路径边界、内嵌字节与断链剥离正负 fixture。
 - `npm run check:diagrams` 校验 Archify Typed JSON、交互 HTML 新鲜度和原生 PNG 尺寸；`npm run review:diagrams` 使用真实浏览器做视觉复核并调用 Viewer 原生导出刷新文档主图。
+
+需要把带本地图的 Markdown 单独复制出去时，安装 Pandoc 2.12+ 后生成自包含 HTML；输出位于已忽略的 `build/portable-docs/`，移动一个 HTML 即可阅读：
+
+```bash
+npm run export:portable-docs -- docs/sharing/ai-coding-scaffold.md
+```
 
 ## 许可证
 

@@ -61,6 +61,8 @@ Markdown 不内嵌重复的 JSON，也不再保存另一份图表 DSL。每个�
 - “查看图表源”链接指向 Typed JSON；
 - 配套文字说明事实边界，不能让视觉效果把占位、计划或推断包装成已实现能力。
 
+仓库内三联引用服务于维护和交互，不等于便携交付。需要把某份 Markdown 单独复制到仓库外时，按[便携单文件文档](portable-documents.md)生成自包含 HTML；不要把远程图片 URL 写回 Markdown，也不要为了便携性删除交互 HTML 或 Typed JSON 链接。
+
 HTML 与 PNG 都是生成物。HTML 可以用固定渲染器重建并做确定性新鲜度检查；PNG 必须调用交互 HTML 自带的 `Archify.exportMenu.run("png")` 原生导出链路，回执要求 `canonical=true`，像素尺寸必须等于 SVG viewBox 乘以 Viewer 选择的安全整数倍率。PNG 受浏览器和系统字体栈影响，不做跨机器字节比较。`visual-check` 的四张整页截图只留在临时证据目录供人工复核，不复制进文档目录。
 
 ## 命令与验收

@@ -32,6 +32,7 @@
 - HTML 是可搜索、聚焦、追踪路径、切换主题和导出的交互成品。
 - PNG 必须来自 Viewer 原生 `Download PNG` 导出，不含标题栏、菜单或导航控件；`visual-check` 整页截图只作临时验收证据。
 - Markdown 使用预览图链接到 HTML，并另给 JSON 源链接；配套文字说明图的事实边界。
+- 需要脱离仓库单独发送文档时，运行 `npm run export:portable-docs -- <source.md>` 生成忽略目录下的自包含 HTML；不要为便携交付改写这里的三联引用。具体边界见 `docs/architecture/portable-documents.md`。
 
 示例：
 
