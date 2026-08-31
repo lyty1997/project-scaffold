@@ -31,16 +31,16 @@ function pandocInfo() {
   });
   if (result.error) {
     throw new Error(
-      `无法启动 Pandoc：${result.error.message}。请安装 Pandoc ${PORTABLE_MIN_PANDOC_VERSION}+，` +
-        "或用 PANDOC_BIN 指定可执行文件。"
+      `Could not start Pandoc: ${result.error.message}. Install Pandoc ${PORTABLE_MIN_PANDOC_VERSION}+ ` +
+        "or set PANDOC_BIN to its executable."
     );
   }
   if (result.status !== 0) {
-    throw new Error(`Pandoc --version 失败（exit ${result.status}）：${result.stderr || result.stdout}`);
+    throw new Error(`Pandoc --version failed with exit ${result.status}: ${result.stderr || result.stdout}`);
   }
   const version = result.stdout.match(/^pandoc\s+(\d+(?:\.\d+)+)/m)?.[1] ?? "";
   if (!version || compareVersions(version, PORTABLE_MIN_PANDOC_VERSION) < 0) {
-    throw new Error(`需要 Pandoc ${PORTABLE_MIN_PANDOC_VERSION}+，当前为 ${version || "未知版本"}。`);
+    throw new Error(`Pandoc ${PORTABLE_MIN_PANDOC_VERSION}+ is required; found ${version || "an unknown version"}.`);
   }
   return { executable, version };
 }
@@ -49,20 +49,20 @@ function ensureSafeOutputParent(outputPath) {
   const parent = dirname(outputPath);
   const relativeParent = relative(ROOT, parent);
   if (relativeParent === ".." || relativeParent.startsWith(`..${sep}`)) {
-    throw new Error(`便携输出逃逸仓库：${outputPath}`);
+    throw new Error(`Portable output escapes the repository: ${outputPath}`);
   }
   let cursor = ROOT;
   for (const segment of relativeParent.split(sep).filter(Boolean)) {
     cursor = resolve(cursor, segment);
     if (existsSync(cursor) && lstatSync(cursor).isSymbolicLink()) {
-      throw new Error(`便携输出目录不能经过 symlink：${cursor}`);
+      throw new Error(`Portable output directory must not traverse a symbolic link: ${cursor}`);
     }
   }
   mkdirSync(parent, { recursive: true });
   if (existsSync(outputPath)) {
     const stats = lstatSync(outputPath);
     if (stats.isSymbolicLink() || !stats.isFile()) {
-      throw new Error(`便携输出必须是普通文件：${outputPath}`);
+      throw new Error(`Portable output must be a regular file: ${outputPath}`);
     }
   }
 }
@@ -127,21 +127,21 @@ function exportDocument(sourcePath, pandoc) {
         ALL_PROXY: "",
       },
     });
-    if (result.error) throw new Error(`Pandoc 无法启动：${result.error.message}`);
+    if (result.error) throw new Error(`Pandoc could not start: ${result.error.message}`);
     if (result.status !== 0) {
       throw new Error(
-        `Pandoc 导出 ${source.sourceRelative} 失败（exit ${result.status}）：\n` +
+        `Pandoc export failed for ${source.sourceRelative} with exit ${result.status}:\n` +
           [result.stdout, result.stderr].filter(Boolean).join("\n")
       );
     }
     if (result.stderr.trim()) {
-      throw new Error(`Pandoc 导出 ${source.sourceRelative} 返回警告：\n${result.stderr.trim()}`);
+      throw new Error(`Pandoc export for ${source.sourceRelative} returned a warning:\n${result.stderr.trim()}`);
     }
 
     const checked = checkPortableHtml(source.source, candidatePath);
     if (checked.errors.length > 0) {
       throw new Error(
-        `${source.sourceRelative} 的便携产物未通过写盘前检查：\n` +
+        `Portable output for ${source.sourceRelative} failed pre-write validation:\n` +
           checked.errors.map((error) => `- ${error}`).join("\n")
       );
     }
@@ -156,14 +156,14 @@ function exportDocument(sourcePath, pandoc) {
 }
 
 if (resolve(process.argv[1] ?? "") !== PORTABLE_EXPORTER) {
-  throw new Error("便携导出器入口解析失败。");
+  throw new Error("Could not resolve the portable exporter entry point.");
 }
 
 try {
   const sources = findPortableSources(process.argv.slice(2));
   const pandoc = pandocInfo();
   const receipts = sources.map((source) => exportDocument(source, pandoc));
-  console.log(`已用 Pandoc ${pandoc.version} 生成 ${receipts.length} 份便携单文件 HTML：`);
+  console.log(`Generated ${receipts.length} portable single-file HTML document(s) with Pandoc ${pandoc.version}:`);
   for (const receipt of receipts) {
     console.log(
       `- ${receipt.output} (${receipt.images} image(s), ${receipt.bytes} bytes, ` +
@@ -171,6 +171,6 @@ try {
     );
   }
 } catch (error) {
-  console.error(`便携文档导出失败：${error.message}`);
+  console.error(`Portable document export failed: ${error.message}`);
   process.exit(1);
 }

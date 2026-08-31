@@ -1,53 +1,55 @@
-# 跨机协同开发预览工作流
+# Cross-Machine Collaborative Development Preview Workflow
 
-状态：active
-最近更新：__在实际使用时更新为当前日期__
-适用范围：本地渲染端机器与远端托管机之间的本地开发预览闭环（编码会话可以在任意一端发起，托管固定在远端托管机一端）。**不决定生产部署目标**——GitHub Pages / Cloudflare Pages / Vercel / 自托管仍是 [待决策问题](open-decisions.md) 中的未决项，本工作流只覆盖"改代码 → 本地渲染验证 → 再改"的迭代环节。
+English | [Chinese](dev-workflow-zh.md)
 
-## 背景与目标
+Status: active
+Last updated: __replace with the current date when applying this workflow__
+Applies to: the local development preview loop between a local rendering machine and a remote hosting machine. A coding session can begin on either side, while hosting remains fixed on the remote machine. **This workflow does not choose a production deployment target.** GitHub Pages, Cloudflare Pages, Vercel, self-hosting, and other options remain open in [Open Decisions](open-decisions.md). This workflow covers only the "change code → validate the local rendering → change it again" iteration loop.
 
-个人开发习惯是：视觉审查和标注在一台机器上用 Claude Desktop 完成（大屏、桌面端体验更好），网站进程托管固定放在另一台机器上。需要把这两端用 git 串起来，形成一个可重复的"改动 → 预览 → 反馈 → 再改动"闭环，且改动可能来自任意一端。
+## Background and goal
 
-**关键澄清：不要把"当前编码会话所在环境"等同于"托管机"。** Claude Code CLI / Claude Desktop 的编码会话可以运行在本地渲染端或远端托管机任意一端（取决于用户在哪台机器上发起对话），与"网站预览服务固定托管在哪台机器"是两回事，不能划等号。本文件后续把两者分开描述：**托管角色**（固定是 `__PREVIEW_HOST__` 这台远端机器）与**发起编码会话的机器**（可以是任意一端，随时可能变化）。
+This workflow supports a personal development pattern in which visual review and annotation happen through Claude Desktop on one machine, where a larger display and desktop experience are preferable, while another machine always hosts the website process. Git needs to connect both sides into a repeatable "change → preview → feedback → change again" loop, with changes potentially originating on either side.
 
-## 工程量判断
+**Critical distinction: do not equate the environment that hosts the current coding session with the hosting machine.** A Claude Code CLI or Claude Desktop coding session may run on either the local rendering machine or the remote hosting machine, depending on where the user starts the conversation. That is independent of the machine where the website preview service is always hosted. The rest of this document separates the **hosting role**—always the remote machine at `__PREVIEW_HOST__`—from the **machine that starts the coding session**, which may be either side and can change at any time.
 
-判定为**刚刚好**，理由：
+## Scope assessment
 
-- 不引入任何新依赖或框架：复用项目已有的静态文件服务器（例如 `python3 -m http.server`）、已存在的 GitHub 远程仓库、渲染端已经可用的浏览器控制工具链。
-- 不新建常驻服务：同步与重启都是按需触发的一次性脚本，不需要 systemd/守护进程，出问题时排查成本低（优先选择"按需触发"而非自动轮询）。
-- 不新建标注工具：优先复用 Claude Desktop 自身能力，只有在验证后确认不可行时才退回 Playwright MCP 的元素定位 + 文字描述，不为"标注"单独造一套本地服务或数据库。
-- worktree 只在远端托管机新增一个，职责单一（专门给预览用），不做多层嵌套 worktree 或分支矩阵，避免管理成本超过收益。
+The scope is **appropriate** for the following reasons:
 
-## 角色与环境
+- It introduces no dependency or framework. It reuses the project's existing static-file server, such as `python3 -m http.server`, the existing GitHub remote, and the browser-control toolchain already available on the rendering machine.
+- It adds no persistent service. Synchronization and restart operations are one-shot scripts invoked when needed, with low troubleshooting cost. Explicit invocation is preferred to automatic polling.
+- It adds no annotation tool. Claude Desktop's own capabilities are used first. Only if validation proves them unavailable does the workflow fall back to Playwright MCP element targeting plus a textual description; it does not create a separate local annotation service or database.
+- It adds only one worktree on the remote hosting machine, dedicated to preview. There are no nested worktrees or branch matrices whose management cost would exceed their value.
 
-| 角色 | 位置 | 职责 |
+## Roles and environments
+
+| Role | Location | Responsibility |
 |---|---|---|
-| 远端托管机 | 局域网地址 `__PREVIEW_HOST__`，用户 `__REMOTE_USER__`，仓库实际路径 `__REMOTE_REPO_PATH__`（含同级的预览专用 worktree） | 托管预览用的静态服务器、跑 `preview.sh`；**不是**"编码会话固定所在环境"，只是网站进程固定托管在这台机器上 |
-| 本地渲染端机器 | 用于日常编码与渲染验证的机器（示例中为 Windows，实际可以是任意操作系统） | 跑 Claude Desktop / Claude Code 编码会话（直接读写本机 git 副本、执行 `sync.ps1`/`restart-remote.ps1`），配对了可控制的 Chrome 浏览器扩展用于渲染验证 |
-| GitHub origin | `https://github.com/__GITHUB_OWNER__/__GITHUB_REPO__.git` | 两端共同的远程仓库，承担双向同步，无需额外中转 |
+| Remote hosting machine | LAN address `__PREVIEW_HOST__`, user `__REMOTE_USER__`, and actual repository path `__REMOTE_REPO_PATH__`, with a sibling preview worktree | Host the preview static server and run `preview.sh`. It is **not** a fixed environment for coding sessions; only the website process is fixed to this machine. |
+| Local rendering machine | The machine used for daily coding and rendering validation—Windows in the example, but it may run any operating system | Run Claude Desktop or Claude Code coding sessions, read and write the local Git clone directly, execute `sync.ps1` and `restart-remote.ps1`, and use a paired, controllable Chrome browser extension for rendering validation |
+| GitHub origin | `https://github.com/__GITHUB_OWNER__/__GITHUB_REPO__.git` | Shared remote for bidirectional synchronization, with no additional relay |
 
-编码会话本身可能运行在本地渲染端也可能运行在远端托管机上（两边都能跑 Claude Code），这不影响本工作流——不管从哪一端发起改动，最终都通过 git 走到远端托管机上重启预览。
+The coding session itself can run on the local rendering machine or the remote hosting machine because both can run Claude Code. This does not change the workflow: regardless of where a change begins, it ultimately travels through Git to the remote hosting machine, where the preview restarts.
 
-## 网络与访问
+## Network and access
 
-- 需要先确认本地渲染端与远端托管机在同一局域网（或已建立可用的内网穿透/VPN 通道），可直接用局域网地址访问，无需额外的 SSH 隧道；两者之间的 ICMP 与 SSH（22 端口）需要提前验证连通。
-- 端口：如果远端托管机的常用端口（例如 `8000`）已被其他项目占用，本工作流的预览服务应固定使用一个专属端口，用占位符 **`__PREVIEW_PORT__`** 表示，互不冲突。预览 URL 固定为 `http://__PREVIEW_HOST__:__PREVIEW_PORT__/`。
-- **常见网络故障排查方向**：如果 `preview.sh` 启动的进程已监听 `0.0.0.0:__PREVIEW_PORT__`，但从本地渲染端对 `__PREVIEW_HOST__:__PREVIEW_PORT__` 发起 TCP 连接超时/被拒，而 ICMP 和 SSH（22 端口）都通，通常根因是远端托管机的主机防火墙只放行了部分端口。需要在远端托管机上放行该端口（至少对局域网网段放行），再用类似 `Test-NetConnection` 的工具从本地渲染端验证。这类环境相关的具体调试记录应写入项目自己的 `progress.md` / `known-issues.md`，不属于本设计文档内容。
+- First confirm that the local rendering machine and remote hosting machine are on the same LAN, or have a working private-network tunnel or VPN. The LAN address should be directly reachable without an additional SSH tunnel, and ICMP plus SSH on port 22 must be verified in advance.
+- Port: if a common port on the remote hosting machine, such as `8000`, is already in use by another project, assign this workflow a dedicated fixed port represented by **`__PREVIEW_PORT__`**. The stable preview URL is `http://__PREVIEW_HOST__:__PREVIEW_PORT__/`.
+- **Common network troubleshooting direction:** if the process launched by `preview.sh` listens on `0.0.0.0:__PREVIEW_PORT__`, but a TCP connection from the local rendering machine to `__PREVIEW_HOST__:__PREVIEW_PORT__` times out or is refused even though ICMP and SSH on port 22 work, the likely cause is a host firewall on the remote machine that allows only selected ports. Allow the preview port, at least for the LAN subnet, and verify it from the local rendering machine with a tool such as `Test-NetConnection`. Environment-specific debugging records belong in the project's own `progress.md` or `known-issues.md`, not in this design document.
 
-## 渲染与标注机制（推荐方案已验证可行）
+## Rendering and annotation mechanism (verified recommended approach)
 
-**结论：不需要 Playwright MCP，Claude Desktop 自带的 Chrome 扩展配对机制就能用，这是首选方案。**
+**Conclusion: Playwright MCP is not required. Claude Desktop's paired Chrome extension works and is the preferred path.**
 
-- 本地渲染端机器的 `claude_desktop_config.json` 里如果已经有一个配对好的 Chrome 浏览器扩展（`chromeExtension.pairedDeviceName`，且 `allowAllBrowserActions: true`），可以直接使用。这不是 Claude Desktop 的"Artifact"沙箱预览（那个只能渲染模型自己生成、托管在沙箱内的内容），而是一个独立的、能真正控制用户本机浏览器的扩展桥接。
-- 先调用桥接的 `list_connected_browsers` 确认连接是活的（`isLocal: true`），再用 `navigate` 把浏览器导航到 `http://__PREVIEW_HOST__:__PREVIEW_PORT__/`——渲染发生在一个真实的、用户桌面上可见的 Chrome 窗口里（不是 Desktop 自身面板内嵌；如果需要严格"Desktop 窗口内渲染"而非"桌面上的独立 Chrome 窗口"，这一点需要用户确认是否可接受）。
-- 标注方式：这套机制不提供"点选元素 + 写贴纸评论"式的可视化标注 UI。实际标注是**对话式**的——用户看着渲染结果，用文字描述想要的修改；需要精确定位时，可以让 Claude 读取页面（accessibility 快照 / `get_page_text` / 截图）拿到元素引用后再描述，而不是指望一个独立的标注浮层或数据库。
+- If `claude_desktop_config.json` on the local rendering machine already contains a paired Chrome browser extension through `chromeExtension.pairedDeviceName` with `allowAllBrowserActions: true`, use it directly. This is not Claude Desktop's Artifact sandbox preview, which can render only model-generated content hosted in its sandbox. It is a separate extension bridge that can control the user's actual browser.
+- Call `list_connected_browsers` first to confirm that the connection is live and reports `isLocal: true`. Then use `navigate` to open `http://__PREVIEW_HOST__:__PREVIEW_PORT__/`. Rendering occurs in a real Chrome window visible on the user's desktop, not in a panel embedded in Desktop. If rendering strictly inside the Desktop window rather than in a separate desktop Chrome window is required, the user must decide whether this distinction is acceptable.
+- Annotation: this mechanism does not provide a visual "select an element and attach a sticky-note comment" UI. Annotation is **conversational**: the user views the rendering and describes the desired change in text. When precise targeting is needed, Claude can read the page through an accessibility snapshot, `get_page_text`, or a screenshot to obtain an element reference, then use that reference in the discussion. It does not rely on a separate overlay or annotation database.
 
-### 备用方案：Playwright MCP
+### Fallback: Playwright MCP
 
-如果换一台本地渲染端机器时发现 Chrome 扩展没有配对（`list_connected_browsers` 返回空），才需要退回 Playwright MCP：
+Use Playwright MCP only when a different local rendering machine has no paired Chrome extension and `list_connected_browsers` returns an empty result:
 
-- 在本地渲染端 Claude Desktop 的 MCP 配置（`claude_desktop_config.json`）里加入：
+- Add the following to the Claude Desktop MCP configuration, `claude_desktop_config.json`, on the local rendering machine:
 
 ```json
 {
@@ -60,78 +62,78 @@
 }
 ```
 
-- 渲染方式退化为：用 `browser_navigate` 打开预览 URL，用 `browser_take_screenshot` 或 `browser_snapshot` 获取截图或带 `ref` 编号的无障碍树。
-- 标注方式与上面一致：文字描述 + 引用元素 `ref` 编号精确定位。
+- Rendering falls back to opening the preview URL with `browser_navigate` and capturing a screenshot or a numbered accessibility tree with `browser_take_screenshot` or `browser_snapshot`.
+- Annotation remains textual, with element `ref` numbers for precise targeting.
 
-## 分支与 worktree 布局
+## Branch and worktree layout
 
-沿用全局 git 工作流约定（`main` 稳定 / `dev` 开发主干 / `feature/描述` 特性分支），并在远端托管机新增一个专用于预览的 worktree，理由是：远端托管机端可能同时存在"CLI 自己在 `dev` 上直接改动"和"某个 `feature` 分支需要马上预览"两件事，两者不应该共用同一个工作目录互相打扰。
+Retain the global Git workflow: stable `main`, integration branch `dev`, and `feature/description` branches. Add one preview-only worktree on the remote hosting machine. The reason is that the remote machine may simultaneously have direct CLI changes on `dev` and an urgent preview of a `feature` branch; those activities must not share a working directory or interfere with each other.
 
+```text
+__PROJECT_NAME__/                  # Daily development directory on the remote hosting machine; follows dev
+__PROJECT_NAME__.preview/          # New worktree dedicated to checking out an acceptance branch and running the static server
 ```
-__PROJECT_NAME__/                  # 远端托管机上的日常开发目录，跟随 dev
-__PROJECT_NAME__.preview/          # 新增 worktree，专门用于 checkout 待验收分支并跑静态服务器
-```
 
-- 远端托管机主目录（实际路径 `__REMOTE_REPO_PATH__`）：日常直接改动使用，正常提交到 `dev` 或临时 `feature/*` 分支。
-- 远端托管机预览 worktree（同级 `__PROJECT_NAME__.preview`）：只跑静态服务器，不在这里直接改代码，谁的分支要看效果就切过去看，和主目录互不干扰，采用分离头指针模式（原因见下）。
-- 本地渲染端：clone 同一个仓库（`https://github.com/__GITHUB_OWNER__/__GITHUB_REPO__.git`），日常在 `feature/描述` 分支下编辑，不直接改 `dev` / `main`，改完 push 该分支。
+- Remote hosting machine main directory, at the actual path `__REMOTE_REPO_PATH__`: used for ordinary direct changes, committed normally to `dev` or a temporary `feature/*` branch.
+- Remote hosting machine preview worktree, the sibling `__PROJECT_NAME__.preview`: runs only the static server. Do not edit code there. Check out whichever branch needs visual review without disturbing the main directory. It uses detached HEAD mode for the reason below.
+- Local rendering machine: clone the same repository from `https://github.com/__GITHUB_OWNER__/__GITHUB_REPO__.git`, edit on a `feature/description` branch, do not edit `dev` or `main` directly, and push the feature branch when ready.
 
-**创建方式的一处约束**：git 不允许同一个分支在两个 worktree 里同时被检出（比如主目录已经在 `dev`，预览 worktree 就不能再 `git checkout dev`，会报 `already used by worktree`）。所以预览 worktree 用 `git worktree add --detach ../__PROJECT_NAME__.preview dev` 建成**分离头指针（detached HEAD）**模式，之后每次要看哪个分支的效果，都是 `git checkout --detach <分支或 origin/分支的最新提交>`，而不是切到分支本身。这样无论主目录当前停在哪个分支，预览 worktree 都不会和它冲突，包括预览 `dev` 或 `main` 自己的场景。
+**Constraint when creating the worktree:** Git does not allow one branch to be checked out in two worktrees at the same time. For example, if the main directory already has `dev` checked out, `git checkout dev` in the preview worktree fails with `already used by worktree`. Create the preview worktree in **detached HEAD** mode with `git worktree add --detach ../__PROJECT_NAME__.preview dev`. Whenever a branch needs previewing, run `git checkout --detach <latest commit from branch or origin/branch>` instead of checking out the branch itself. The preview worktree then cannot conflict with the main directory regardless of its current branch, including when previewing `dev` or `main`.
 
-**本地渲染端的 worktree 是另外一回事，工具链自带，不用手动管理**：如果本地渲染端用 Claude Code / Claude Desktop 的编码会话来改代码，工具链本身会给每个会话自动建一个独立 worktree + 分支（例如 `.claude/worktrees/<会话名>`，分支名形如 `claude/<会话名>`），和主目录（跟随 `main`）互不干扰。这天然满足"发生改动时用 worktree 隔离"的诉求，不需要在这份设计里再手动搭一套本地渲染端 worktree 管理机制；该会话分支后续照常走 push → 同步 → （按需）合并的路径回到 `dev`/`main`。
+**The worktree on the local rendering machine is a separate tool-managed concern and does not require manual management.** When a Claude Code or Claude Desktop coding session changes code on the local rendering machine, the toolchain creates an isolated worktree and branch for the session, for example `.claude/worktrees/<session-name>` on a branch such as `claude/<session-name>`. It does not disturb the main directory, which follows `main`. This already provides worktree isolation for changes, so this design does not add another manual worktree manager on the local rendering side. The session branch later follows the normal push → synchronize → optionally merge path back to `dev` or `main`.
 
-## 源码同步脚本（双向、一键）
+## Source synchronization scripts (bidirectional, one command)
 
-两端共用同一个 GitHub 远程，"双向同步"不需要额外的中转服务，一个薄的 shell / PowerShell 脚本封装 `fetch + pull --rebase + push` 即可：
+Both sides share the same GitHub remote, so bidirectional synchronization requires no relay service. A thin shell or PowerShell script can wrap `fetch + pull --rebase + push`:
 
-- `scripts/dev/sync.sh`（Linux / macOS / Git Bash 通用）：给当前分支执行 `git fetch`，`git pull --rebase`，若有本地未推送的提交则 `git push`。
-- `scripts/dev/sync.ps1`（Windows PowerShell，或对应本地渲染端 shell 环境）：同样的逻辑，供本地渲染端 Claude Desktop 或用户直接运行。额外支持一个可选开关 `-RestartPreview`（默认不开，不影响与 `sync.sh` 的对等行为）：推送成功后顺带调用 `restart-remote.ps1` 通过 SSH 让远端托管机预览重启，把"改代码→同步→重启→查看"收成一条命令。
-- 两个脚本都提交进仓库，随 git 同步分发到两端，不需要分别维护。
-- **配置来源**：两个脚本涉及的远端主机地址、端口、用户名、仓库路径等环境相关的值，**不写死在脚本默认值里**，一律从 `scripts/dev/dev-workflow.env`（不进版本库，被 `.gitignore` 忽略）读取。缺失该文件或缺失必需字段时，脚本必须报清晰错误并提示"复制 `scripts/dev/dev-workflow.env.example` 为 `scripts/dev/dev-workflow.env` 并填写"，而不是静默套用一个可能错误的默认值。这是为了避免环境值在脚本里硬编码导致跨项目/跨环境漂移，也避免把某个具体环境的真实信息带入脚手架模板。
-- **踩过的坑**：`.ps1` 文件里带中文注释时必须存成**带 BOM 的 UTF-8**。Windows PowerShell 5.1 解析 `.ps1` 源码时，没有 BOM 就按系统 ANSI 代码页解码，可能把 UTF-8 的中文字节序列读成乱码，进而在字符串/括号处报一堆看似无关的语法错误。判断依据：这类报错只在直接执行 `.ps1` 文件时出现，用文件查看工具读出来的内容看着完全正常。修法是用 `[System.Text.UTF8Encoding]::new($true)` 之类方式重新写盘，确保开头是 `EF BB BF`。
+- `scripts/dev/sync.sh`, portable across Linux, macOS, and Git Bash: run `git fetch` and `git pull --rebase` for the current branch, then `git push` when local commits have not been pushed.
+- `scripts/dev/sync.ps1`, for Windows PowerShell or the corresponding local rendering shell environment: perform the same operation for Claude Desktop or direct user invocation on the local rendering machine. It also accepts an optional `-RestartPreview` switch, disabled by default so it remains equivalent to `sync.sh`. After a successful push, the switch calls `restart-remote.ps1` over SSH to restart the preview on the remote hosting machine, reducing "change → synchronize → restart → view" to one command.
+- Both scripts are committed and distributed to both machines through Git, with no separate copies to maintain.
+- **Configuration source:** environment-specific values used by either script—remote address, port, username, and repository path—are **never hard-coded as script defaults**. They all come from `scripts/dev/dev-workflow.env`, which is excluded by `.gitignore`. If the file or a required field is missing, the script must report a clear error and instruct the user to copy `scripts/dev/dev-workflow.env.example` to `scripts/dev/dev-workflow.env` and fill it in. It must not silently apply a potentially incorrect default. This prevents environment values from drifting across projects and environments and prevents real details from one environment from leaking into the scaffold.
+- **Previously encountered pitfall:** a `.ps1` file containing Chinese comments must be saved as UTF-8 with a BOM. Windows PowerShell 5.1 otherwise decodes the source with the system ANSI code page, which can turn UTF-8 Chinese bytes into mojibake and produce apparently unrelated syntax errors around strings or parentheses. The distinguishing evidence is that the errors occur only when the `.ps1` file is executed directly even though file viewers display its content correctly. Rewrite it with a BOM-aware encoder such as `[System.Text.UTF8Encoding]::new($true)` and confirm the leading bytes are `EF BB BF`. First-party scripts now use English comments, but the encoding boundary still matters if downstream projects add non-ASCII text.
 
-## 预览服务脚本（按需触发，不常驻）
+## Preview service script (invoked on demand, not persistent)
 
-- `scripts/dev/preview.sh`（只在远端托管机用）：操作对象是 `../__PROJECT_NAME__.preview` 这个 worktree，配置（仓库路径、端口等）同样从 `scripts/dev/dev-workflow.env` 读取，缺失时报错而不是套用默认值。支持四个子命令：
-  - `preview.sh serve <分支>`：如果 worktree 不存在则用 `--detach` 创建，`git fetch` 后 `git checkout --detach origin/<分支>`（分离头指针，原因见上一节），在后台启动静态文件服务器（监听 `__PREVIEW_PORT__`），PID 通过反查监听该端口的进程获得并写入 PID 文件，而不是信任 shell 的 `$!`（在 `setsid` 等场景下 `$!` 不可靠）。
-  - `preview.sh restart [分支]`：正确顺序是**先 `git fetch` + `git checkout --detach origin/<分支>` 成功，再停旧进程，再启动新进程**（不传分支则重新拉取并检出当前预览的那个分支的最新提交）。顺序不能反——如果先停旧进程再做网络操作，一旦 `fetch`/`checkout` 因网络抖动失败，会导致预览服务"只停不起"，比重启前更糟。全程按 PID 文件（且用监听端口反查进程作为兜底校验）判断进程是否存活，避免重复启动或杀错进程。
-  - `preview.sh stop`：按 PID 文件（或反查监听端口）杀进程并清理。
-  - `preview.sh status`：查询当前是否有预览进程在跑、监听哪个端口、对应哪个 commit，便于排查。
-- 因为是按需触发（不需要自动轮询 watcher），这个脚本不需要 `trap`/常驻生命周期管理这类复杂度，每次都是一次性前台命令，简单可控。
-- **触发方式有两种**：
-  1. 人工经由远端托管机端会话执行（原始设计）：不管是 Claude Code 会话还是用户自己登录，只要在远端托管机上直接跑 `preview.sh restart` 即可。
-  2. 本地渲染端直接 SSH 触发（见下一节"远程重启"）：不需要额外开一个远端托管机端会话，`restart-remote.ps1` 会通过 SSH 在远端托管机上执行同一个 `preview.sh restart`，两种方式最终跑的是同一段远端逻辑，只是发起点不同。
+- `scripts/dev/preview.sh`, used only on the remote hosting machine, operates on the `../__PROJECT_NAME__.preview` worktree. It reads configuration such as repository path and port from `scripts/dev/dev-workflow.env` and reports an error rather than using defaults when configuration is missing. It supports four subcommands:
+  - `preview.sh serve <branch>`: if the worktree does not exist, create it with `--detach`. After `git fetch`, run `git checkout --detach origin/<branch>` for the reason in the previous section. Start the static server in the background on `__PREVIEW_PORT__`. Find the PID by identifying the process listening on that port and write it to the PID file instead of trusting shell `$!`, which is unreliable in cases such as `setsid`.
+  - `preview.sh restart [branch]`: use the exact order **successfully run `git fetch` and `git checkout --detach origin/<branch>`, then stop the old process, then start the new process**. When no branch is provided, fetch and check out the latest commit from the currently previewed branch. Do not reverse this order: if the old process stops before a network operation and `fetch` or `checkout` fails during a network interruption, the service remains down, which is worse than its pre-restart state. Use the PID file throughout, with a lookup by listening port as a fallback validation, to determine whether the process is alive and avoid duplicate starts or killing an unrelated process.
+  - `preview.sh stop`: kill the process identified by the PID file or listening-port lookup and clean up.
+  - `preview.sh status`: report whether a preview process is running, which port it listens on, and which commit it serves.
+- Because each operation is invoked on demand rather than through an automatic polling watcher, the script does not need the complexity of `trap` or persistent lifecycle management. Every invocation is a simple, controlled foreground command.
+- **Two trigger paths are supported:**
+  1. Run it from a session on the remote hosting machine, as in the original design. A Claude Code session or the logged-in user can execute `preview.sh restart` directly.
+  2. Trigger it over SSH from the local rendering machine, as described in Remote Restart below. No separate remote coding session is needed: `restart-remote.ps1` invokes the same `preview.sh restart` command on the hosting machine. The remote logic is identical; only the origin of the request differs.
 
-## 远程重启（本地渲染端 → 远端托管机，通过 SSH）
+## Remote restart (local rendering machine → remote hosting machine over SSH)
 
-为了让"改源码→同步→重启→查看"能在本地渲染端一端一次性发起、不必再手动切到远端托管机端会话，新增：
+To run the entire "change source → synchronize → restart → view" loop from the local rendering machine without manually switching to a remote session, add:
 
-- `scripts/dev/restart-remote.ps1`（只在本地渲染端用）：SSH 到远端托管机，`cd` 到仓库实际路径后执行 `./scripts/dev/preview.sh restart <分支>`。不重新实现远端逻辑，只是把"喊它跑一次"这一步从本地渲染端补上。默认分支取本地当前分支，也可用 `-Branch` 显式指定。所有环境相关的值（主机地址、用户名、仓库路径）同样从 `scripts/dev/dev-workflow.env` 读取，缺失时报错并提示补全配置文件，不在脚本里写死默认值。
-- 依赖：本地渲染端到 `__PREVIEW_HOST__`（用户 `__REMOTE_USER__`）的免密 SSH 登录，用一把**专用**密钥（占位符 `__SSH_KEY_NAME__`，例如 `~/.ssh/id_ed25519_<项目>_preview` 这种命名模式，不复用 GitHub 或其它用途的密钥）。`restart-remote.ps1` 会在 `dev-workflow.env` 里配置了 `REMOTE_USER` / `SSH_KEY_NAME` 时，直接以 `user@host` 并 `-i ~/.ssh/<密钥> -o IdentitiesOnly=yes` 发起 SSH；两者都没配置时退回裸 `ssh <host>`，改由 `~/.ssh/config` 的 `Host __PREVIEW_HOST__` + `IdentityFile` + `IdentitiesOnly yes` 解析。无论走哪条路，公钥都需要用户手动追加到远端托管机 `~/.ssh/authorized_keys`（这一步涉及修改远端机器的访问控制，Claude 不代为操作，只生成密钥对和使用说明）。**注意**：仅仅在本地 `known_hosts` 里出现远端主机指纹，不代表免密登录已经生效，配好后必须实际执行一次 SSH 命令验证能无密码登录成功，不能只凭配置文件"看起来对"就认为通道已打通。
-- `sync.ps1 -RestartPreview` 会在推送成功后自动调用这个脚本，实现单条命令收尾。
+- `scripts/dev/restart-remote.ps1`, used only on the local rendering machine: connect to the remote hosting machine over SSH, `cd` to the actual repository path, and run `./scripts/dev/preview.sh restart <branch>`. It does not reimplement remote logic; it only asks the remote machine to run it once. The default is the currently checked-out local branch and can be overridden with `-Branch`. All environment-specific values—host address, username, and repository path—come from `scripts/dev/dev-workflow.env`. Missing values produce an error and an instruction to complete the configuration file rather than hard-coded defaults.
+- Dependency: passwordless SSH from the local rendering machine to `__PREVIEW_HOST__` as `__REMOTE_USER__`, using a **dedicated** key whose filename is given by `__SSH_KEY_NAME__`, for example `~/.ssh/id_ed25519_<project>_preview`, rather than reusing a GitHub or other-purpose key. When `REMOTE_USER` and `SSH_KEY_NAME` are set in `dev-workflow.env`, `restart-remote.ps1` connects directly to `user@host` with `-i ~/.ssh/<key> -o IdentitiesOnly=yes`. When neither is configured, it falls back to bare `ssh <host>`, resolved through a `Host __PREVIEW_HOST__` entry in `~/.ssh/config` with `IdentityFile` and `IdentitiesOnly yes`. In either path, the user must append the public key manually to `~/.ssh/authorized_keys` on the remote hosting machine. That step modifies access control on another machine, so Claude does not perform it; it only generates the keypair and instructions. **Important:** the presence of the remote host fingerprint in local `known_hosts` does not prove that passwordless login works. After configuration, execute an actual SSH command and verify that it succeeds without a password. Do not treat a configuration that merely looks correct as a working channel.
+- `sync.ps1 -RestartPreview` calls this script automatically after a successful push, completing the loop in one command.
 
-## 端到端迭代流程
+## End-to-end iteration
 
-[![本地渲染端与远端托管端协同预览闭环静态预览](../diagrams/dev-workflow-loop.archify.png)](../diagrams/dev-workflow-loop.archify.html)
+[![Static preview of the collaborative preview loop between the local rendering machine and remote hosting machine](../diagrams/dev-workflow-loop.archify.png)](../diagrams/dev-workflow-loop.archify.html)
 
-[打开交互时序图](../diagrams/dev-workflow-loop.archify.html) · [查看 Typed JSON 图表源](../diagrams/dev-workflow-loop.sequence.json)
+[Open the interactive sequence diagram](../diagrams/dev-workflow-loop.archify.html) · [View the Typed JSON diagram source](../diagrams/dev-workflow-loop.sequence.json)
 
-**捷径**：图中"User → 远端托管端：请求同步并重启预览"这一步，如果本地渲染端就是发起改动的一方，不必真的去找一个远端托管端会话——直接在本地渲染端跑 `sync.ps1 -RestartPreview` 即可，它会在推送成功后自己通过 SSH 触发远端托管端的 `preview.sh restart`，等价于图中 `Win → Hub`、`User → Linux`、`Linux → Hub`、`Linux → Preview` 这几步揉在一起，少一次人工切换。
+**Shortcut:** in the diagram, the step "User → remote hosting machine: request synchronization and preview restart" does not require a separate remote session when the local rendering machine originated the change. Run `sync.ps1 -RestartPreview` locally. After pushing, it triggers `preview.sh restart` remotely over SSH. This combines the diagram's `Win → Hub`, `User → Linux`, `Linux → Hub`, and `Linux → Preview` steps and removes one manual context switch.
 
-## 落地步骤 Checklist
+## Implementation checklist
 
-面向刚 clone 这个脚手架的新项目，从零搭建这套预览闭环：
+For a new project cloned from this scaffold, build the preview loop from scratch as follows:
 
-1. 运行脚手架的 `init.mjs`，把 `__PROJECT_NAME__`、`__PROJECT_SLUG__`、`__GITHUB_OWNER__`、`__GITHUB_REPO__` 等占位符替换成本项目的真实值。
-2. 复制 `scripts/dev/dev-workflow.env.example` 为 `scripts/dev/dev-workflow.env`（不进版本库），填写远端托管机地址、端口、用户名、仓库路径等实际值。
-3. 在远端托管机上创建预览 worktree（分离头指针模式）：`git worktree add --detach ../<项目名>.preview dev`。
-4. 新增/确认 `scripts/dev/sync.sh`、`scripts/dev/sync.ps1`、`scripts/dev/preview.sh`、`scripts/dev/restart-remote.ps1` 四个脚本存在且（`.sh` 部分）带可执行权限。
-5. 生成一把专用 SSH 密钥（`__SSH_KEY_NAME__`），配置本地 `~/.ssh/config` 的 `Host` 条目，并把公钥手动装到远端托管机的 `~/.ssh/authorized_keys`；实际执行一次 SSH 命令验证免密登录生效（不要只看 `known_hosts` 就假设通了）。
-6. 在本地渲染端确认 Chrome 扩展配对状态（`list_connected_browsers`），按"渲染与标注机制"一节完成一次现场验证；如果扩展未配对，退回 Playwright MCP 备用方案。
-7. 两端各跑一次 `sync.sh` / `sync.ps1`，确认能互相看到对方的提交。
-8. 走一轮完整"改动 → 推送 → 远程重启 → 本地渲染端渲染确认"的端到端验证：本地渲染端跑 `sync.ps1 -RestartPreview`，确认远端预览服务重启并可通过浏览器访问到最新内容。
-9. 如遇网络不通（能 ping 通/能 SSH 但预览端口不可达等），按"网络与访问"一节的排查方向处理，并把本项目具体的排查记录写入项目自己的 `progress.md` / `known-issues.md`，不要写回本设计文档。
+1. Run the scaffold's `init.mjs` to replace `__PROJECT_NAME__`, `__PROJECT_SLUG__`, `__GITHUB_OWNER__`, `__GITHUB_REPO__`, and the other placeholders with real project values.
+2. Copy `scripts/dev/dev-workflow.env.example` to `scripts/dev/dev-workflow.env`, which remains untracked, and fill in the actual remote address, port, username, repository path, and related values.
+3. On the remote hosting machine, create the detached preview worktree with `git worktree add --detach ../<project-name>.preview dev`.
+4. Add or confirm the presence of `scripts/dev/sync.sh`, `scripts/dev/sync.ps1`, `scripts/dev/preview.sh`, and `scripts/dev/restart-remote.ps1`, with executable permissions on the `.sh` files.
+5. Generate a dedicated SSH key named through `__SSH_KEY_NAME__`, configure the local `Host` entry in `~/.ssh/config`, and manually install the public key in `~/.ssh/authorized_keys` on the remote hosting machine. Execute an SSH command to prove passwordless access works; do not infer it from `known_hosts`.
+6. On the local rendering machine, check Chrome extension pairing with `list_connected_browsers` and complete an actual validation following the Rendering and Annotation Mechanism section. If the extension is not paired, use the Playwright MCP fallback.
+7. Run `sync.sh` and `sync.ps1` once on their respective machines and confirm that each can see the other's commits.
+8. Complete one end-to-end "change → push → remote restart → local rendering confirmation" validation. Run `sync.ps1 -RestartPreview` on the local rendering machine, then confirm that the remote preview service has restarted and the latest content is accessible in the browser.
+9. If networking fails—for example, ping and SSH work but the preview port is unreachable—follow Network and Access and record project-specific troubleshooting in that project's own `progress.md` or `known-issues.md`, not in this design document.
 
-## 未决事项
+## Open items
 
-- 生产环境最终部署目标（GitHub Pages / Cloudflare Pages / Vercel / 自托管）仍未决定，见 [待决策问题](open-decisions.md)；本工作流只覆盖本地预览环节，与生产部署方式无关，二者可以独立演进。
+- The production deployment target—GitHub Pages, Cloudflare Pages, Vercel, or self-hosting—remains undecided; see [Open Decisions](open-decisions.md). This workflow covers only local preview and can evolve independently of production deployment.

@@ -1,23 +1,31 @@
-# Git 工作流
-## 分支
-- `main`：稳定发布，不直接提交
-- `dev`：开发主干
-- `feature/s{N}-{描述}` / `bugfix/{描述}` / `release/{版本}`
+# Git Workflow
 
-## 提交格式
+English | [Chinese](../rules-zh/git-workflow-zh.md)
+
+## Branches
+
+- `main`: stable releases; do not commit directly.
+- `dev`: development trunk.
+- `feature/s{N}-description`, `bugfix/description`, or `release/version`.
+
+## Commit format
+
+```text
+<type>(<scope>): <English subject>
 ```
-<type>(<scope>): <English 主题> / <中文主题>
-```
-主题行中英双语、英文在前，用 ` / ` 分隔英文与中文两段（例：`feat(scaffold): add stack recipe / 新增技术栈配方`）。
-type: `feat|fix|docs|style|refactor|test|chore`  scope 按项目模块自定（本仓库当前常用 `scaffold`），`.githooks/commit-msg` 强制"有 scope + 英文段在前 + ` / ` 分隔 + 后段非空"，不校验 scope 枚举
-- 不要带上"Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>"
 
-## 提交前
-- 运行风格检查和测试，确保无敏感信息
-- 本仓库已用 `.githooks/commit-msg` 把提交格式变成机器强制（`git config core.hooksPath .githooks` 后生效），不合规格式会被直接拒绝
+Use an English subject. Allowed types are `feat|fix|docs|style|refactor|test|chore`; choose a scope that names the project module (`scaffold` is common in this repository). `.githooks/commit-msg` enforces a non-empty scope and English subject but does not restrict the scope vocabulary.
 
-## push / merge 后 — 必须观察 CI
-- push 到 `main`/`dev`，或合并 PR 后，必须主动观察 `.github/workflows/ci.yml` 的运行结果，不能推完/合完就视为任务结束
-- 有 PR 时用 `gh pr checks <PR号> --watch` 跟踪；直接 push 到分支时用 `gh run watch`（或先 `gh run list --branch <分支名>` 找到对应 run 再 `gh run watch <run-id>`）
-- CI 未通过（`quality` matrix 任一 OS 失败、或 `diagrams` job 失败）：定位失败原因 → 本地修复并重跑 `npm run quality`（涉及图表改动再跑 `npm run check:diagrams`，并用 `npm run review:diagrams -- <source-file>` 完成真实浏览器复核）→ 重新推送 → 再次观察，直到全部转绿
-- 不允许在 CI 红色或状态未知的情况下汇报任务完成
+- Do not add `Co-Authored-By` trailers.
+
+## Before committing
+
+- Run formatting checks and tests and confirm no sensitive information is present.
+- This repository enforces the subject format through `.githooks/commit-msg` after `git config core.hooksPath .githooks` is enabled.
+
+## After push or merge: observe CI
+
+- After pushing to `main` or `dev`, or merging a PR, actively observe `.github/workflows/ci.yml`; a successful push or merge is not task completion by itself.
+- For a PR, use `gh pr checks <PR-number> --watch`. For a direct branch push, use `gh run watch`, locating the run first with `gh run list --branch <branch>` when needed.
+- If any OS in the `quality` matrix or the `diagrams` job fails, identify the cause, fix it locally, rerun `npm run quality`, and for diagram changes also run `npm run check:diagrams` plus `npm run review:diagrams -- <source-file>`. Push the repair and observe CI again until every required job is green.
+- Never report completion while CI is red or its state is unknown.

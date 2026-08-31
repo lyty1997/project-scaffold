@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "sequence",
   "meta": {
-    "title": "本地渲染端与远端托管端协同预览闭环",
-    "locale": "zh-CN",
+    "title": "Cross-Machine Preview Loop: Local Renderer and Remote Host",
+    "locale": "en",
     "quality_profile": "showcase",
     "column_fit": "spread",
     "viewBox": [1380, 780],
@@ -13,21 +13,21 @@
     "views": [
       {
         "id": "local-edit",
-        "label": "本地查看与修改",
+        "label": "Local Review and Editing",
         "focus": ["user", "local", "workspace", "preview", "hub"],
-        "note": "本地渲染端示例为 Claude Desktop，预览由 worktree 与静态服务器承载；角色不绑定具体操作系统。"
+        "note": "Claude Desktop is the example local renderer; a worktree and static server host the preview. The roles are OS-agnostic."
       },
       {
         "id": "remote-sync",
-        "label": "远端同步预览",
+        "label": "Sync the Remote Preview",
         "focus": ["user", "remote", "hub", "preview"],
-        "note": "远端托管端示例为 Claude Code CLI；它拉取 feature 分支并重启预览，不直接编辑本地源码。"
+        "note": "Claude Code CLI is the example remote host; it pulls the feature branch and restarts the preview without editing local source."
       },
       {
         "id": "merge-after-review",
-        "label": "确认后合并",
+        "label": "Merge After Approval",
         "focus": ["user", "local", "remote", "hub"],
-        "note": "反复查看与修改，直到使用者确认再合并到 dev。"
+        "note": "Review and revise until the user approves merging into dev."
       }
     ]
   },
@@ -35,17 +35,17 @@
     {
       "id": "user",
       "type": "external",
-      "label": "用户"
+      "label": "User"
     },
     {
       "id": "local",
       "type": "frontend",
-      "label": "本地渲染端"
+      "label": "Local Renderer"
     },
     {
       "id": "workspace",
       "type": "database",
-      "label": "本地源码"
+      "label": "Local Source"
     },
     {
       "id": "hub",
@@ -55,39 +55,39 @@
     {
       "id": "remote",
       "type": "backend",
-      "label": "远端托管端"
+      "label": "Remote Host"
     },
     {
       "id": "preview",
       "type": "cloud",
-      "label": "远端预览"
+      "label": "Remote Preview"
     }
   ],
   "segments": [
     {
       "from": 150,
       "to": 195,
-      "label": "启动预览"
+      "label": "Start Preview"
     },
     {
       "from": 200,
       "to": 420,
-      "label": "本地查看与修改"
+      "label": "Local Review and Editing"
     },
     {
       "from": 425,
       "to": 515,
-      "label": "远端同步"
+      "label": "Remote Sync"
     },
     {
       "from": 520,
       "to": 645,
-      "label": "刷新与确认"
+      "label": "Refresh and Approve"
     },
     {
       "from": 650,
       "to": 720,
-      "label": "确认合并"
+      "label": "Merge After Approval"
     }
   ],
   "messages": [
@@ -96,7 +96,7 @@
       "from": "remote",
       "to": "preview",
       "y": 170,
-      "label": "启动指定分支的预览服务",
+      "label": "Start preview for selected branch",
       "variant": "emphasis"
     },
     {
@@ -104,14 +104,14 @@
       "from": "user",
       "to": "local",
       "y": 210,
-      "label": "打开预览 URL"
+      "label": "Open preview URL"
     },
     {
       "id": "capture-preview",
       "from": "local",
       "to": "preview",
       "y": 242,
-      "label": "navigate 与截图",
+      "label": "Navigate and capture",
       "variant": "emphasis"
     },
     {
@@ -119,7 +119,7 @@
       "from": "preview",
       "to": "local",
       "y": 274,
-      "label": "渲染截图与元素快照",
+      "label": "Return screenshot and element snapshot",
       "variant": "return"
     },
     {
@@ -127,7 +127,7 @@
       "from": "local",
       "to": "user",
       "y": 306,
-      "label": "展示当前效果",
+      "label": "Show current preview",
       "variant": "return"
     },
     {
@@ -135,14 +135,14 @@
       "from": "user",
       "to": "local",
       "y": 338,
-      "label": "标注或描述修改意见"
+      "label": "Annotate or describe requested changes"
     },
     {
       "id": "edit-source",
       "from": "local",
       "to": "workspace",
       "y": 370,
-      "label": "修改本地源码",
+      "label": "Edit local source",
       "variant": "emphasis"
     },
     {
@@ -150,7 +150,7 @@
       "from": "local",
       "to": "hub",
       "y": 402,
-      "label": "commit 并 push feature 分支",
+      "label": "Commit and push feature branch",
       "variant": "emphasis"
     },
     {
@@ -158,7 +158,7 @@
       "from": "user",
       "to": "remote",
       "y": 434,
-      "label": "请求同步并重启预览"
+      "label": "Request sync and preview restart"
     },
     {
       "id": "fetch-feature",
@@ -172,7 +172,7 @@
       "from": "remote",
       "to": "preview",
       "y": 498,
-      "label": "pull feature 并重启服务",
+      "label": "Pull feature branch and restart preview",
       "variant": "emphasis"
     },
     {
@@ -180,14 +180,14 @@
       "from": "user",
       "to": "local",
       "y": 530,
-      "label": "刷新查看最新效果"
+      "label": "Refresh the latest preview"
     },
     {
       "id": "capture-latest",
       "from": "local",
       "to": "preview",
       "y": 562,
-      "label": "navigate 与截图",
+      "label": "Navigate and capture",
       "variant": "emphasis"
     },
     {
@@ -195,7 +195,7 @@
       "from": "preview",
       "to": "local",
       "y": 594,
-      "label": "最新渲染结果",
+      "label": "Latest rendered result",
       "variant": "return"
     },
     {
@@ -203,7 +203,7 @@
       "from": "local",
       "to": "user",
       "y": 626,
-      "label": "确认是否符合预期",
+      "label": "Ask whether the result meets expectations",
       "variant": "return"
     },
     {
@@ -211,7 +211,7 @@
       "from": "user",
       "to": "remote",
       "y": 658,
-      "label": "确认合并",
+      "label": "Approve the merge",
       "variant": "emphasis"
     },
     {
@@ -219,7 +219,7 @@
       "from": "remote",
       "to": "hub",
       "y": 690,
-      "label": "合并 feature 分支到 dev",
+      "label": "Merge feature branch into dev",
       "variant": "emphasis"
     }
   ],

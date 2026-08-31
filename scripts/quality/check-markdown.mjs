@@ -59,7 +59,7 @@ function scanLinkTargets(line) {
   return targets;
 }
 
-// 去掉行内代码 `...`（用等长空格占位以保持列位置），避免把文档里演示的链接语法当成真链接。
+// Replace inline code with equal-length spaces so example link syntax is not treated as a real link.
 function stripInlineCode(line) {
   return line.replace(/`[^`]*`/g, (match) => " ".repeat(match.length));
 }
@@ -111,19 +111,11 @@ function checkInternalLinks() {
   return errors;
 }
 
-function checkDocsReadmeIndexesAllDocs() {
-  const readmePath = resolve(DOCS_ROOT, "README.md");
-  if (!existsSync(readmePath)) {
-    return ["docs/README.md does not exist"];
-  }
-
-  const readmeText = readFileSync(readmePath, "utf8");
-
-  // 收集 README 里所有内部链接指向的绝对路径（跳过围栏/行内代码），按"确实被链接"判定，
-  // 而不是裸 String.includes——后者会因路径子串碰撞（如 overview.md 是 architecture/overview.md 的子串）误判为已索引。
+function linkedMarkdownTargets(indexPath) {
+  const indexText = readFileSync(indexPath, "utf8");
   const linkedTargets = new Set();
   let inFence = false;
-  for (const rawLine of readmeText.split(/\r?\n/)) {
+  for (const rawLine of indexText.split(/\r?\n/)) {
     if (/^\s*(```|~~~)/.test(rawLine)) {
       inFence = !inFence;
       continue;
@@ -131,23 +123,68 @@ function checkDocsReadmeIndexesAllDocs() {
     if (inFence) continue;
     for (const rawTarget of scanLinkTargets(stripInlineCode(rawLine))) {
       const target = normalizeTarget(rawTarget);
-      if (target) linkedTargets.add(resolve(DOCS_ROOT, target));
+      if (target) linkedTargets.add(resolve(indexPath, "..", target));
     }
   }
+  return linkedTargets;
+}
 
+function chinesePathFor(englishPath) {
+  return englishPath.replace(/\.md$/, "-zh.md");
+}
+
+function englishPathFor(chinesePath) {
+  return chinesePath.replace(/-zh\.md$/, ".md");
+}
+
+function checkDocsLanguageIndexes() {
+  const englishIndex = resolve(DOCS_ROOT, "README.md");
+  const chineseIndex = resolve(DOCS_ROOT, "README-zh.md");
   const errors = [];
+
+  for (const indexPath of [englishIndex, chineseIndex]) {
+    if (!existsSync(indexPath)) {
+      errors.push(`${relative(ROOT, indexPath).replaceAll("\\", "/")} does not exist`);
+    }
+  }
+  if (errors.length > 0) return errors;
+
+  const englishTargets = linkedMarkdownTargets(englishIndex);
+  const chineseTargets = linkedMarkdownTargets(chineseIndex);
+
+  if (!englishTargets.has(chineseIndex)) {
+    errors.push("docs/README.md does not link to docs/README-zh.md");
+  }
+  if (!chineseTargets.has(englishIndex)) {
+    errors.push("docs/README-zh.md does not link to docs/README.md");
+  }
+
   for (const docPath of listFiles(DOCS_ROOT, (path) => path.endsWith(".md"))) {
-    if (docPath === readmePath) continue;
-    if (!linkedTargets.has(docPath)) {
-      const relativePath = relative(DOCS_ROOT, docPath).replaceAll("\\", "/");
-      errors.push(`docs/README.md does not index docs/${relativePath}`);
+    const isChinese = docPath.endsWith("-zh.md");
+    const counterpart = isChinese ? englishPathFor(docPath) : chinesePathFor(docPath);
+    const shown = relative(ROOT, docPath).replaceAll("\\", "/");
+    const counterpartShown = relative(ROOT, counterpart).replaceAll("\\", "/");
+
+    if (!existsSync(counterpart)) {
+      errors.push(`${shown} is missing language counterpart ${counterpartShown}`);
+    }
+
+    const expectedTargets = isChinese ? chineseTargets : englishTargets;
+    const ownIndex = isChinese ? chineseIndex : englishIndex;
+    if (docPath !== ownIndex && !expectedTargets.has(docPath)) {
+      const indexShown = relative(ROOT, ownIndex).replaceAll("\\", "/");
+      errors.push(`${indexShown} does not index ${shown}`);
+    }
+
+    if (!linkedMarkdownTargets(docPath).has(counterpart)) {
+      errors.push(`${shown} does not link to its language counterpart ${counterpartShown}`);
     }
   }
 
   return errors;
 }
 
-const errors = [...checkInternalLinks(), ...checkDocsReadmeIndexesAllDocs()];
+const errors = [...checkInternalLinks(), ...checkDocsLanguageIndexes()];
 
 if (errors.length > 0) {
   console.error("Markdown documentation checks failed:");
@@ -158,4 +195,3 @@ if (errors.length > 0) {
 }
 
 console.log("Markdown documentation checks passed.");
-

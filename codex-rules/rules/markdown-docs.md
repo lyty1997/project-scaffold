@@ -1,21 +1,48 @@
-# Markdown 文档规范
+# Markdown Documentation Rules
 
-## 内容与结构
+English | [Chinese](markdown-docs-zh.md)
 
-- 按需说明目的、边界、模型或接口、风险和验收标准，避免套用空章节。
-- 待决策事项统一标为“待确认”，集中记录到 `docs/architecture/open-decisions.md`。
-- 重要设计文档维护状态、适用范围和最近更新时间；设计变更写明影响与待验证项。
-- 新增 `docs/**/*.md` 必须在 `docs/README.md` 建立链接索引。
-- 内部链接不得断开或逃逸仓库；外部链接优先使用官方文档或原始出处。
+## Content and structure
 
-## 图表
+- Explain the purpose, boundaries, model or interface, risks, and acceptance criteria when they are relevant; do not add empty template sections.
+- Mark unresolved decisions consistently and keep them in `docs/architecture/open-decisions.md`.
+- Important design documents maintain status, scope, and last-updated metadata.
+- Index every new `docs/**/*.md` file from the matching language index.
+- Internal links must resolve inside the repository. Prefer official documentation and primary sources for external links.
 
-- Codex 从 `.agents/skills/archify/SKILL.md` 原生发现 `archify`，执行内容以项目内唯一的 [Archify Skill 实现](../../.claude/skills/archify/SKILL.md) 为准；不新增 PlantUML、Mermaid、无源码截图或手写 SVG/PNG。极简目录树可用 ASCII。
-- Typed JSON 是唯一可编辑真相源；同名 `.archify.html` 是交互产物，`.archify.png` 必须由 Viewer 原生导出且不含 Viewer chrome。Markdown 同时链接三者，不复制 JSON 正文；整页截图只作临时视觉证据。
-- 新增或修改图表必须完成 `showcase` 9/9 校验、HTML 确定性生成、四档桌面包含性检查和深浅主题人工复核。命令、固定版本与离线边界见 [Archify 图表系统](../../docs/architecture/diagram-system.md)。
-- 图表保持简单可读，并配套文字说明。
-- 需要把带图 Markdown 单独移出仓库时，按[便携单文件文档](../../docs/architecture/portable-documents.md)运行 `npm run export:portable-docs -- <source.md>`；不要把仓库三联引用改成远程 URL，也不要提交 `build/portable-docs/`。
+## Diagram tool selection
 
-## 归档
+Archify and PlantUML are complementary. Choose by delivery and maintenance needs, not by a blanket diagram-type rule.
 
-持续追加的进度或待决策文档过长时，将已结束且不再变化的历史移入只读的 `*.archive.md`，主文件保留归档链接和仍有效内容。归档文件同样加入 `docs/README.md`，无需为拆分另建门禁。
+| Need | Tool |
+| --- | --- |
+| Architecture overview, complex workflow/swimlane, data flow, lifecycle, or presentation diagram | Archify |
+| Interaction, light/dark themes, search, route tracing, or canonical high-resolution PNG | Archify |
+| Markdown-inline source, quick edits, and clear text diffs | PlantUML |
+| ERD/class model, precise state machine, or focused sequence/activity diagram | PlantUML |
+| Fast CI compilation of many technical diagrams | PlantUML |
+
+An explicit user tool choice takes precedence. For overlapping types, use Archify when the standalone viewer or presentation quality is part of the deliverable; use PlantUML when inline ownership, precision, and reviewable source are primary.
+
+Never maintain equivalent Archify JSON and PlantUML for the same illustration. A document may use both tools for genuinely different views.
+
+## Archify contract
+
+- Codex discovers `archify` from `.agents/skills/archify/SKILL.md`; the canonical implementation is [the vendored Archify Skill](../../.claude/skills/archify/SKILL.md).
+- Typed JSON is the only editable source. The matching `.archify.html` is the interactive artifact and `.archify.png` is a Viewer-native canonical export without Viewer chrome.
+- Markdown links the PNG, HTML, and JSON. Full-page screenshots are temporary visual evidence only.
+- New or changed diagrams require showcase 9/9 validation, deterministic HTML delivery, four desktop containment checks, and human review in both themes.
+
+## PlantUML contract
+
+- Use the project [PlantUML in Markdown Skill](../../.claude/skills/plantuml-in-markdown/SKILL.md) and its select → extract → compile → repair → write back → compile-all loop.
+- The fenced Markdown block is the only editable source. Each block must be followed by its generated local SVG reference for GitHub.
+- In a bilingual pair, only canonical English Markdown owns the block; the Chinese translation reuses the SVG without duplicating the source.
+- Run `npm run gen:plantuml` after source changes and `npm run check:plantuml` before handoff. `PUML_JAR` must identify the local pinned JAR.
+- Do not use remote/local include directives or hand-edit generated SVG. Inspect the final SVG, but do not compare its bytes across machines.
+
+Keep every diagram simple, readable, and accompanied by prose that states its factual boundary. Portable Archify-backed documents follow [Portable Single-File Documents](../../docs/architecture/portable-documents.md).
+
+## Archiving
+
+When an append-only progress or decision document becomes too long, move completed immutable history into a read-only `*.archive.md`. Keep a link in the active document and add the archive to both documentation indexes.

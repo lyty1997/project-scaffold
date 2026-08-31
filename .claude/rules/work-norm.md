@@ -1,47 +1,58 @@
-# 工程规范
+# Engineering Practice
 
-## 遵守第一性原理
-- 但是在开始造轮子之前，一定要先搜索，查一查有没有适用的开源项目可供移植，或有没有成熟的方案可复用
+English | [Chinese](../rules-zh/work-norm-zh.md)
 
-## 开发流程
-- 任何开发工作开始前，必须先与用户共同完成设计文档和技术规范文档，经用户确认后方可根据设计动手写代码（设计文档落项目 `docs/` 体系）
-- 遇到需要确认或澄清的问题时，主动向用户提问，不要自行假设
-- 每个 plan 都要判断它是过度工程、欠工程、还是刚刚好，并说明原因
-- 确认 plan 后，edit写代码之前，更新相关设计文档
-- 设计文档建议不超过 700 行（不强制）
-- 每次解决 bug 后，主动将错误原因和解决方案追加到项目的已知问题文档，没有就新建
-- 执行工作前先查阅"已知问题"，避免重复犯同类错误
+## First principles
 
-## 编码纪律
-- 分模块设计，需以用户确认的总设计文档或架构设计文档为唯一真相源，拆分模块进行详细设计
-- 模块之间对接联调之前，要先对齐 API，注意 API 参数和类型（签名、字段名、可选/必选、类型/枚举范围、错误形态），避免联调时才发现签名不匹配
-- 每个模块在上下游模块没有准备好之前，要用模拟数据（stub/mock/fixture）自测，拿到输入输出证据后才能验收；不允许靠"等下游就绪再说"代替自测
+- Before building a new mechanism, search for a suitable open-source project or mature design that can be reused or adapted.
 
-### 不埋雷：暴露问题而非掩盖
-**核心原则：编码时避免埋雷——不要为了交付用多余的兜底掩盖问题，要把问题暴露出来然后解决掉。** 优雅的错误处理 ≠ 堆兜底；兜底是用来「优雅降级 + 让失败可见」的，不是用来「假装成功、悄悄丢数据」的。具体红线：
-- **禁止静默吞异常**：`except Exception: pass` / `with suppress(Exception)` / 空 `catch {}` 都是反模式；要么处理、要么上抛、最低限度也要 `logger.warning` 让失败可见。
-- **禁止收太宽的 except**：宽 except 会顺手吞掉编程 bug（拼写错、类型错），让真问题伪装成「已处理」。except 类型要收窄到这一处真正可预期的异常。
-- **禁止用假数据/空结果冒充成功**：模型空响应、缺页、缺图、读不到文件——不能当成功结果往下游传或写进缓存；缺失项要收集进 `skipped`/`missing`/`error` 并透出到结果或日志。
-- **失败信号要透到用户侧**：关键失败不能只躺在服务端日志，要进 `result.error` / 任务状态 / 前端可见提示；前端 catch 要区分预期态（如 404 静默）与真错误（`setError`/`console.error`）。
-- **降级必须留痕**：确实需要降级（如退回本地推理、回退原文）时，必须 `logger.warning` 说明「降级了什么、结果与请求不符在哪」，并尽量挂软提示，绝不悄悄改变行为。
-- **交付前自检**：提交前问自己「这段兜底是在优雅降级，还是在掩盖一个我没解决的 bug？」——若是后者，停下来修根因。
+## Development workflow
 
-## 前端开发规范
+- Before implementation, complete the relevant design and technical specification with the user and record it under `docs/`. Begin coding only after the required decisions are confirmed.
+- Ask when a question requires confirmation; do not invent the answer.
+- For every plan, assess whether its scope is excessive, insufficient, or proportionate and explain why.
+- Update the relevant design after the plan is confirmed and before editing code.
+- Prefer design documents no longer than 700 lines, without treating that number as a hard limit.
+- After fixing a reusable bug, add its cause and solution to both known-issues documents, creating them if needed.
+- Read the relevant known issues before starting work to avoid repeating a previous failure.
 
-### 视觉验证（强制执行，不可跳过）
-每次修改 UI 后必须执行以下步骤，不得以任何理由跳过：
-1. 确认开发服务器正在运行（npm run dev）
-2. 运行 `node scripts/screenshot.js http://localhost:3000/你修改的页面`
-3. 读取 screenshots/current.png 检查渲染结果
-4. 发现问题立即修复，再次截图确认
-5. 直到视觉结果正确才算完成
-没有截图验证的 UI 修改视为未完成。
+## Coding discipline
 
-## 版本管理
-- 每添加一个feature都要提交一次patch，方便回溯和回退
+- Treat the user-confirmed product or architecture design as the single source of truth, then create focused module designs beneath it.
+- Align an API before integrating modules: signature, field names, optionality, types and enum ranges, and error shapes.
+- When upstream or downstream modules are unavailable, test each module with stubs, mocks, or fixtures and require input/output evidence before acceptance. Waiting for another module is not a substitute for isolated testing.
 
-## 任务收尾
-- 每次任务结束或意外中断时，必须更新 `docs/progress.md`（项目进度）并记录任务摘要
-- 任务摘要需包含：时间戳、主题、完成内容、遗留问题（如有）
-- 更新自己的项目 memory
-- 重要变更：创建会议纪要，更新需求/设计文档
+### Expose failures instead of planting hidden hazards
+
+**Do not add redundant fallbacks merely to deliver on time. Expose the problem and solve its root cause.** Graceful error handling is not a pile of fallbacks: degradation must stay visible and must not pretend success or discard data silently.
+
+- **Never swallow exceptions silently.** `except Exception: pass`, broad `suppress(Exception)`, and empty `catch {}` blocks are anti-patterns. Handle, rethrow, or at minimum log a warning that makes the failure visible.
+- **Catch the narrow expected exception.** A broad catch also hides programming defects such as misspellings and type errors, misrepresenting them as handled failures.
+- **Never substitute fake data or an empty result for success.** An empty model response, missing page or image, or unreadable file must be collected under `skipped`, `missing`, or `error` and exposed through the result or logs instead of entering downstream caches as success.
+- **Surface critical failures to the user.** Do not leave them only in server logs. Put them in `result.error`, task status, or visible UI feedback. Frontend catches distinguish expected states such as a quiet 404 from real errors reported through `setError` or `console.error`.
+- **Leave evidence of degradation.** If fallback to local inference or original text is truly required, log what changed and how the result differs from the request, and show a soft warning when possible.
+- **Before delivery, ask whether a fallback degrades gracefully or hides an unresolved bug.** Stop and repair the root cause when it does the latter.
+
+## Frontend development
+
+### Mandatory visual verification
+
+After every UI change:
+
+1. Confirm the development server is running with `npm run dev`.
+2. Run `node scripts/screenshot.js http://localhost:3000/changed-page`.
+3. Inspect `screenshots/current.png`.
+4. Fix visible defects and capture again.
+5. Continue until the render is correct.
+
+A UI change without screenshot verification is incomplete.
+
+## Version control
+
+- Commit each feature as a focused change so it can be reviewed and reverted independently.
+
+## Task handoff
+
+- At completion or interruption, update both `docs/progress.md` and `docs/progress-zh.md` with a timestamp, topic, completed work, and remaining issues.
+- Update the project's maintained Agent memory when applicable.
+- For an important change, record meeting notes and update the requirements or design documents.

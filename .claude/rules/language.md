@@ -1,5 +1,8 @@
-# 语言规则
-- 对话：中文
-- 代码注释/docstring：中文（标准英文术语保留原样）
-- 提交信息：主题行中英双语、英文在前（`<type>(<scope>): <English 主题> / <中文主题>`）
-- `docs/` 文档：中文
+# Language Rules
+
+English | [Chinese](../rules-zh/language-zh.md)
+
+- Conversation: match the user's explicit language; otherwise use English.
+- Code comments and docstrings: English, preserving standard technical terms.
+- Commit subjects: English Conventional Commits in the form `<type>(<scope>): <English subject>`.
+- `docs/`: canonical English documents with synchronized `-zh.md` Chinese translations.

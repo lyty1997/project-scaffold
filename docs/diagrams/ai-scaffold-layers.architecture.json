@@ -2,28 +2,28 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "AI 编码脚手架四层架构",
-    "locale": "zh-CN",
+    "title": "Four-Layer AI Coding Scaffold",
+    "locale": "en",
     "quality_profile": "showcase",
     "viewBox": [1390, 800],
     "views": [
       {
         "id": "task-path",
-        "label": "一次任务的主路径",
+        "label": "Main Path Through a Task",
         "focus": ["owner", "agent", "source", "local-gates", "ci"],
-        "note": "从负责人提出任务，到源码修改、本地门禁和远端验证。"
+        "note": "Follow an owner's request through source changes, local gates, and remote verification."
       },
       {
         "id": "context-path",
-        "label": "事实与规则如何进入 Agent",
+        "label": "How Facts and Rules Reach the Agent",
         "focus": ["docs", "state", "agents", "rules", "agent"],
-        "note": "项目事实、当前状态与分层规则共同约束 Agent。"
+        "note": "Project facts, current state, and layered rules jointly constrain the Agent."
       },
       {
         "id": "feedback-path",
-        "label": "验证反馈闭环",
+        "label": "Verification Feedback Loop",
         "focus": ["contracts", "source", "local-gates", "ci", "agent", "state"],
-        "note": "契约和源码进入门禁，CI 结果再反馈给 Agent 与项目状态。"
+        "note": "Contracts and source enter the gates; CI results feed back into the Agent and project state."
       }
     ],
     "legend": {
@@ -43,7 +43,7 @@
     {
       "id": "owner",
       "type": "external",
-      "label": "项目负责人",
+      "label": "Project Owner",
       "row": 2,
       "col": 0,
       "size": [150, 60]
@@ -51,7 +51,7 @@
     {
       "id": "docs",
       "type": "database",
-      "label": "定位、架构、边界",
+      "label": "Project Definition",
       "sublabel": "docs/",
       "row": 0,
       "col": 1
@@ -59,15 +59,15 @@
     {
       "id": "state",
       "type": "database",
-      "label": "待决策与进度",
-      "sublabel": "决策记录 / 进度",
+      "label": "Open Decisions",
+      "sublabel": "Progress Log",
       "row": 0,
       "col": 2
     },
     {
       "id": "agents",
       "type": "security",
-      "label": "始终生效的边界",
+      "label": "Core Boundaries",
       "sublabel": "AGENTS.md",
       "row": 1,
       "col": 1
@@ -75,31 +75,31 @@
     {
       "id": "rules",
       "type": "security",
-      "label": "按任务选读的规则",
-      "sublabel": "规则路由",
+      "label": "Task-Specific Rules",
+      "sublabel": "Rule Routing",
       "row": 1,
       "col": 2
     },
     {
       "id": "agent",
       "type": "backend",
-      "label": "AI 编码 Agent",
-      "sublabel": "理解、判断与修改",
+      "label": "AI Coding Agent",
+      "sublabel": "Reason and Edit",
       "row": 2,
       "col": 3
     },
     {
       "id": "source",
       "type": "backend",
-      "label": "项目源码与配置",
-      "sublabel": "实现真相源",
+      "label": "Source + Config",
+      "sublabel": "Source of Truth",
       "row": 3,
       "col": 3
     },
     {
       "id": "automation",
       "type": "backend",
-      "label": "初始化、预览与生成器",
+      "label": "Project Automation",
       "sublabel": "scripts/",
       "row": 2,
       "col": 4,
@@ -108,7 +108,7 @@
     {
       "id": "contracts",
       "type": "database",
-      "label": "契约词表与扫描规则",
+      "label": "Contract Rules",
       "sublabel": "docs/contracts/",
       "row": 4,
       "col": 2
@@ -116,8 +116,8 @@
     {
       "id": "local-gates",
       "type": "security",
-      "label": "本地门禁与 Git hooks",
-      "sublabel": "可执行反馈",
+      "label": "Local Gates and Git Hooks",
+      "sublabel": "Enforced Checks",
       "row": 4,
       "col": 3,
       "size": [180, 60]
@@ -125,8 +125,8 @@
     {
       "id": "ci",
       "type": "cloud",
-      "label": "CI 与专项检查",
-      "sublabel": "远端证据",
+      "label": "CI Checks",
+      "sublabel": "Remote Evidence",
       "row": 4,
       "col": 4
     }
@@ -134,25 +134,25 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "项目真相层",
+      "label": "Project Truth Layer",
       "wraps": ["docs", "state"],
       "pad": 28
     },
     {
       "kind": "security-group",
-      "label": "Agent 上下文层",
+      "label": "Agent Context Layer",
       "wraps": ["agents", "rules"],
       "pad": 28
     },
     {
       "kind": "region",
-      "label": "工程执行层",
+      "label": "Engineering Execution Layer",
       "wraps": ["agent", "source", "automation"],
       "pad": 28
     },
     {
       "kind": "security-group",
-      "label": "可执行反馈层",
+      "label": "Enforced Feedback Layer",
       "wraps": ["contracts", "local-gates", "ci"],
       "pad": 28
     }
@@ -162,13 +162,13 @@
       "id": "owner-docs",
       "from": "owner",
       "to": "docs",
-      "label": "写入目标与事实"
+      "label": "Records goals and facts"
     },
     {
       "id": "owner-state",
       "from": "owner",
       "to": "state",
-      "label": "做出取舍",
+      "label": "Makes decisions",
       "fromSide": "top",
       "toSide": "top",
       "via": [[155, 30], [700, 30]]
@@ -177,28 +177,28 @@
       "id": "owner-agent",
       "from": "owner",
       "to": "agent",
-      "label": "提出当前任务",
+      "label": "Assigns the current task",
       "variant": "emphasis"
     },
     {
       "id": "docs-agent",
       "from": "docs",
       "to": "agent",
-      "label": "项目上下文",
+      "label": "Project context",
       "toSide": "top"
     },
     {
       "id": "state-agent",
       "from": "state",
       "to": "agent",
-      "label": "阶段与未决项",
+      "label": "Stage and open decisions",
       "toSide": "top"
     },
     {
       "id": "agents-agent",
       "from": "agents",
       "to": "agent",
-      "label": "稳定边界",
+      "label": "Stable boundaries",
       "variant": "security",
       "toSide": "top",
       "labelAt": [800, 330]
@@ -207,7 +207,7 @@
       "id": "rules-agent",
       "from": "rules",
       "to": "agent",
-      "label": "任务细则",
+      "label": "Task rules",
       "variant": "security",
       "toSide": "top",
       "labelAt": [1020, 330]
@@ -216,7 +216,7 @@
       "id": "agent-source",
       "from": "agent",
       "to": "source",
-      "label": "小步修改",
+      "label": "Incremental changes",
       "variant": "emphasis",
       "labelAt": [960, 454]
     },
@@ -224,19 +224,19 @@
       "id": "agent-automation",
       "from": "agent",
       "to": "automation",
-      "label": "调用确定性能力"
+      "label": "Uses automation"
     },
     {
       "id": "contracts-gates",
       "from": "contracts",
       "to": "local-gates",
-      "label": "提供可扫描契约"
+      "label": "Machine-checkable contracts"
     },
     {
       "id": "source-gates",
       "from": "source",
       "to": "local-gates",
-      "label": "接受本地验证",
+      "label": "Local validation",
       "variant": "emphasis",
       "fromSide": "bottom",
       "toSide": "top",
@@ -246,14 +246,15 @@
       "id": "gates-ci",
       "from": "local-gates",
       "to": "ci",
-      "label": "同一基线进入远端",
+      "label": "Same baseline",
       "variant": "emphasis"
     },
     {
       "id": "ci-agent",
       "from": "ci",
       "to": "agent",
-      "label": "失败或通过证据",
+      "label": "CI evidence",
+      "labelDx": -60,
       "fromSide": "right",
       "toSide": "right",
       "via": [[1380, 710], [1380, 490], [1090, 490], [1090, 410]]
@@ -262,7 +263,7 @@
       "id": "agent-state",
       "from": "agent",
       "to": "state",
-      "label": "回写进度与遗留项",
+      "label": "Updates project state",
       "via": [[1060, 410], [1060, 180], [800, 180], [800, 110]]
     }
   ]

@@ -1,30 +1,35 @@
-# 编码安全规范 — 技术栈自动调度
+# Coding Safety: Automatic Stack Dispatch
 
-## 自动检查（hooks 层）
-项目 hook `.claude/hooks/post-edit-safety.py` 在每次 Write/Edit 代码文件后自动运行：
-- 根据文件扩展名识别技术栈（.py/.pyi → Python，.ts/.tsx → TypeScript，.js/.jsx → JavaScript）
-- Python：自动运行 `mypy --strict` + `ruff check` + `typos`
-- TypeScript：自动运行 `tsc --noEmit` + `eslint` + `typos`
-- JavaScript：自动运行 `eslint` + `typos`
-- 检查结果通过 additionalContext 反馈
-- `must_pass=true` 的检查若失败、缺依赖或超时，会被视为错误，必须修复
-- `must_pass=false` 的检查可作为警告提示，不阻断主流程
+English | [Chinese](../rules-zh/safety-dispatch-zh.md)
 
-配置位置：`.claude/settings.json` → hooks.PostToolUse
-克隆本仓库后无需额外配置，hook 随项目自动生效（若个人全局 `~/.claude/settings.json` 也配置了同名 hook，两者会合并运行）。
+## Automated hook checks
 
-## 编码规范（rules 层）
-hooks 只管自动检查，编码指南仍由 rules 文件约束：
+After every Write or Edit of a code file, `.claude/hooks/post-edit-safety.py`:
 
-| 技术栈 | 对应规范 |
-|-------|---------|
+- detects the stack from the extension: `.py`/`.pyi` for Python, `.ts`/`.tsx` for TypeScript, and `.js`/`.jsx` for JavaScript;
+- runs `mypy --strict`, `ruff check`, and `typos` for Python;
+- runs `tsc --noEmit`, ESLint, and `typos` for TypeScript;
+- runs ESLint and `typos` for JavaScript;
+- reports results through additionalContext;
+- treats a failed, missing, or timed-out `must_pass=true` check as an error that must be fixed;
+- reports `must_pass=false` checks as non-blocking warnings.
+
+The hook is configured under `.claude/settings.json` at `hooks.PostToolUse`. It activates with the repository after cloning. A same-named hook in the user's global `~/.claude/settings.json` is merged and may also run.
+
+## Rules by stack
+
+Hooks provide automated checks; these files define coding guidance:
+
+| Stack | Rule |
+| --- | --- |
 | Python | `python-coding-rules.md` |
-| TypeScript/JS | `typescript-coding-rules.md` |
-| Rust | 待建 |
-| Go | 待建 |
-| 跨语言 — 并发/资源 | `concurrency-resource-safety.md`（asyncio task / 子进程 / pipe drain / shutdown 顺序 / shell trap） |
+| TypeScript / JavaScript | `typescript-coding-rules.md` |
+| Rust | Pending |
+| Go | Pending |
+| Cross-language concurrency and resources | `concurrency-resource-safety.md` for asyncio tasks, subprocesses, pipe draining, shutdown order, and shell traps |
 
-## 扩展新技术栈
-1. 在 `.claude/hooks/post-edit-safety.py` 的 `CHECKS` 和 `EXT_MAP` 中添加新语言的检查命令
-2. 在 `.claude/rules/` 中创建对应的编码规范文件
-3. 更新本文件的表格
+## Adding a stack
+
+1. Add the language commands to `CHECKS` and `EXT_MAP` in `.claude/hooks/post-edit-safety.py`.
+2. Create the matching rule file under `.claude/rules/` and its maintained translation under `.claude/rules-zh/`.
+3. Update the table above and its Chinese counterpart.

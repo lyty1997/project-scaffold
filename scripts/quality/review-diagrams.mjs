@@ -16,7 +16,7 @@ const specs = requested.size === 0
   : allSpecs.filter((spec) => requested.has(basename(spec.path)) || requested.has(relativePath(spec.path)));
 
 if (specs.length === 0) {
-  console.error("没有与参数匹配的 Archify 图表源。");
+  console.error("No Archify diagram source matched the arguments.");
   process.exit(1);
 }
 
@@ -35,17 +35,17 @@ for (const spec of specs) {
         "showcase",
         "--json",
       ]),
-      `${relativePath(spec.path)} 交付`
+      `${relativePath(spec.path)} delivery`
     );
 
     const evidenceArtifact = resolve(evidenceRoot, basename(spec.outputPath));
     copyFileSync(spec.outputPath, evidenceArtifact);
     const visual = parseReceipt(
       runArchify(["visual-check", evidenceArtifact, "--json"]),
-      `${relativePath(spec.path)} 视觉检查`
+      `${relativePath(spec.path)} visual check`
     );
     if (visual.status !== "pass") {
-      throw new Error(`${relativePath(spec.path)} 的 visual-check status=${visual.status}。`);
+      throw new Error(`${relativePath(spec.path)} visual-check returned status=${visual.status}.`);
     }
 
     const nativeExportPath = evidenceArtifact.replace(/\.html$/, ".native.png");
@@ -56,9 +56,9 @@ for (const spec of specs) {
     });
     copyFileSync(nativeExportPath, spec.previewPath);
     console.log(
-      `- ${relativePath(spec.path)}：9/9，四档桌面无溢出；` +
-        `Viewer 原生 PNG ${nativeExport.width}x${nativeExport.height} ` +
-        `(×${nativeExport.scale}, canonical) 已刷新为 ${relativePath(spec.previewPath)}；` +
+      `- ${relativePath(spec.path)}: 9/9 with no overflow at four desktop sizes; ` +
+        `Viewer-native PNG ${nativeExport.width}x${nativeExport.height} ` +
+        `(x${nativeExport.scale}, canonical) refreshed at ${relativePath(spec.previewPath)}; ` +
         `html ${delivered.artifact.sha256.slice(0, 12)}`
     );
   } catch (error) {
@@ -66,8 +66,8 @@ for (const spec of specs) {
   }
 }
 
-console.log(`视觉证据保留在 ${evidenceRoot}`);
-console.log("自动检查通过后仍须人工查看该目录中的深浅主题截图与 *.native.png；脚本不会代替人工宣称视觉通过。");
+console.log(`Visual evidence retained at ${evidenceRoot}`);
+console.log("After automated checks pass, inspect the light/dark screenshots and *.native.png in that directory manually; this script does not claim visual approval.");
 
 if (failures.length > 0) {
   console.error(`Diagram visual review failed (${failures.length}):`);

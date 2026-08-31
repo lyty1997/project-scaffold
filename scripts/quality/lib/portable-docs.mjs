@@ -56,19 +56,19 @@ function pathInside(root, path) {
 function regularFileWithinRoot(path, root, label) {
   const absolutePath = resolve(path);
   if (!pathInside(root, absolutePath)) {
-    throw new Error(`${label} 逃逸允许根目录：${absolutePath}`);
+    throw new Error(`${label} escapes the allowed root: ${absolutePath}`);
   }
   if (!existsSync(absolutePath)) {
-    throw new Error(`${label}不存在：${absolutePath}`);
+    throw new Error(`${label} does not exist: ${absolutePath}`);
   }
   const stats = lstatSync(absolutePath);
   if (stats.isSymbolicLink() || !stats.isFile()) {
-    throw new Error(`${label}必须是普通文件，不能是 symlink：${absolutePath}`);
+    throw new Error(`${label} must be a regular file, not a symbolic link: ${absolutePath}`);
   }
   const realRoot = realpathSync(root);
   const realPath = realpathSync(absolutePath);
   if (!pathInside(realRoot, realPath)) {
-    throw new Error(`${label}真实路径逃逸允许根目录：${absolutePath}`);
+    throw new Error(`${label} resolves outside the allowed root: ${absolutePath}`);
   }
   return absolutePath;
 }
@@ -232,32 +232,32 @@ function verifyImageSignature(bytes, mime, label) {
       bytes.length >= 12 &&
       bytes.subarray(0, 4).toString("ascii") === "RIFF" &&
       bytes.subarray(8, 12).toString("ascii") === "WEBP");
-  if (!valid) throw new Error(`${label} 的文件签名与扩展名不一致。`);
+  if (!valid) throw new Error(`${label} file signature does not match its extension.`);
 }
 
 function normalizeImageTarget(rawTarget, sourcePath, root, line) {
-  if (!rawTarget) throw new Error(`${sourcePath}:${line}: 图片目标为空。`);
+  if (!rawTarget) throw new Error(`${sourcePath}:${line}: image target is empty.`);
   const unescaped = rawTarget.replace(/\\([\\()[\]<> ])/g, "$1");
   if (
     isAbsolute(unescaped) ||
     unescaped.startsWith("//") ||
     /^[A-Za-z][A-Za-z0-9+.-]*:/.test(unescaped)
   ) {
-    throw new Error(`${sourcePath}:${line}: 便携导出只接受仓库内本地图片：${rawTarget}`);
+    throw new Error(`${sourcePath}:${line}: portable export accepts only repository-local images: ${rawTarget}`);
   }
   if (/[?#]/.test(unescaped)) {
-    throw new Error(`${sourcePath}:${line}: 本地图片路径不能带 query 或 fragment：${rawTarget}`);
+    throw new Error(`${sourcePath}:${line}: local image paths must not include a query or fragment: ${rawTarget}`);
   }
   let decoded;
   try {
     decoded = decodeURIComponent(unescaped);
   } catch (error) {
-    throw new Error(`${sourcePath}:${line}: 图片路径 URL 编码无效：${error.message}`);
+    throw new Error(`${sourcePath}:${line}: image path has invalid URL encoding: ${error.message}`);
   }
   if (decoded.includes("\0") || /[?#]/.test(decoded)) {
-    throw new Error(`${sourcePath}:${line}: 图片路径包含不允许的字符。`);
+    throw new Error(`${sourcePath}:${line}: image path contains a forbidden character.`);
   }
-  return regularFileWithinRoot(resolve(dirname(sourcePath), decoded), root, `${sourcePath}:${line}: 图片`);
+  return regularFileWithinRoot(resolve(dirname(sourcePath), decoded), root, `${sourcePath}:${line}: image`);
 }
 
 function cleanHeading(text) {
@@ -278,45 +278,45 @@ export function inspectPortableSource(
   sourcePath,
   { root = ROOT, generatorFiles = DEFAULT_GENERATOR_FILES } = {}
 ) {
-  const source = regularFileWithinRoot(sourcePath, root, "便携 Markdown 源");
+  const source = regularFileWithinRoot(sourcePath, root, "Portable Markdown source");
   if (extname(source).toLowerCase() !== ".md") {
-    throw new Error(`便携文档源必须是 .md：${source}`);
+    throw new Error(`Portable document source must be .md: ${source}`);
   }
   const sourceBytes = readFileSync(source);
   const sourceText = sourceBytes.toString("utf8");
   const withoutCode = markdownWithoutCode(sourceText);
   if (RAW_HTML_PATTERN.test(withoutCode)) {
-    throw new Error(`${source} 包含原始 HTML；便携导出只接受可审查的 Markdown 结构。`);
+    throw new Error(`${source} contains raw HTML; portable export accepts only auditable Markdown structure.`);
   }
 
   const imageRefs = findMarkdownImages(sourceText);
-  if (imageRefs.length === 0) throw new Error(`${source} 没有可内嵌的 Markdown 图片。`);
+  if (imageRefs.length === 0) throw new Error(`${source} has no embeddable Markdown images.`);
   const cache = new Map();
   const images = [];
   let totalBytes = 0;
   for (const ref of imageRefs) {
     if (!cleanHeading(ref.alt)) {
-      throw new Error(`${source}:${ref.line}: 图片必须提供非空 alt 文本。`);
+      throw new Error(`${source}:${ref.line}: image must provide non-empty alt text.`);
     }
     const path = normalizeImageTarget(ref.target, source, root, ref.line);
     const extension = extname(path).toLowerCase();
     const mime = IMAGE_TYPES[extension];
     if (!mime) {
-      throw new Error(`${source}:${ref.line}: 不支持主动或未知图片格式 ${extension || "<none>"}。`);
+      throw new Error(`${source}:${ref.line}: unsupported or unknown image format ${extension || "<none>"}.`);
     }
     let bytes = cache.get(path);
     if (!bytes) {
       const size = statSync(path).size;
       if (size === 0 || size > MAX_IMAGE_BYTES) {
-        throw new Error(`${source}:${ref.line}: 图片必须大于 0 且不超过 16 MiB：${path}`);
+        throw new Error(`${source}:${ref.line}: image must be larger than 0 bytes and no more than 16 MiB: ${path}`);
       }
       bytes = readFileSync(path);
-      verifyImageSignature(bytes, mime, `${source}:${ref.line}: 图片`);
+      verifyImageSignature(bytes, mime, `${source}:${ref.line}: image`);
       cache.set(path, bytes);
     }
     totalBytes += bytes.length;
     if (totalBytes > MAX_DOCUMENT_IMAGE_BYTES) {
-      throw new Error(`${source} 的图片总量超过 32 MiB。`);
+      throw new Error(`${source} contains more than 32 MiB of images.`);
     }
     images.push({ ...ref, path, mime, bytes });
   }
@@ -335,7 +335,7 @@ export function inspectPortableSource(
     );
   }
   for (const generatorPath of generatorFiles) {
-    if (!existsSync(generatorPath)) throw new Error(`缺少便携导出器文件：${generatorPath}`);
+    if (!existsSync(generatorPath)) throw new Error(`Portable exporter file is missing: ${generatorPath}`);
     addHashInput(hash, `@generator/${basename(generatorPath)}`, readFileSync(generatorPath));
   }
 
@@ -353,7 +353,7 @@ export function inspectPortableSource(
 
 export function portableOutputPath(sourcePath) {
   const source = resolve(sourcePath);
-  if (!pathInside(DOCS_ROOT, source)) throw new Error(`便携源不在 docs/：${source}`);
+  if (!pathInside(DOCS_ROOT, source)) throw new Error(`Portable source is outside docs/: ${source}`);
   const outputRelative = relative(DOCS_ROOT, source).replace(/\.md$/i, ".html");
   return resolve(PORTABLE_BUILD_ROOT, outputRelative);
 }
@@ -362,7 +362,7 @@ export function findPortableSources(requested = []) {
   let candidates;
   if (requested.length > 0) {
     candidates = requested.map((value) => {
-      if (value.startsWith("-")) throw new Error(`不支持便携导出选项：${value}`);
+      if (value.startsWith("-")) throw new Error(`Unsupported portable export option: ${value}`);
       return resolve(ROOT, value);
     });
   } else {
@@ -372,9 +372,9 @@ export function findPortableSources(requested = []) {
   }
 
   const unique = [...new Set(candidates)].sort();
-  if (unique.length === 0) throw new Error("没有找到包含本地 Markdown 图片的文档。");
+  if (unique.length === 0) throw new Error("No document containing a local Markdown image was found.");
   for (const path of unique) {
-    if (!pathInside(DOCS_ROOT, path)) throw new Error(`便携文档必须位于 docs/：${path}`);
+    if (!pathInside(DOCS_ROOT, path)) throw new Error(`Portable documents must be inside docs/: ${path}`);
     inspectPortableSource(path);
   }
   return unique;
@@ -412,79 +412,79 @@ export function checkPortableHtml(
   const expected = inspectPortableSource(sourcePath, { root, generatorFiles });
   const errors = [];
   if (!existsSync(outputPath)) {
-    return { errors: [`缺少便携 HTML：${outputPath}`], expected };
+    return { errors: [`Portable HTML is missing: ${outputPath}`], expected };
   }
   const outputStats = lstatSync(outputPath);
   if (outputStats.isSymbolicLink() || !outputStats.isFile()) {
-    return { errors: [`便携 HTML 必须是普通文件：${outputPath}`], expected };
+    return { errors: [`Portable HTML must be a regular file: ${outputPath}`], expected };
   }
   const html = readFileSync(outputPath, "utf8");
-  if (!/^<!doctype html>/i.test(html)) errors.push("便携产物缺少 HTML5 doctype。");
-  if (!/<html\b[^>]*\blang="(?:zh-CN|en)"/i.test(html)) errors.push("便携产物缺少受支持的 html lang。");
-  if (!/<h1\b/i.test(html)) errors.push("便携产物没有正文 H1。");
+  if (!/^<!doctype html>/i.test(html)) errors.push("Portable output is missing an HTML5 doctype.");
+  if (!/<html\b[^>]*\blang="(?:zh-CN|en)"/i.test(html)) errors.push("Portable output is missing a supported html lang value.");
+  if (!/<h1\b/i.test(html)) errors.push("Portable output has no document H1.");
   if (metaContent(html, "portable-source") !== expected.sourceRelative) {
-    errors.push("便携产物记录的源路径与当前 Markdown 不一致。");
+    errors.push("Portable output source path does not match the current Markdown source.");
   }
   if (metaContent(html, "portable-input-sha256") !== expected.inputSha256) {
-    errors.push("便携产物输入摘要已过期。");
+    errors.push("Portable output input digest is stale.");
   }
   if (Number(metaContent(html, "portable-image-count")) !== expected.images.length) {
-    errors.push("便携产物记录的图片数量不正确。");
+    errors.push("Portable output records an incorrect image count.");
   }
   const pandocVersion = metaContent(html, "portable-pandoc-version");
   if (!/^\d+(?:\.\d+)+$/.test(pandocVersion)) {
-    errors.push("便携产物缺少合法 Pandoc 版本回执。");
+    errors.push("Portable output is missing a valid Pandoc version receipt.");
   } else if (compareVersions(pandocVersion, PORTABLE_MIN_PANDOC_VERSION) < 0) {
-    errors.push(`便携产物 Pandoc 版本低于 ${PORTABLE_MIN_PANDOC_VERSION}。`);
+    errors.push(`Portable output uses Pandoc older than ${PORTABLE_MIN_PANDOC_VERSION}.`);
   }
 
   for (const forbidden of ["script", "link", "base", "form", "iframe", "object", "embed", "video", "audio", "source"]) {
     if (new RegExp(`<${forbidden}\\b`, "i").test(html)) {
-      errors.push(`便携产物不得包含 <${forbidden}>。`);
+      errors.push(`Portable output must not contain <${forbidden}>.`);
     }
   }
   for (const match of html.matchAll(/\shref\s*=\s*(["'])(.*?)\1/gi)) {
     if (!/^(?:#|https?:\/\/|mailto:|tel:)/i.test(match[2])) {
-      errors.push(`便携产物仍含本地或不安全 href：${match[2]}`);
+      errors.push(`Portable output still contains a local or unsafe href: ${match[2]}`);
     }
   }
   for (const match of html.matchAll(/\ssrc\s*=\s*(["'])(.*?)\1/gi)) {
     if (!/^data:image\/(?:png|jpeg|webp|gif);base64,/i.test(match[2])) {
-      errors.push(`便携产物仍含非内嵌 src：${match[2]}`);
+      errors.push(`Portable output still contains a non-embedded src: ${match[2]}`);
     }
   }
   if (/\s(?:href|src)\s*=\s*(?!["'])/i.test(html)) {
-    errors.push("便携产物包含未加引号的 href 或 src。");
+    errors.push("Portable output contains an unquoted href or src.");
   }
   if (/\s(?:srcset|poster)\s*=/i.test(html)) {
-    errors.push("便携产物不得包含 srcset 或 poster 资源引用。");
+    errors.push("Portable output must not contain srcset or poster resource references.");
   }
-  if (/@import\b/i.test(html)) errors.push("便携 CSS 不得包含 @import。");
+  if (/@import\b/i.test(html)) errors.push("Portable CSS must not contain @import.");
   for (const match of html.matchAll(/url\(([^)]*)\)/gi)) {
     const value = match[1].trim().replace(/^(["'])(.*)\1$/, "$2");
-    if (!value.startsWith("data:")) errors.push(`便携 CSS 仍含外部 url：${value}`);
+    if (!value.startsWith("data:")) errors.push(`Portable CSS still contains an external URL: ${value}`);
   }
 
   const allImageTags = [...html.matchAll(/<img\b[^>]*>/gi)];
   if (allImageTags.length !== expected.images.length) {
-    errors.push(`便携产物共有 ${allImageTags.length} 个 img 标签，预期 ${expected.images.length} 个。`);
+    errors.push(`Portable output contains ${allImageTags.length} img tags; expected ${expected.images.length}.`);
   }
   const embedded = [...html.matchAll(/<img\b[^>]*\bsrc="data:(image\/(?:png|jpeg|webp|gif));base64,([^"]+)"[^>]*>/gi)];
   if (embedded.length !== expected.images.length) {
-    errors.push(`便携产物内嵌 ${embedded.length} 张图片，预期 ${expected.images.length} 张。`);
+    errors.push(`Portable output embeds ${embedded.length} images; expected ${expected.images.length}.`);
   }
   for (let index = 0; index < Math.min(embedded.length, expected.images.length); index += 1) {
     const [tag, mime, base64] = embedded[index];
     const image = expected.images[index];
     if (mime.toLowerCase() !== image.mime) {
-      errors.push(`第 ${index + 1} 张便携图片 MIME 不正确。`);
+      errors.push(`Portable image ${index + 1} has an incorrect MIME type.`);
     }
     const bytes = strictBase64(base64);
     if (!bytes || !bytes.equals(image.bytes)) {
-      errors.push(`第 ${index + 1} 张便携图片字节与原图不一致。`);
+      errors.push(`Portable image ${index + 1} bytes do not match the source image.`);
     }
     const alt = tag.match(/\balt="([^"]*)"/i)?.[1] ?? "";
-    if (!alt.trim()) errors.push(`第 ${index + 1} 张便携图片缺少 alt 文本。`);
+    if (!alt.trim()) errors.push(`Portable image ${index + 1} is missing alt text.`);
   }
 
   return {

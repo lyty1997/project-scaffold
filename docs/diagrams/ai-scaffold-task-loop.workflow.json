@@ -2,8 +2,8 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "AI 编码任务最短闭环",
-    "locale": "zh-CN",
+    "title": "Minimal AI Coding Task Loop",
+    "locale": "en",
     "quality_profile": "showcase",
     "legend": {
       "mode": "hidden"
@@ -11,64 +11,64 @@
     "views": [
       {
         "id": "happy-path",
-        "label": "可执行任务主路径",
+        "label": "Executable Task Path",
         "focus": ["receive", "load-context", "classify", "design-gate", "update-design", "implement", "validate", "progress", "report"],
-        "note": "从接收任务到设计、实现、验证和交付证据。"
+        "note": "Follow task intake through design, implementation, verification, and delivery evidence."
       },
       {
         "id": "decision-stop",
-        "label": "待决定事项暂停",
+        "label": "Pause for User Decisions",
         "focus": ["classify", "clarify", "wait-decision"],
-        "note": "只有使用者能决定的事项不会被 Agent 擅自补全。"
+        "note": "The Agent never fills in decisions that only the user can make."
       },
       {
         "id": "repair-loop",
-        "label": "真实失败修复循环",
+        "label": "Root-Cause Repair Loop",
         "focus": ["implement", "validate"],
-        "note": "检查失败返回实现步骤定位根因，直到真实通过。"
+        "note": "Failed checks return to implementation for root-cause repair until they genuinely pass."
       }
     ]
   },
   "lanes": [
     {
       "id": "intake",
-      "label": "任务理解"
+      "label": "Task Understanding"
     },
     {
       "id": "decision",
-      "label": "决策与设计"
+      "label": "Decision and Design"
     },
     {
       "id": "execution",
-      "label": "实现与验证"
+      "label": "Implementation and Verification"
     },
     {
       "id": "handoff",
-      "label": "证据与交付"
+      "label": "Evidence and Handoff"
     },
     {
       "id": "blocked",
-      "label": "等待使用者决定",
+      "label": "Awaiting User Decision",
       "variant": "exception"
     }
   ],
   "phases": [
     {
       "id": "understand",
-      "label": "读取事实",
+      "label": "Read the Facts",
       "fromCol": 0,
       "toCol": 1
     },
     {
       "id": "decide",
-      "label": "决策门",
+      "label": "Decision Gate",
       "fromCol": 2,
       "toCol": 3,
       "variant": "security"
     },
     {
       "id": "execute",
-      "label": "小步实现与验收",
+      "label": "Incremental Implementation and Acceptance",
       "fromCol": 4,
       "toCol": 5,
       "variant": "emphasis"
@@ -105,7 +105,7 @@
       "lane": "intake",
       "col": 0,
       "type": "external",
-      "label": "接收任务",
+      "label": "Receive Task",
       "width": 150
     },
     {
@@ -113,7 +113,7 @@
       "lane": "intake",
       "col": 1,
       "type": "database",
-      "label": "读取项目上下文",
+      "label": "Load Project Context",
       "width": 170
     },
     {
@@ -121,7 +121,7 @@
       "lane": "decision",
       "col": 2,
       "type": "backend",
-      "label": "区分信息类型",
+      "label": "Classify Information",
       "width": 180
     },
     {
@@ -129,7 +129,7 @@
       "lane": "decision",
       "col": 3,
       "type": "security",
-      "label": "检查文档先行范围",
+      "label": "Check Docs-First Scope",
       "width": 190
     },
     {
@@ -137,7 +137,7 @@
       "lane": "decision",
       "col": 4,
       "type": "database",
-      "label": "更新设计或契约",
+      "label": "Update Design or Contract",
       "width": 170
     },
     {
@@ -145,7 +145,7 @@
       "lane": "execution",
       "col": 4,
       "type": "backend",
-      "label": "小步实现",
+      "label": "Implement Incrementally",
       "width": 160
     },
     {
@@ -153,7 +153,7 @@
       "lane": "execution",
       "col": 5,
       "type": "security",
-      "label": "运行相称检查",
+      "label": "Run Risk-Appropriate Checks",
       "width": 210
     },
     {
@@ -161,7 +161,7 @@
       "lane": "handoff",
       "col": 5,
       "type": "database",
-      "label": "更新 progress",
+      "label": "Update Progress",
       "width": 180
     },
     {
@@ -169,7 +169,7 @@
       "lane": "intake",
       "col": 5,
       "type": "external",
-      "label": "汇报结果",
+      "label": "Report Results",
       "width": 170
     },
     {
@@ -177,7 +177,7 @@
       "lane": "blocked",
       "col": 3,
       "type": "security",
-      "label": "写清事实、选项与影响",
+      "label": "State Facts, Options, Impact",
       "width": 200
     },
     {
@@ -185,7 +185,7 @@
       "lane": "blocked",
       "col": 4,
       "type": "external",
-      "label": "暂停依赖该决定的工作",
+      "label": "Pause Decision-Dependent Work",
       "width": 200
     }
   ],
@@ -200,21 +200,21 @@
       "id": "context-classify",
       "from": "load-context",
       "to": "classify",
-      "label": "查证并分类",
+      "label": "Verify and classify",
       "role": "main"
     },
     {
       "id": "classify-design",
       "from": "classify",
       "to": "design-gate",
-      "label": "无待决定阻塞",
+      "label": "No decision blocker",
       "role": "main"
     },
     {
       "id": "classify-clarify",
       "from": "classify",
       "to": "clarify",
-      "label": "存在待决定事项",
+      "label": "Decision required",
       "variant": "security",
       "role": "error"
     },
@@ -222,7 +222,7 @@
       "id": "clarify-wait",
       "from": "clarify",
       "to": "wait-decision",
-      "label": "请求使用者决定",
+      "label": "Request user decision",
       "variant": "security",
       "role": "branch"
     },
@@ -230,7 +230,7 @@
       "id": "design-update",
       "from": "design-gate",
       "to": "update-design",
-      "label": "触及文档先行范围",
+      "label": "Docs-first change required",
       "variant": "security",
       "role": "main"
     },
@@ -238,21 +238,21 @@
       "id": "design-implement",
       "from": "design-gate",
       "to": "implement",
-      "label": "无需先改设计",
+      "label": "No design update needed",
       "role": "branch"
     },
     {
       "id": "update-implement",
       "from": "update-design",
       "to": "implement",
-      "label": "设计已同步",
+      "label": "Design synchronized",
       "role": "main"
     },
     {
       "id": "implement-validate",
       "from": "implement",
       "to": "validate",
-      "label": "提交本轮结果",
+      "label": "Submit this iteration",
       "variant": "emphasis",
       "role": "main"
     },
@@ -260,7 +260,7 @@
       "id": "validate-repair",
       "from": "validate",
       "to": "implement",
-      "label": "检查失败，修复根因",
+      "label": "Failed: fix root cause",
       "variant": "security",
       "role": "error",
       "route": "bottom-channel"
@@ -269,7 +269,7 @@
       "id": "validate-progress",
       "from": "validate",
       "to": "progress",
-      "label": "全部通过",
+      "label": "All checks pass",
       "variant": "emphasis",
       "role": "main"
     },
@@ -277,7 +277,7 @@
       "id": "progress-report",
       "from": "progress",
       "to": "report",
-      "label": "交付证据",
+      "label": "Delivery evidence",
       "role": "main"
     }
   ]

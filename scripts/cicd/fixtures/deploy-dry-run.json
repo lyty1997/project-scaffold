@@ -28,7 +28,7 @@
   "targets": [
     {
       "kind": "fixture",
-      "rollback": "重跑旧提交"
+      "rollback": "rerun an earlier commit"
     }
   ],
   "secrets": []

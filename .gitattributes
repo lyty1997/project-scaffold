@@ -1,24 +1,24 @@
-# 统一换行策略，避免跨平台漂移，并覆盖各机器上不同的 core.autocrlf 设置。
-# 背景见 codex-rules/known-issues.md 与本仓库的跨平台约定。
+# Use one line-ending policy to prevent cross-platform drift and override differing
+# core.autocrlf settings across developer machines. See codex-rules/known-issues.md.
 
-# 默认：仓库内一律以 LF 存储；文本/二进制由 git 自动判定。
+# Store text as LF by default and let Git detect text versus binary files.
 * text=auto eol=lf
 
-# Shell 脚本与 git 钩子必须检出为 LF，否则在 Linux/macOS 上会因 CRLF 导致
-# `bad interpreter: /usr/bin/env bash^M` 或每行结尾的 \r 破坏解析。
+# Shell scripts and Git hooks must be checked out with LF. CRLF can cause
+# `bad interpreter: /usr/bin/env bash^M` or leave a parser-breaking \r per line.
 *.sh text eol=lf
 .githooks/pre-commit text eol=lf
 .githooks/commit-msg text eol=lf
 
-# Python 用 LF。
+# Python uses LF.
 *.py text eol=lf
 
-# PowerShell 脚本检出为 CRLF（Windows 约定）。文件本身还须保持 UTF-8 BOM，
-# 否则 Windows PowerShell 5.1 解析中文注释会失败——BOM 属于文件内容，git 不会改动，
-# 但新增/改写 .ps1 时务必自己保留 BOM（详见 codex-rules/known-issues.md）。
+# PowerShell scripts use CRLF for Windows compatibility. Files must also retain
+# their UTF-8 BOM for stable Windows PowerShell 5.1 decoding. The BOM is file
+# content and Git does not add it; preserve it when editing .ps1 files.
 *.ps1 text eol=crlf
 
-# 明确的二进制类型，禁止任何换行/编码转换。
+# Never apply line-ending or encoding conversion to known binary formats.
 *.png binary
 *.jpg binary
 *.jpeg binary

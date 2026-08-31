@@ -1,25 +1,27 @@
-# 使用说明
+# Scaffold Guide
 
-这是一个项目基础脚手架：一套"文档先行、契约词表防漂移、质量门禁 CI、跨机协同开发预览"的工程规范，从 AxialMuseWebsite 项目抽象而来，不预设具体前端/后端技术栈。
+English | [Chinese](SCAFFOLD-zh.md)
 
-## 起步步骤
+This is a technology-neutral project scaffold built around documentation-first development, contract vocabulary, CI-enforced quality gates, and a cross-machine preview workflow. It was extracted from the AxialMuseWebsite project and does not prescribe a frontend or backend stack.
 
-1. 用这个仓库的内容作为新项目的起点（clone 后改远端，或者直接下载解压）。
-2. 运行 `node scripts/init.mjs`（或 `npm run init`），按提示填写项目名、品牌名、GitHub 信息；如果需要跨机协同预览工作流（本地渲染端 + 远端托管端），选择启用并填写远端主机信息。脚本会自动替换所有占位符标记，并在最后跑一次 `npm run quality` 自检。
-3. 跑 `git config core.hooksPath .githooks` 启用本地 pre-commit 质量门禁与 commit-msg 提交信息门禁（后者强制 `<type>(<scope>): <English 主题> / <中文主题>` 中英双语、英文在前的格式，零依赖纯 shell 实现，不需要装 husky/commitlint）。
-4. 如果启用了跨机预览工作流，按 `docs/architecture/dev-workflow.md`"远程重启"一节生成 SSH 密钥并装到远端 `~/.ssh/authorized_keys`。
-5. 确认没问题后删除这份 `SCAFFOLD.md`——它只是给"刚拿到脚手架、还没初始化"的阶段看的，初始化完成后 `README.md` 就是项目自己的正常 README 了。
+## Getting started
 
-## 这套脚手架包含什么
+1. Use the repository contents as the starting point for a new project by cloning and replacing the remote or by downloading an archive.
+2. Run `node scripts/init.mjs` or `npm run init`, then answer the prompts for the project name, brand name, and GitHub details. To enable the optional cross-machine preview workflow (local rendering host plus remote serving host), select it and provide the remote host settings. The script replaces every placeholder and finishes by running `npm run quality`.
+3. Run `git config core.hooksPath .githooks` to enable the local pre-commit quality gate and commit-message gate. The latter enforces the zero-dependency `<type>(<scope>): <English subject>` Conventional Commit format without husky or commitlint.
+4. If the cross-machine preview workflow is enabled, follow the **Remote restart** section in `docs/architecture/dev-workflow.md` to generate an SSH key and install it in the remote `~/.ssh/authorized_keys` file.
+5. After verifying the initialized project, delete both `SCAFFOLD.md` and `SCAFFOLD-zh.md`. They only apply before initialization; `README.md` and `README-zh.md` then become the project's normal entry points.
 
-- `AGENTS.md` / `CLAUDE.md` 风格的 Agent 规则分层结构（`codex-rules/`）：语言、安全隐私、工具失败处理、Git 工作流等通用规则可以直接用；内容/产品规则、前端规则需要按你的项目实际情况调整措辞，但方法论（先设计后编码、区分事实与计划）是通用的。
-- `docs/` 设计文档骨架：架构概览、术语表、待决策问题、产品路线图、跨机协同预览工作流，都是占位模板，需要你按项目实际情况填写。
-- `docs/contracts/`：契约词表机制（`check-contracts.mjs`）本身是通用的，`contract-terms.json`/`contract-rules.json` 里的具体词条只是示例，需要替换成你项目自己的品牌词、禁用旧名、跨层误用检查规则。`site-checks.json` 是可选的静态入口检查配置，如果你的项目还没有 `public/index.html` 这类静态入口，对应的质量门禁会自动跳过。
-- `scripts/quality/`：零依赖 Node.js 质量门禁——四道内容门禁（Markdown 链接与索引、契约词表、密钥扫描、静态入口检查）外加一道 `check:js` 脚本语法自检，`npm run quality` 一键跑全部，CI（`.github/workflows/ci.yml`）在 Ubuntu 与 Windows 上跑的是同一条命令。
-- `scripts/docs/`：使用本机 Pandoc 2.12+ 把带本地插图的 Markdown 导出为 `build/portable-docs/` 下的便携单文件 HTML；图片内嵌、相对链接降级为路径提示，产物不入库。
-- `.claude/skills/archify/`：固定版本、MIT 许可的项目级交互图表 Skill 唯一实现；`.agents/skills/archify/SKILL.md` 是 Codex 原生发现入口，两者由门禁防漂移。Typed JSON、交互 HTML 与 Viewer 原生导出 PNG 的契约见 `docs/architecture/diagram-system.md`，默认离线且不自动检查更新。
-- `scripts/dev/`：`sync.sh`/`sync.ps1` 双向同步脚本开箱即用；`preview.sh`/`restart-remote.ps1`/`serve.py` 是跨机协同预览工作流的实现，依赖 `scripts/dev/dev-workflow.env`（本地文件，`init.mjs` 会帮你生成）。
+## Included
 
-## 不包含什么
+- Layered Agent rules based on `AGENTS.md` / `CLAUDE.md` and `codex-rules/`. General language, security, privacy, tool-failure, and Git workflow rules are reusable; content, product, and frontend wording must be adapted to the project while preserving the documentation-first and fact-versus-plan principles.
+- A `docs/` design skeleton covering architecture, terminology, pending decisions, the content roadmap, and cross-machine preview. These are placeholder templates that must be completed with project facts. English files are canonical and paired `-zh.md` files provide maintained Chinese translations.
+- `docs/contracts/`, which contains a reusable contract-vocabulary mechanism in `check-contracts.mjs`. The terms and checks in `contract-terms.json` and `contract-rules.json` are examples and must be replaced with the project's real brand names, retired names, and cross-layer constraints. `site-checks.json` configures the optional static-entry check, which skips cleanly if the project has no entry such as `public/index.html`.
+- Zero-dependency Node.js quality gates under `scripts/quality/`: JavaScript syntax, Markdown links and bilingual indexes, contract vocabulary, secret patterns, static entry points, portable documents, CI/CD contracts, and generated diagrams. CI runs the same baseline command on Ubuntu and Windows.
+- `scripts/docs/`, which uses local Pandoc 2.12 or later to export Markdown with local images as portable HTML under `build/portable-docs/`. Images are embedded, relative links become path hints, and output is not committed.
+- Complementary diagram workflows: pinned Archify under `.claude/skills/archify/` for polished interactive artifacts, and `.claude/skills/plantuml-in-markdown/` for inline, diff-friendly technical diagrams. The tool-selection, source, export, and combined CI contracts are defined in `docs/architecture/diagram-system.md`.
+- `scripts/dev/`, including cross-platform `sync.sh` / `sync.ps1` and the optional `preview.sh`, `restart-remote.ps1`, and `serve.py` workflow. Runtime settings live in the ignored `scripts/dev/dev-workflow.env`, which the initializer can create.
 
-这不是一个预置了 React/Vue/Express/数据库的全栈项目模板——它只提供"怎么协作、怎么保证文档和代码不漂移、怎么在两端预览"这一层。具体前端框架、后端框架、数据库怎么选，按 `docs/architecture/open-decisions.md` 的方法论自己决定并记录下来。
+## Not included
+
+This is not a preconfigured React, Vue, Express, or database starter. It supplies the collaboration, documentation-consistency, validation, and preview layer. Select and record the actual frontend, backend, and database stack using the process in `docs/architecture/open-decisions.md`.

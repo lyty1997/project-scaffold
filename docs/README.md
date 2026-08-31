@@ -1,52 +1,55 @@
-# __PROJECT_NAME__ 文档入口
+# __PROJECT_NAME__ Documentation
 
-本文档目录是项目定位、架构、内容模型、产品服务演进和质量门禁的真相源。涉及公开页面结构、内容栏目、产品服务、用户数据、部署和 CI 的改动，先更新这里对应文档，再进入实现。
+English | [Chinese](README-zh.md)
 
-## 文档索引
+This directory is the source of truth for project positioning, architecture, the content model, product and service evolution, and quality gates. Before changing public page structure, content sections, product services, user data, deployment, or CI, update the corresponding document here.
 
-- [项目进度](progress.md)
-- [技术分享：AI 编码脚手架——从一次对话到可复用的工程闭环](sharing/ai-coding-scaffold.md)
-- [架构概览](architecture/overview.md)
-- [质量门禁](architecture/quality-gates.md)
-- [Archify 图表系统](architecture/diagram-system.md)
-- [便携单文件文档](architecture/portable-documents.md)
-- [术语表](architecture/glossary.md)
-- [待决策问题](architecture/open-decisions.md)
-- [跨机协同开发预览工作流](architecture/dev-workflow.md)
-- [CI/CD 自动搭建](architecture/cicd-autosetup.md)
-- [并行项目规则同步台账](architecture/sibling-repo-sync.md)（仓库所有者私人笔记，非通用脚手架内容）
-- [内容与产品路线](product/content-roadmap.md)
-- [契约词表](contracts/contract-terms.json)
-- [契约扫描规则](contracts/contract-rules.json)
-- [站点检查规则](contracts/site-checks.json)
-- [Archify 固定版本契约](contracts/archify.json)
-- [技术栈参考配方](architecture/stack-recipes/README.md)：[Python](architecture/stack-recipes/python.md)、[TypeScript](architecture/stack-recipes/typescript.md)、[迁移一致性门禁](architecture/stack-recipes/migration-ledger-check.md)
+## Documentation index
 
-## 按问题找文档
+- [Project progress](progress.md)
+- [Technical article: AI Coding Scaffold—From One Conversation to a Reusable Engineering Loop](sharing/ai-coding-scaffold.md)
+- [Architecture overview](architecture/overview.md)
+- [Quality gates](architecture/quality-gates.md)
+- [Diagram system: Archify + PlantUML](architecture/diagram-system.md)
+- [Portable single-file documents](architecture/portable-documents.md)
+- [Language and localization](architecture/localization.md)
+- [Glossary](architecture/glossary.md)
+- [Open decisions](architecture/open-decisions.md)
+- [Cross-machine collaborative development preview workflow](architecture/dev-workflow.md)
+- [Automated CI/CD setup](architecture/cicd-autosetup.md)
+- [Sibling repository rule-synchronization ledger](architecture/sibling-repo-sync.md) (private notes for the repository owner, not general scaffold content)
+- [Content and product roadmap](product/content-roadmap.md)
+- [Contract term registry](contracts/contract-terms.json)
+- [Contract scanning rules](contracts/contract-rules.json)
+- [Static-site checks](contracts/site-checks.json)
+- [Pinned Archify contract](contracts/archify.json)
+- [Technology stack reference recipes](architecture/stack-recipes/README.md): [Python](architecture/stack-recipes/python.md), [TypeScript](architecture/stack-recipes/typescript.md), and [migration consistency gate](architecture/stack-recipes/migration-ledger-check.md)
 
-| 我想知道... | 去哪份文档 |
+## Find a document by question
+
+| I want to know... | Read... |
 | --- | --- |
-| 这个项目现在处于什么阶段、这一版做什么/不做什么 | 本文件"当前阶段"一节 |
-| 系统整体结构、目录职责、模块怎么划分 | [架构概览](architecture/overview.md) |
-| 某个名词/缩写具体指什么 | [术语表](architecture/glossary.md) |
-| 还没拍板的技术/产品决策有哪些 | [待决策问题](architecture/open-decisions.md) |
-| 内容栏目、产品服务的规划和边界 | [内容与产品路线](product/content-roadmap.md) |
-| 本地开发怎么跨机预览、怎么同步 | [跨机协同开发预览工作流](architecture/dev-workflow.md) |
-| 品牌名/状态枚举等契约词从哪来、怎么改 | [契约词表](contracts/contract-terms.json)、[契约扫描规则](contracts/contract-rules.json) |
-| `npm run quality`、图表检查和本地钩子具体做什么 | [质量门禁](architecture/quality-gates.md) |
-| 图表用什么源格式、怎样生成交互成品并做视觉验收 | [Archify 图表系统](architecture/diagram-system.md) |
-| 怎样把带本地插图的 Markdown 导出成可单独移动的一个文件 | [便携单文件文档](architecture/portable-documents.md) |
-| CI/CD 如何探测、生成、校验和按项目接入发版 | [CI/CD 自动搭建](architecture/cicd-autosetup.md) |
-| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
+| What stage the project is in and what this release does or does not include | Current Stage in this file |
+| The overall system structure, directory responsibilities, and module boundaries | [Architecture Overview](architecture/overview.md) |
+| The precise meaning of a term or abbreviation | [Glossary](architecture/glossary.md) |
+| Which technical or product decisions remain open | [Open Decisions](architecture/open-decisions.md) |
+| The plan and boundaries for content sections and product services | [Content and Product Roadmap](product/content-roadmap.md) |
+| How to preview and synchronize local development across machines | [Cross-Machine Collaborative Development Preview Workflow](architecture/dev-workflow.md) |
+| Where brand names, status enums, and other contract terms come from and how to change them | [Contract Term Registry](contracts/contract-terms.json) and [Contract Scanning Rules](contracts/contract-rules.json) |
+| What `npm run quality`, diagram checks, and local hooks do | [Quality Gates](architecture/quality-gates.md) |
+| How to choose Archify or PlantUML and validate each artifact type | [Diagram System: Archify + PlantUML](architecture/diagram-system.md) |
+| How to export Markdown with local illustrations as a single portable file | [Portable Single-File Documents](architecture/portable-documents.md) |
+| How CI/CD is detected, generated, validated, and connected to project releases | [Automated CI/CD Setup](architecture/cicd-autosetup.md) |
+| Which operating rules an Agent must follow while performing a task | Root [AGENTS.md](../AGENTS.md) and the [Codex Rule Index](../codex-rules/global-AGENTS.md) |
 
-## 当前阶段
+## Current stage
 
-- 阶段：__在这里写你当前所处的阶段__。
-- 范围：__在这里写清楚这一版做什么__。
-- 非目标：__在这里写清楚明确不做什么__。
+- Stage: __describe the project's current stage here__.
+- Scope: __state clearly what this release includes__.
+- Non-goals: __state clearly what this release does not include__.
 
-## 文档维护要求
+## Documentation maintenance requirements
 
-- 新增 `docs/` 下的 Markdown 文件后，必须在本文件索引。
-- 修改路由、导航、内容栏目、产品服务或部署方式时，同步更新相关设计文档。
-- 不确定事项写入 [待决策问题](architecture/open-decisions.md)，不要散落在代码注释里。
+- After adding a Markdown file under `docs/`, add it to the matching language index in this directory.
+- When changing routes, navigation, content sections, product services, or deployment, update the relevant design documents at the same time.
+- Record uncertain items in [Open Decisions](architecture/open-decisions.md) rather than scattering them through code comments.

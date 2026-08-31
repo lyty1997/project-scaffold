@@ -18,11 +18,12 @@
       "target": ".claude/skills/archify/SKILL.md"
     }
   },
-  "vendored_tree_sha256": "86f11b405010dfa7626441297e2c1b938b06c68af291e93e4321446fbac902a2",
+  "vendored_tree_sha256": "9c5a66a971124ce4997fd3b17404133861c10b9af2335adcadd1af5be5819bd3",
   "network_policy": "disabled",
   "local_changes": [
     "remove-remote-google-fonts",
     "disable-automatic-update-check",
-    "enforce-native-document-png"
+    "enforce-native-document-png",
+    "route-plantuml-coexistence"
   ]
 }

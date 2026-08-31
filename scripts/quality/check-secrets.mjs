@@ -3,8 +3,9 @@ import { listFiles, projectRoot, readText } from "./lib/files.mjs";
 
 const ROOT = projectRoot();
 
-// 常见密钥关键字：允许作为更长标识符的后缀（client_secret / access_token 等），
-// 因此前面不加 \b 词边界，只要求后面紧跟赋值符号。
+// Common secret keywords may be suffixes of longer identifiers such as
+// client_secret or access_token, so do not require a leading word boundary;
+// require only an assignment operator after the keyword.
 const SECRET_KEYWORD = "(?:api[_-]?key|apikey|secret|token|password|passwd|pwd|access[_-]?key)";
 
 const SECRET_PATTERNS = [
@@ -12,21 +13,24 @@ const SECRET_PATTERNS = [
   { name: "GitHub token", pattern: /gh[pousr]_[0-9A-Za-z_]{36,}/ },
   { name: "AWS access key", pattern: /AKIA[0-9A-Z]{16}/ },
   { name: "Slack token", pattern: /xox[baprs]-[0-9A-Za-z-]{10,}/ },
-  // 带引号赋值：keyword: "值" / keyword = '值'
+  // Quoted assignment: keyword: "value" / keyword = 'value'.
   { name: "quoted secret assignment", pattern: new RegExp(`${SECRET_KEYWORD}\\s*[:=]\\s*["'][^"']{8,}["']`, "i") },
-  // 不带引号赋值：keyword=值（值足够长、无空白/引号/注释符，且必须结束于行尾或注释）。
-  // 末尾边界避免把 `token = document.createElement(...)`、`token = path.resolve(...)`
-  // 这类普通源码表达式截断到左括号前后误报，同时仍覆盖 shell / env / PowerShell / 配置文件。
+  // Unquoted assignment: keyword=value, where the value is long enough, contains
+  // no whitespace, quote, or comment delimiter, and ends at EOL or a comment.
+  // The trailing boundary avoids truncating expressions such as
+  // `token = document.createElement(...)` or `token = path.resolve(...)` at the
+  // opening parenthesis while still covering shell, env, PowerShell, and config files.
   {
     name: "unquoted secret assignment",
     pattern: new RegExp(`${SECRET_KEYWORD}\\s*[:=]\\s*[^\\s"'#;,)]{12,}(?=\\s*(?:$|#|//))`, "i"),
   },
-  // URL 内嵌凭证：形如 协议://用户:口令@主机
+  // Credentials embedded in a URL authority (username and password before the host).
   { name: "credential in URL", pattern: /[a-z][a-z0-9+.-]*:\/\/[^/\s:@]+:[^/\s:@]+@/i },
 ];
 
-// 与 scripts/init.mjs 的 isTextFile 保持一致：既扫常规文本扩展名，也扫这些无扩展名文本文件，
-// 避免密钥藏在 shell/PowerShell/Python 脚本或 CODEOWNERS 之类文件里逃过扫描。
+// Keep this aligned with scripts/init.mjs isTextFile: scan regular text
+// extensions plus extensionless text files so secrets cannot hide in shell,
+// PowerShell, Python, or files such as CODEOWNERS.
 const TEXT_EXTENSIONS = new Set([
   ".css", ".html", ".js", ".json", ".jsx", ".md", ".mjs", ".cjs", ".ts", ".tsx",
   ".txt", ".yaml", ".yml", ".toml", ".ini", ".conf", ".env", ".sh", ".ps1", ".py",

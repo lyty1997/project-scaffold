@@ -8,14 +8,14 @@ import {
 
 const integrationErrors = assertVendoredArchify();
 if (integrationErrors.length > 0) {
-  console.error("Archify 集成契约无效：");
+  console.error("Archify integration contract is invalid:");
   for (const error of integrationErrors) console.error(`- ${error}`);
   process.exit(1);
 }
 
 const specs = findDiagramSpecs();
 if (specs.length === 0) {
-  console.error("未发现任何 Archify Typed JSON 图表源。");
+  console.error("No Archify Typed JSON diagram source was found.");
   process.exit(1);
 }
 
@@ -30,11 +30,11 @@ for (const spec of specs) {
     "showcase",
     "--json",
   ]);
-  const receipt = parseReceipt(result, `${relativePath(spec.path)} 交付`);
+  const receipt = parseReceipt(result, `${relativePath(spec.path)} delivery`);
   receipts.push({ spec, receipt });
 }
 
-console.log(`已原子生成 ${receipts.length} 个 Archify 交互产物：`);
+console.log(`Atomically generated ${receipts.length} Archify interactive artifact(s):`);
 for (const { spec, receipt } of receipts) {
   console.log(
     `- ${relativePath(spec.outputPath)} ` +

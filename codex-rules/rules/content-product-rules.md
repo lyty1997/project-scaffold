@@ -1,18 +1,20 @@
-# 内容与产品规则
+# Content and Product Rules
 
-项目定位与阶段边界以 [内容与产品路线](../../docs/product/content-roadmap.md) 为准；未完成初始化的占位文案不得对外发布。
+English | [Chinese](content-product-rules-zh.md)
 
-## 公开表达
+Project positioning and stage boundaries are defined in the [Content and Product Roadmap](../../docs/product/content-roadmap.md). Do not publish uninitialized placeholder copy.
 
-- 明确区分事实、观点、计划和待确认事项。
-- 未发布能力不得写成已上线事实；不承诺无法验证的收益或结果。
-- 技术内容应交代问题、取舍、实现边界和复盘结论，不写成泛营销材料。
-- 外部资料优先引用官方文档或原始出处，并保留链接。
+## Public claims
 
-## 产品上线条件
+- Clearly distinguish facts, opinions, plans, and pending decisions.
+- Never present an unreleased capability as live or promise an unverifiable benefit or result.
+- Technical content should explain the problem, tradeoffs, implementation boundaries, and retrospective conclusions instead of reading as generic marketing.
+- Prefer official documentation or original sources for external facts and retain the links.
 
-上线产品或服务入口前，设计文档必须明确目标用户、核心问题、服务边界与非目标、支持或反馈入口、隐私边界，以及收费、试用或交付方式等商业化假设。
+## Conditions for launching a product
 
-## 讨论与反馈
+Before exposing a product or service entry point, its design must define the target user, core problem, service boundaries and non-goals, support or feedback channel, privacy boundary, and assumptions about pricing, trials, or delivery.
 
-引入评论、表单、订阅或社区能力前，必须设计收集字段、用途、存储位置、保留周期、删除与导出方式、反滥用机制和第三方依赖；安全细则见 [安全与隐私规范](security-privacy.md)。
+## Discussion and feedback
+
+Before adding comments, forms, subscriptions, or community features, design the collected fields, purpose, storage location, retention period, deletion and export process, anti-abuse controls, and third-party dependencies. See [Security and Privacy](security-privacy.md).

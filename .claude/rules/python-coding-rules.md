@@ -1,65 +1,78 @@
-## Python 代码质量与安全规范
+# Python Code Quality and Security
 
-### 一、类型安全
+English | [Chinese](../rules-zh/python-coding-rules-zh.md)
 
-#### 静态检查（编码期）
-- `mypy --strict` 作为主要类型检查器（由 hook 自动执行）
-- 项目可选配合 pyright IDE 集成（`pyproject.toml` 中配置 strict 模式）
-- 所有函数签名必须有完整类型注解（参数 + 返回值），无例外
-- 禁止使用 `Any` 除非有注释说明原因
-- 泛型容器必须标注元素类型：`list[str]` 而非 `list`
-- 每个函数都要写注释说明
+## 1. Type safety
 
-#### 运行时校验（系统边界）
-- 外部输入（API 请求、用户输入、配置文件、文件解析结果）必须用 pydantic BaseModel 校验
-- 性能敏感的内部路径用 `beartype` 装饰器做 O(1) 类型断言
-- 禁止用 `isinstance` 手写校验链代替结构化校验
+### Static checks during development
 
-### 二、资源安全（防泄漏）
-- 文件、数据库连接、网络会话、锁 —— 必须用 `with` 语句或 `contextlib.closing`
-- 自定义资源类必须实现 `__enter__` / `__exit__`（或继承 `contextlib.AbstractContextManager`）
-- 临时文件必须用 `tempfile` 模块，禁止手动 open + 手动 delete
-- ruff 启用规则：`SIM105`、`ASYNC`、`S`、`PT`
-- pylint 启用：`consider-using-with`
+- Use `mypy --strict` as the primary type checker; the hook runs it automatically.
+- A project may also configure strict pyright integration in `pyproject.toml` for the IDE.
+- Every function signature requires complete parameter and return annotations.
+- Do not use `Any` without a comment explaining why it is necessary.
+- Annotate generic element types, such as `list[str]` instead of `list`.
+- Document each function's non-obvious contract with a comment or docstring; do not add comments that merely restate the code.
 
-### 三、并发安全
+### Runtime validation at system boundaries
 
-#### async 代码
-- async 函数内禁止直接调用阻塞 IO（文件读写、`requests`、`time.sleep`）
-- 必须用 `asyncio.to_thread()` 包裹阻塞调用，或使用原生 async 库（`aiohttp`、`aiofiles`）
-- 开发模式下启用事件循环 debug：`loop.set_debug(True)` + `slow_callback_duration = 0.1`
+- Validate external input such as API requests, user input, configuration, and parsed files with a Pydantic `BaseModel`.
+- Performance-sensitive internal paths may use `beartype` decorators for O(1) type assertions.
+- Do not replace structured validation with a hand-written chain of `isinstance` checks.
 
-#### 多线程代码
-- 共享可变状态必须用 `threading.Lock` / `Queue` 保护，禁止裸写共享变量
-- 推荐使用 `Guarded[T]` 模式封装共享数据，强制通过上下文管理器访问
-- 避免嵌套锁，如必须则统一锁获取顺序防死锁
+## 2. Resource safety
 
-### 四、安全漏洞防护
-- 禁止拼接 SQL，必须用参数化查询
-- 禁止 `eval()` / `exec()`，除非有安全沙箱且注释说明
-- 子进程调用禁止 `shell=True`，用列表形式传参
-- 日志/输出禁止打印密钥、token、密码等敏感信息
+- Manage files, database connections, network sessions, and locks with `with` or `contextlib.closing`.
+- Custom resource classes implement `__enter__` and `__exit__` or inherit `contextlib.AbstractContextManager`.
+- Use `tempfile` for temporary files; do not manually combine open and delete.
+- Enable Ruff rules `SIM105`, `ASYNC`, `S`, and `PT`.
+- Enable pylint's `consider-using-with`.
 
-### 五、测试规范
-- 框架：`pytest` + `pytest-asyncio`（异步代码必须用 asyncio 模式）
-- 覆盖率：新功能必须有单元测试，核心模块 ≥ 80%
-- 位置：`tests/` 目录，结构与 `src/` 一致，文件名 `test_` 开头
-- 集成测试：外部服务（Docker/Git/Redis）用 Docker 容器隔离
-- Tester 角色：自动生成测试用例，沙箱运行，结果反馈给 Reviewer
+## 3. Concurrency safety
 
-### 六、自动检查（三层防线）
+### Async code
 
-#### 第一层：PostToolUse hook（Claude 编辑时实时触发）
-- 项目 hook `.claude/hooks/post-edit-safety.py`，每次 Write/Edit 自动运行：
-  - `mypy --strict` — 类型检查
-  - `ruff check` — B(bugbear),C4,C90,UP,T20,ARG,RET,S,ASYNC,SIM105,PT
-  - `typos` — 标识符拼写检查（支持下划线/驼峰拆分）
-- 检测到错误时反馈 additionalContext，必须修复后再继续
+- Do not call blocking I/O such as file operations, `requests`, or `time.sleep` directly inside an async function.
+- Wrap blocking work with `asyncio.to_thread()` or use a native async library such as `aiohttp` or `aiofiles`.
+- In development, enable event-loop debugging with `loop.set_debug(True)` and `slow_callback_duration = 0.1`.
 
-#### 第二层：pre-commit（git 提交时兜底）
-- `.pre-commit-config.yaml` 配置同样的 mypy + ruff + typos 检查
-- 覆盖用户手动编辑的代码，提交前必须通过
+### Multithreaded code
 
-#### 第三层：提交前手动检查
-- `bandit -r src/` — 深度安全扫描
-- `pytest --tb=short` — 全量测试
+- Protect shared mutable state with `threading.Lock` or `Queue`; never write it without synchronization.
+- Prefer a `Guarded[T]` wrapper that requires context-manager access.
+- Avoid nested locks. When unavoidable, enforce one global acquisition order.
+
+## 4. Vulnerability prevention
+
+- Never concatenate SQL; use parameterized queries.
+- Do not use `eval()` or `exec()` without a documented security sandbox.
+- Do not pass `shell=True` to subprocesses; pass an argument list.
+- Never log or print keys, tokens, passwords, or other sensitive values.
+
+## 5. Testing
+
+- Use `pytest` and `pytest-asyncio`; async tests must run in asyncio mode.
+- New behavior requires unit tests, and core modules target at least 80% coverage.
+- Mirror `src/` under `tests/` and prefix test filenames with `test_`.
+- Isolate external services such as Docker, Git, and Redis in containers for integration tests.
+- The Tester role generates cases, runs them in the sandbox, and reports results to the Reviewer.
+
+## 6. Three layers of automated checks
+
+### PostToolUse hook
+
+After every Write or Edit, `.claude/hooks/post-edit-safety.py` runs:
+
+- `mypy --strict` for types;
+- `ruff check` with B, C4, C90, UP, T20, ARG, RET, S, ASYNC, SIM105, and PT;
+- `typos`, including underscore and camelCase identifier splitting.
+
+Errors arrive through additionalContext and must be fixed before continuing.
+
+### pre-commit
+
+`.pre-commit-config.yaml` configures equivalent mypy, Ruff, and typos checks for manually edited code. All must pass before commit.
+
+### Manual pre-commit checks
+
+- `bandit -r src/` for a deeper security scan.
+- `pytest --tb=short` for the complete test suite.

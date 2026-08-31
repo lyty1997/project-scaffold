@@ -99,7 +99,7 @@ async function evaluate(browser, sessionId, expression, awaitPromise = false) {
 
 export async function exportNativePng({ artifactPath, outputPath, theme = "light" }) {
   const chrome = findChrome();
-  if (!chrome) throw new Error("未找到 Chrome/Chromium，无法执行 Viewer 原生 PNG 导出。");
+  if (!chrome) throw new Error("Chrome/Chromium was not found; Viewer-native PNG export cannot run.");
 
   const browser = new ChromeVisualBrowser(chrome);
   try {
@@ -112,12 +112,12 @@ export async function exportNativePng({ artifactPath, outputPath, theme = "light
     const sessionId = await browser.sessionPromise;
     const receipt = await evaluate(browser, sessionId, NATIVE_PNG_EXPRESSION, true);
     if (!receipt || receipt.format !== "png" || receipt.canonical !== "true") {
-      throw new Error(`Viewer 原生导出回执无效：${JSON.stringify(receipt)}`);
+      throw new Error(`Invalid Viewer-native export receipt: ${JSON.stringify(receipt)}`);
     }
 
     const bytes = Buffer.from(receipt.base64 || "", "base64");
     if (bytes.length !== Number(receipt.bytes)) {
-      throw new Error(`原生 PNG 字节数与回执不一致：文件 ${bytes.length}，回执 ${receipt.bytes}。`);
+      throw new Error(`Native PNG byte count does not match the receipt: file ${bytes.length}, receipt ${receipt.bytes}.`);
     }
 
     const actual = pngDimensions(bytes);
@@ -135,13 +135,13 @@ export async function exportNativePng({ artifactPath, outputPath, theme = "light
       actual.height !== expectedFromContract.height
     ) {
       throw new Error(
-        `原生 PNG 尺寸不一致：实际 ${actual.width}x${actual.height}，` +
-          `页面回执 ${expectedFromPage.width}x${expectedFromPage.height}，` +
-          `契约 ${expectedFromContract.width}x${expectedFromContract.height}。`
+        `Native PNG dimensions do not match: actual ${actual.width}x${actual.height}, ` +
+          `page receipt ${expectedFromPage.width}x${expectedFromPage.height}, ` +
+          `contract ${expectedFromContract.width}x${expectedFromContract.height}.`
       );
     }
     if (!String(receipt.filename || "").endsWith(".png")) {
-      throw new Error(`Viewer 原生下载文件名不是 PNG：${JSON.stringify(receipt.filename)}`);
+      throw new Error(`Viewer-native download filename is not a PNG: ${JSON.stringify(receipt.filename)}`);
     }
 
     writeFileSync(outputPath, bytes);

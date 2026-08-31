@@ -2,8 +2,8 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "AI 编码脚手架复用流程",
-    "locale": "zh-CN",
+    "title": "Reusing the AI Coding Scaffold",
+    "locale": "en",
     "quality_profile": "showcase",
     "legend": {
       "mode": "hidden"
@@ -11,60 +11,60 @@
     "views": [
       {
         "id": "initialize",
-        "label": "把模板变成项目",
+        "label": "Turn the Template into a Project",
         "focus": ["obtain", "project-facts", "contracts"],
-        "note": "先替换身份、阶段、边界和契约，再进入技术实现。"
+        "note": "Replace identity, stage, boundaries, and contracts before implementation."
       },
       {
         "id": "optional-preview",
-        "label": "按需处理跨机预览",
+        "label": "Configure Cross-Machine Preview",
         "focus": ["preview-decision", "preview-keep", "preview-remove", "stack-gates"],
-        "note": "可选能力必须明确保留并配置，或完整移除。"
+        "note": "Optional capabilities must be explicitly retained and configured or fully removed."
       },
       {
         "id": "delivery-choice",
-        "label": "CI/CD 决策与起步",
+        "label": "Decide and Bootstrap CI/CD",
         "focus": ["cicd-decision", "cicd-build", "local-quality", "first-feature"],
-        "note": "决定已明确才生成并实测；否则记录待办后继续本地基线。"
+        "note": "Generate and test CI/CD only after decisions are explicit; otherwise record a follow-up and continue locally."
       }
     ]
   },
   "lanes": [
     {
       "id": "initialization",
-      "label": "机械初始化"
+      "label": "Deterministic Initialization"
     },
     {
       "id": "choices",
-      "label": "项目级取舍"
+      "label": "Project-Level Decisions"
     },
     {
       "id": "project",
-      "label": "项目工程落地"
+      "label": "Project Implementation"
     },
     {
       "id": "deferred",
-      "label": "删除或延期分支",
+      "label": "Removal or Deferral",
       "variant": "exception"
     }
   ],
   "phases": [
     {
       "id": "identity",
-      "label": "项目事实",
+      "label": "Project Facts",
       "fromCol": 0,
       "toCol": 2
     },
     {
       "id": "options",
-      "label": "可选能力",
+      "label": "Optional Capabilities",
       "fromCol": 3,
       "toCol": 4,
       "variant": "security"
     },
     {
       "id": "start-work",
-      "label": "形成可执行基线",
+      "label": "Establish an Executable Baseline",
       "fromCol": 5,
       "toCol": 5,
       "variant": "emphasis"
@@ -98,7 +98,7 @@
       "lane": "initialization",
       "col": 0,
       "type": "external",
-      "label": "取得脚手架并运行 init",
+      "label": "Get Scaffold and Run init",
       "width": 200
     },
     {
@@ -106,7 +106,7 @@
       "lane": "initialization",
       "col": 1,
       "type": "database",
-      "label": "填写身份并重写 docs",
+      "label": "Set Identity and Rewrite Docs",
       "width": 200
     },
     {
@@ -114,7 +114,7 @@
       "lane": "initialization",
       "col": 2,
       "type": "database",
-      "label": "替换项目契约与扫描入口",
+      "label": "Replace Contracts and Scan Rules",
       "width": 220
     },
     {
@@ -122,7 +122,7 @@
       "lane": "choices",
       "col": 3,
       "type": "security",
-      "label": "是否需要跨机协同预览",
+      "label": "Need Cross-Machine Preview?",
       "width": 220
     },
     {
@@ -130,7 +130,7 @@
       "lane": "project",
       "col": 3,
       "type": "backend",
-      "label": "保留并配置预览工作流",
+      "label": "Keep and Configure Preview",
       "width": 210
     },
     {
@@ -138,7 +138,7 @@
       "lane": "deferred",
       "col": 3,
       "type": "external",
-      "label": "删除不用的可选文档与脚本",
+      "label": "Remove Unused Docs and Scripts",
       "width": 220
     },
     {
@@ -146,7 +146,7 @@
       "lane": "project",
       "col": 4,
       "type": "backend",
-      "label": "确定技术栈并接入真实门禁",
+      "label": "Choose Stack and Add Real Gates",
       "width": 220
     },
     {
@@ -154,7 +154,7 @@
       "lane": "choices",
       "col": 4,
       "type": "security",
-      "label": "部署与发布决定是否明确",
+      "label": "Release Path Defined?",
       "width": 220
     },
     {
@@ -162,7 +162,7 @@
       "lane": "project",
       "col": 5,
       "type": "cloud",
-      "label": "探测、生成并实测 CI/CD",
+      "label": "Probe, Generate, and Test CI/CD",
       "width": 210
     },
     {
@@ -170,7 +170,7 @@
       "lane": "initialization",
       "col": 5,
       "type": "security",
-      "label": "启用 hooks 并运行 quality",
+      "label": "Enable Hooks and Run Checks",
       "width": 210
     },
     {
@@ -178,7 +178,7 @@
       "lane": "choices",
       "col": 5,
       "type": "backend",
-      "label": "从第一个真实功能开始迭代",
+      "label": "Start the First Real Feature",
       "width": 220
     }
   ],
@@ -193,21 +193,21 @@
       "id": "facts-contracts",
       "from": "project-facts",
       "to": "contracts",
-      "label": "项目事实已写入",
+      "label": "Project facts recorded",
       "role": "main"
     },
     {
       "id": "contracts-preview",
       "from": "contracts",
       "to": "preview-decision",
-      "label": "检查可选能力",
+      "label": "Review optional capabilities",
       "role": "main"
     },
     {
       "id": "preview-keep-edge",
       "from": "preview-decision",
       "to": "preview-keep",
-      "label": "需要",
+      "label": "Needed",
       "variant": "emphasis",
       "role": "main"
     },
@@ -215,7 +215,7 @@
       "id": "preview-remove-edge",
       "from": "preview-decision",
       "to": "preview-remove",
-      "label": "不需要",
+      "label": "Not needed",
       "variant": "security",
       "role": "branch"
     },
@@ -223,28 +223,28 @@
       "id": "keep-stack",
       "from": "preview-keep",
       "to": "stack-gates",
-      "label": "环境已配置",
+      "label": "Environment configured",
       "role": "main"
     },
     {
       "id": "remove-stack",
       "from": "preview-remove",
       "to": "stack-gates",
-      "label": "可选内容已移除",
+      "label": "Optional content removed",
       "role": "branch"
     },
     {
       "id": "stack-cicd",
       "from": "stack-gates",
       "to": "cicd-decision",
-      "label": "本地工程基线已明确",
+      "label": "Local baseline defined",
       "role": "main"
     },
     {
       "id": "cicd-build-edge",
       "from": "cicd-decision",
       "to": "cicd-build",
-      "label": "决定已明确",
+      "label": "Decision finalized",
       "variant": "emphasis",
       "role": "main"
     },
@@ -252,14 +252,14 @@
       "id": "build-quality",
       "from": "cicd-build",
       "to": "local-quality",
-      "label": "远端链路已实测",
+      "label": "Remote workflow tested",
       "role": "main"
     },
     {
       "id": "cicd-defer-quality",
       "from": "cicd-decision",
       "to": "local-quality",
-      "label": "未明确：记录待办",
+      "label": "Undecided: record follow-up",
       "variant": "security",
       "role": "branch"
     },
@@ -267,7 +267,7 @@
       "id": "quality-feature",
       "from": "local-quality",
       "to": "first-feature",
-      "label": "基础门禁通过",
+      "label": "Baseline gates pass",
       "variant": "emphasis",
       "role": "main"
     }

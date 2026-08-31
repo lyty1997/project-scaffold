@@ -1,21 +1,23 @@
-# Git 工作流
+# Git Workflow
 
-## 工作区安全
+English | [Chinese](git-workflow-zh.md)
 
-- 修改前检查状态，不回滚用户已有改动。
-- 不执行 `git reset --hard`、`git checkout --` 等破坏性操作，除非用户明确要求并确认风险。
-- 提交聚焦一个目的；相关文档、实现、质量脚本和 CI 保持同步。
-- 不提交依赖目录、缓存、构建产物、日志或本地环境文件。
+## Worktree safety
 
-## 分支与提交
+- Inspect status before editing and do not roll back the user's existing work.
+- Do not run destructive commands such as `git reset --hard` or `git checkout --` unless the user explicitly requests them and confirms the risk.
+- Keep each commit focused on one purpose and synchronize the related documentation, implementation, quality scripts, and CI.
+- Do not commit dependency directories, caches, build output, logs, or local environment files.
 
-- `main` 保持稳定且不直接提交；开发主干为 `dev`；特性与修复分支使用 `feature/描述`、`bugfix/描述`。
-- 主题格式：`<type>(<scope>): <English 主题> / <中文主题>`；type 限 `feat|fix|docs|style|refactor|test|chore`，不添加 `Co-Authored-By`。
-- `.githooks/commit-msg` 机器校验上述格式；merge、revert、Reapply 及 `fixup!`、`squash!`、`amend!` 等 Git 自动主题豁免。
-- 克隆后运行 `git config core.hooksPath .githooks` 启用本地 hooks；提交前运行相关质量门禁。
+## Branches and commits
 
-## push、PR 与 CI
+- Keep `main` stable and do not commit to it directly. Use `dev` as the development trunk and `feature/description` or `bugfix/description` for focused work.
+- Use `<type>(<scope>): <English subject>`, where type is one of `feat|fix|docs|style|refactor|test|chore`. Do not add `Co-Authored-By` trailers.
+- `.githooks/commit-msg` enforces this format. Git-generated merge, revert, Reapply, `fixup!`, `squash!`, and `amend!` subjects are exempt.
+- Run `git config core.hooksPath .githooks` after cloning and execute the relevant quality gates before committing.
 
-执行 push 或合并后必须观察 `.github/workflows/ci.yml` 结果。有 PR 时用 `gh pr checks <PR号> --watch`；直接 push 时用 `gh run list --branch <分支>` 找到 run，再用 `gh run watch <run-id>`。
+## Push, PR, and CI
 
-CI 失败时定位根因、本地复现并修复、重新推送后继续观察；不得在失败或状态未知时把已 push 或已合并的任务报告为完成。
+Observe `.github/workflows/ci.yml` after every push or merge. For a PR, run `gh pr checks <PR-number> --watch`. For a direct push, locate the run with `gh run list --branch <branch>` and then use `gh run watch <run-id>`.
+
+When CI fails, identify the root cause, reproduce and fix it locally, push the repair, and continue observing the new run. Never report pushed or merged work as complete while CI is failing or its status is unknown.

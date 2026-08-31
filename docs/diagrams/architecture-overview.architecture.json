@@ -2,22 +2,22 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "架构概览占位示例",
-    "locale": "zh-CN",
+    "title": "Placeholder Architecture Overview",
+    "locale": "en",
     "quality_profile": "showcase",
     "viewBox": [980, 540],
     "views": [
       {
         "id": "request-path",
-        "label": "应用请求路径",
+        "label": "Application Request Path",
         "focus": ["visitor", "frontend", "backend", "storage"],
-        "note": "占位示例中的访问、调用与数据读写路径。"
+        "note": "Follow requests, service calls, and data access through the placeholder application."
       },
       {
         "id": "governance-path",
-        "label": "工程约束路径",
+        "label": "Engineering Guardrail Path",
         "focus": ["docs", "quality", "frontend", "backend"],
-        "note": "文档真相源与质量门禁如何约束示例应用。"
+        "note": "See how the documentation source of truth and quality gates constrain the example application."
       }
     ],
     "legend": {
@@ -37,42 +37,42 @@
     {
       "id": "visitor",
       "type": "external",
-      "label": "访问者",
+      "label": "Visitor",
       "row": 1,
       "col": 0
     },
     {
       "id": "frontend",
       "type": "frontend",
-      "label": "前端应用",
+      "label": "Frontend",
       "row": 1,
       "col": 1
     },
     {
       "id": "backend",
       "type": "backend",
-      "label": "后端 / API",
+      "label": "Backend / API",
       "row": 1,
       "col": 2
     },
     {
       "id": "storage",
       "type": "database",
-      "label": "数据存储",
+      "label": "Data Store",
       "row": 1,
       "col": 3
     },
     {
       "id": "docs",
       "type": "database",
-      "label": "docs 真相源",
+      "label": "Canonical Docs",
       "row": 0,
       "col": 1
     },
     {
       "id": "quality",
       "type": "security",
-      "label": "quality 门禁",
+      "label": "Quality Gate",
       "row": 2,
       "col": 1
     }
@@ -80,13 +80,13 @@
   "boundaries": [
     {
       "kind": "region",
-      "label": "应用",
+      "label": "Application",
       "wraps": ["frontend", "backend", "storage"],
       "pad": 28
     },
     {
       "kind": "security-group",
-      "label": "工程规范",
+      "label": "Engineering Guardrails",
       "wraps": ["docs", "quality"],
       "pad": 28
     }
@@ -96,14 +96,14 @@
       "id": "visitor-frontend",
       "from": "visitor",
       "to": "frontend",
-      "label": "访问",
+      "label": "Visits",
       "variant": "emphasis"
     },
     {
       "id": "frontend-backend",
       "from": "frontend",
       "to": "backend",
-      "label": "调用",
+      "label": "Calls",
       "variant": "emphasis",
       "labelAt": [500, 324]
     },
@@ -111,27 +111,27 @@
       "id": "backend-storage",
       "from": "backend",
       "to": "storage",
-      "label": "读写",
+      "label": "Reads / Writes",
       "variant": "emphasis"
     },
     {
       "id": "docs-frontend",
       "from": "docs",
       "to": "frontend",
-      "label": "约束",
+      "label": "Constrains",
       "labelAt": [350, 154]
     },
     {
       "id": "docs-backend",
       "from": "docs",
       "to": "backend",
-      "label": "约束"
+      "label": "Constrains"
     },
     {
       "id": "quality-docs",
       "from": "quality",
       "to": "docs",
-      "label": "校验文档",
+      "label": "Validates docs",
       "variant": "security",
       "fromSide": "left",
       "toSide": "left",
@@ -142,7 +142,7 @@
       "id": "quality-frontend",
       "from": "quality",
       "to": "frontend",
-      "label": "校验前端",
+      "label": "Validates frontend",
       "variant": "security",
       "labelAt": [357, 370]
     },
@@ -150,7 +150,7 @@
       "id": "quality-backend",
       "from": "quality",
       "to": "backend",
-      "label": "校验后端",
+      "label": "Validates backend",
       "variant": "security"
     }
   ]

@@ -15,9 +15,9 @@ import {
 
 const errors = assertVendoredArchify();
 const doctor = runArchify(["doctor"]);
-if (doctor.error || doctor.status !== 0) {
+if (doctor.status !== 0) {
   errors.push(
-    `Archify doctor 失败：\n${[doctor.stdout, doctor.stderr, doctor.error?.message]
+    `Archify doctor failed:\n${[doctor.stdout, doctor.stderr, doctor.error?.message]
       .filter(Boolean)
       .join("\n")}`
   );
@@ -31,7 +31,7 @@ try {
 }
 
 if (specs.length === 0) {
-  errors.push("未发现任何 Archify Typed JSON 图表源。");
+  errors.push("No Archify Typed JSON diagram source was found.");
 } else {
   errors.push(...assertDocumentedArtifacts(specs));
 }
@@ -50,14 +50,14 @@ try {
         "showcase",
         "--json",
       ]);
-      const receipt = parseReceipt(result, `${relativePath(spec.path)} showcase 校验`);
+      const receipt = parseReceipt(result, `${relativePath(spec.path)} showcase validation`);
       if (
         receipt?.validation?.checksPassed !== 9 ||
         receipt?.validation?.checkCount !== 9 ||
         receipt?.validation?.errors !== 0 ||
         receipt?.validation?.warnings !== 0
       ) {
-        errors.push(`${relativePath(spec.path)} 未取得 9/9、0 error、0 warning 的 showcase 回执。`);
+        errors.push(`${relativePath(spec.path)} did not receive a showcase receipt with 9/9 checks, 0 errors, and 0 warnings.`);
       }
 
       const artifactErrors = assertTrustedArtifact(spec);
@@ -68,7 +68,7 @@ try {
         readFileSync(tempOutput).compare(readFileSync(spec.outputPath)) !== 0
       ) {
         errors.push(
-          `${relativePath(spec.outputPath)} 已漂移；运行 npm run gen:diagrams 刷新交互产物。`
+          `${relativePath(spec.outputPath)} has drifted; run npm run gen:diagrams to refresh the interactive artifact.`
         );
       }
     } catch (error) {

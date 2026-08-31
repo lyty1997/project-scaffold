@@ -1,10 +1,11 @@
-// CI/CD 探测器：只收集事实，不做任何决策。
+// CI/CD probe: collect facts without making decisions.
 //
-// 设计约束见 docs/architecture/cicd-autosetup.md：
-// - 探测只用来「选工具链」，不用来「猜构建/测试命令」。因此这里输出的是
-//   「package.json 里有哪些 script 名」这类事实，而不是「构建命令是 npm run build」这类推断。
-// - 全部只读；远端调用只用 GET。
-// - 拿不到数据必须显式记录失败原因，不得静默当作「没有」。
+// Design constraints are documented in docs/architecture/cicd-autosetup.md:
+// - Probe facts help choose a toolchain; they never guess build or test commands.
+//   Report facts such as package.json script names, not assumptions such as
+//   "the build command is npm run build."
+// - All operations are read-only, and remote calls use GET only.
+// - Missing data must carry an explicit failure reason, never masquerade as absence.
 
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
@@ -13,7 +14,7 @@ import { listFiles, projectRoot, readJson, readText } from "../quality/lib/files
 
 const ROOT = projectRoot();
 
-// 构建系统特征文件 -> 归类名。只记录「存在什么」，不推断该怎么调用。
+// Build-system marker -> category. Record what exists, not how to invoke it.
 const BUILD_MARKERS = [
   { file: "CMakeLists.txt", kind: "cmake" },
   { file: "Makefile", kind: "make" },
@@ -36,17 +37,17 @@ const BUILD_MARKERS = [
   { file: "docker-compose.yml", kind: "container" },
 ];
 
-// 静态站点入口候选，用于判断「可能要发 Pages/Cloudflare/Vercel」。
+// Static-site entry candidates that may inform a later hosting decision.
 const STATIC_ENTRIES = ["public/index.html", "index.html", "site/index.html", "dist/index.html"];
 
-// 统计源码扩展名分布时关心的语言扩展名。
+// Language extensions included in the source-distribution summary.
 const SOURCE_EXTENSIONS = new Set([
   ".c", ".h", ".cc", ".cpp", ".cxx", ".hpp", ".hxx",
   ".py", ".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs",
   ".rs", ".go", ".java", ".cs", ".rb", ".php", ".html", ".css",
 ]);
 
-// 探测器自身与质量脚本不算「项目源码」，避免脚手架自己的文件把分布带偏。
+// Exclude probe and quality scripts so scaffold files do not skew project-source facts.
 const SELF_PREFIXES = ["scripts/", ".claude/", ".githooks/", "codex-rules/", "docs/"];
 
 function repoPath(...parts) {
@@ -57,7 +58,7 @@ function isSelfFile(relativePath) {
   return SELF_PREFIXES.some((prefix) => relativePath.startsWith(prefix));
 }
 
-// 收集构建系统标记：返回 [{ file, kind }]，按仓库相对路径去重排序。
+// Collect build-system markers as deduplicated, repository-relative { file, kind } records.
 function detectBuildMarkers() {
   const found = [];
   for (const marker of BUILD_MARKERS) {
@@ -68,7 +69,7 @@ function detectBuildMarkers() {
   return found;
 }
 
-// package.json 的 script 名清单是事实；具体哪个是构建命令由使用者拍板。
+// package.json script names are facts; the user decides which command builds the project.
 function detectNodeScripts() {
   const path = repoPath("package.json");
   if (!existsSync(path)) return null;
@@ -83,12 +84,13 @@ function detectNodeScripts() {
       engines: pkg.engines ?? null,
     };
   } catch (error) {
-    // 解析失败是事实的一部分，必须透出，不能当成「没有 package.json」。
-    return { error: `package.json 解析失败: ${error.message}` };
+    // A parse failure is a fact and must not be reported as a missing package.json.
+    return { error: `Failed to parse package.json: ${error.message}` };
   }
 }
 
-// pyproject.toml 不做 TOML 解析（零依赖约束），只做存在性与关键段落的文本特征判断。
+// Preserve the zero-dependency boundary: inspect pyproject.toml presence and
+// recognizable sections without introducing a TOML parser.
 function detectPythonFacts() {
   const path = repoPath("pyproject.toml");
   if (!existsSync(path)) return null;
@@ -125,8 +127,8 @@ function detectExistingWorkflows() {
     .sort();
 }
 
-// 执行 gh 子命令。返回 { ok, stdout, stderr, code }，绝不抛出——
-// 失败本身是要记录的事实，但也绝不当成「探测到空」。
+// Run a gh subcommand and always return { ok, stdout, stderr, code }. Failures
+// are probe facts and must never be interpreted as an empty successful result.
 function runGh(args) {
   try {
     const stdout = execFileSync("gh", args, { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"], timeout: 20000 });
@@ -141,8 +143,8 @@ function runGh(args) {
   }
 }
 
-// gh api 对 403/404 一律 exit 1 且错误 JSON 走 stdout，
-// 所以判定必须解析响应体的 .status，不能只看退出码。
+// gh api exits 1 for both 403 and 404 and writes its error JSON to stdout, so
+// classify the response from .status rather than the exit code alone.
 function ghApi(endpoint) {
   const result = runGh(["api", endpoint]);
   if (result.ok) {
@@ -160,14 +162,14 @@ function ghApi(endpoint) {
   }
 }
 
-// token scope 只能从响应头 X-Oauth-Scopes 取。
-// 明确不用 `gh auth status`：实测它在超时报错时仍然 exit 0，是不可靠判据。
+// Token scopes are available only from the X-Oauth-Scopes response header.
+// Do not use `gh auth status`: it can exit 0 after a timeout and is not reliable.
 function detectTokenScopes() {
   const result = runGh(["api", "-i", "rate_limit"]);
   const payload = result.ok ? result.stdout : result.stdout || result.stderr;
   const line = payload.split(/\r?\n/).find((row) => row.toLowerCase().startsWith("x-oauth-scopes:"));
   if (!line) {
-    return { state: "unknown", reason: result.ok ? "响应头里没有 X-Oauth-Scopes" : result.stderr.trim().slice(0, 300) };
+    return { state: "unknown", reason: result.ok ? "The response did not include X-Oauth-Scopes" : result.stderr.trim().slice(0, 300) };
   }
   const scopes = line.slice(line.indexOf(":") + 1).split(",").map((s) => s.trim()).filter(Boolean);
   return { state: "ok", scopes };
@@ -175,13 +177,13 @@ function detectTokenScopes() {
 
 function probeRemote() {
   if (!runGh(["--version"]).ok) {
-    return { available: false, reason: "未找到 gh CLI，远端事实无法探测；装好 gh 后重跑本命令" };
+    return { available: false, reason: "gh CLI was not found, so remote facts are unavailable; install gh and rerun this command" };
   }
 
   const tokenScopes = detectTokenScopes();
   const repo = ghApi("repos/{owner}/{repo}");
   if (repo.state !== "ok") {
-    return { available: false, reason: `读取仓库信息失败: ${repo.message ?? repo.state}`, tokenScopes };
+    return { available: false, reason: `Failed to read repository information: ${repo.message ?? repo.state}`, tokenScopes };
   }
 
   const defaultBranch = typeof repo.data.default_branch === "string" ? repo.data.default_branch : "main";
@@ -207,59 +209,59 @@ function probeRemote() {
   };
 }
 
-// preflight 只陈述「已核实的阻塞事实」，不替使用者决定怎么办。
+// Preflight reports verified blockers without deciding how the user should resolve them.
 function buildPreflight(remote) {
   const blockers = [];
   const notes = [];
 
   if (!remote.available) {
-    blockers.push(`远端事实不可用：${remote.reason}`);
+    blockers.push(`Remote facts are unavailable: ${remote.reason}`);
     return { blockers, notes };
   }
 
   const scopes = remote.tokenScopes;
   if (scopes.state === "ok") {
     if (!scopes.scopes.includes("workflow")) {
-      blockers.push("token 缺少 workflow scope：推送 .github/workflows/* 会被 GitHub 拒绝，先跑 gh auth refresh -h github.com -s workflow");
+      blockers.push("The token lacks the workflow scope, so GitHub will reject pushes to .github/workflows/*; run gh auth refresh -h github.com -s workflow first");
     }
   } else {
-    blockers.push(`无法确认 token scope（${scopes.reason}）；状态未知不得当作通过`);
+    blockers.push(`Token scopes could not be confirmed (${scopes.reason}); an unknown state cannot be treated as passing`);
   }
 
   if (!remote.repository.isAdmin) {
-    blockers.push("当前身份对该仓库没有 admin 权限：开 Pages、建 environment、配分支保护都会失败");
+    blockers.push("The current identity lacks repository admin permission, so enabling Pages, creating environments, or configuring branch protection will fail");
   }
   if (remote.repository.private) {
-    notes.push("仓库为 private：免费计划下 environments、分支保护、rulesets、Pages 均不可用，相关项需显式跳过而不是静默不配");
+    notes.push("The repository is private: on the free plan, environments, branch protection, rulesets, and Pages are unavailable; explicitly skip unsupported items instead of omitting them silently");
   }
   return { blockers, notes };
 }
 
 function summarize(facts) {
-  const lines = ["", "== CI/CD 探测结果 =="];
+  const lines = ["", "== CI/CD probe results =="];
   const kinds = [...new Set(facts.local.buildMarkers.map((m) => m.kind))];
-  lines.push(`构建系统标记：${kinds.length > 0 ? kinds.join(", ") : "未探测到"}`);
-  lines.push(`静态入口：${facts.local.staticEntries.length > 0 ? facts.local.staticEntries.join(", ") : "无"}`);
+  lines.push(`Build-system markers: ${kinds.length > 0 ? kinds.join(", ") : "none detected"}`);
+  lines.push(`Static entries: ${facts.local.staticEntries.length > 0 ? facts.local.staticEntries.join(", ") : "none"}`);
   const exts = Object.entries(facts.local.sourceExtensions).slice(0, 5).map(([e, n]) => `${e}×${n}`);
-  lines.push(`源码分布：${exts.length > 0 ? exts.join(", ") : "无"}`);
-  lines.push(`已有 workflow：${facts.local.existingWorkflows.length > 0 ? facts.local.existingWorkflows.join(", ") : "无"}`);
+  lines.push(`Source distribution: ${exts.length > 0 ? exts.join(", ") : "none"}`);
+  lines.push(`Existing workflows: ${facts.local.existingWorkflows.length > 0 ? facts.local.existingWorkflows.join(", ") : "none"}`);
 
   if (facts.remote.available) {
     const repo = facts.remote.repository;
-    lines.push(`远端仓库：${repo.nameWithOwner}（${repo.visibility}，admin=${repo.isAdmin}，Pages=${repo.hasPages}）`);
+    lines.push(`Remote repository: ${repo.nameWithOwner} (${repo.visibility}, admin=${repo.isAdmin}, Pages=${repo.hasPages})`);
   } else {
-    lines.push(`远端仓库：不可用 —— ${facts.remote.reason}`);
+    lines.push(`Remote repository: unavailable -- ${facts.remote.reason}`);
   }
 
   if (facts.preflight.blockers.length > 0) {
-    lines.push("", "阻塞项（必须先解决，否则不要开始生成）：");
+    lines.push("", "Blockers (resolve these before generating anything):");
     for (const blocker of facts.preflight.blockers) lines.push(`- ${blocker}`);
   }
   if (facts.preflight.notes.length > 0) {
-    lines.push("", "注意事项：");
+    lines.push("", "Notes:");
     for (const note of facts.preflight.notes) lines.push(`- ${note}`);
   }
-  lines.push("", "以上只是事实。构建命令、测试命令、部署目标必须由你拍板，探测器不做推断。", "");
+  lines.push("", "These are facts only. You must choose the build command, test command, and deployment target; the probe does not infer them.", "");
   return lines.join("\n");
 }
 
@@ -283,7 +285,7 @@ const outputPath = resolve(outputDirectory, "probe.json");
 writeFileSync(outputPath, `${JSON.stringify(facts, null, 2)}\n`, "utf8");
 
 process.stdout.write(summarize(facts));
-process.stdout.write(`事实清单已写入 ${relative(ROOT, outputPath)}\n`);
+process.stdout.write(`Fact inventory written to ${relative(ROOT, outputPath)}\n`);
 
-// 阻塞项存在时以非零退出，避免调用方把「有阻塞」误当成「可以继续」。
+// Exit nonzero when blockers exist so callers cannot mistake them for approval to proceed.
 process.exit(facts.preflight.blockers.length > 0 ? 1 : 0);

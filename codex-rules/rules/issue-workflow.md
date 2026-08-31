@@ -1,22 +1,24 @@
-# Issue 编写与拆解
+# Writing and Decomposing Issues
 
-适用于新增或修改模块、跨模块契约及无法一次闭环的复杂任务；纯文档和无跨层影响的单文件小修可豁免。
+English | [Chinese](issue-workflow-zh.md)
 
-## 新模块 issue
+Use this rule for new or changed modules, cross-module contracts, and complex work that cannot be completed in one loop. A documentation-only or isolated single-file fix with no cross-layer impact is exempt.
 
-验收清单必须包含：
+## New-module issues
 
-- 对外接口签名：函数、路由或事件名称。
-- 参数、返回值、枚举和错误结构：逐字段写明类型、必选性与取值范围。
-- 跨层字段与 ID 的提供方、注入层和上下游依赖；相关 issue 互相引用同一契约。
-- 上下游未就绪时，用 mock、stub 或 fixture 覆盖正常路径和至少一条异常或边界路径，并断言输入输出契约。
-- 在 issue 或 PR 留存测试输出、日志或截图。没有可复核的输入输出证据，不得标记 Done。
+The acceptance checklist must include:
 
-## 复杂任务
+- Public interface signatures, including function, route, or event names.
+- Parameters, return values, enums, and error structures, with type, requirement, and value range for every field.
+- The provider, injection layer, and upstream/downstream dependencies of cross-layer fields and IDs. Related issues must reference the same contract.
+- When an upstream or downstream dependency is unavailable, mocks, stubs, or fixtures covering the normal path and at least one error or boundary path, with input/output contract assertions.
+- Reviewable test output, logs, or screenshots in the issue or PR. Do not mark the issue Done without reproducible input/output evidence.
 
-- 先拆成边界清晰、可独立验收的子 issue，父 issue 只汇总范围和里程碑。
-- 标明 `blocks` / `blocked-by`，按依赖顺序推进。
-- 每个子 issue 仍遵守契约和证据要求；一个闭环后再推进下一个，避免堆积半成品。
-- 子 issue 仍跨多个模块或无法独立出证据时继续拆分；管理成本明显高于实现成本时合并。
+## Complex work
 
-完成后按 [Git 工作流](git-workflow.md) 自检；跨模块证据摘要同步记录到 [项目进度](../../docs/progress.md)。
+- Split work into sub-issues with clear boundaries and independent acceptance. The parent issue should summarize only scope and milestones.
+- Mark `blocks` and `blocked-by` relationships and execute in dependency order.
+- Every sub-issue still follows the contract and evidence requirements. Close one complete loop before starting the next instead of accumulating partial work.
+- Split again when a sub-issue still crosses several modules or cannot produce independent evidence. Merge tasks when coordination cost clearly exceeds implementation cost.
+
+Before completion, check the [Git Workflow](git-workflow.md) and record cross-module evidence in both [progress.md](../../docs/progress.md) and [progress-zh.md](../../docs/progress-zh.md).

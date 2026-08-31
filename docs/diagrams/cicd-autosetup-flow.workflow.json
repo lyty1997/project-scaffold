@@ -2,8 +2,8 @@
   "schema_version": 2,
   "diagram_type": "workflow",
   "meta": {
-    "title": "CI/CD 自动搭建的单向数据流",
-    "locale": "zh-CN",
+    "title": "Unidirectional CI/CD Setup Flow",
+    "locale": "en",
     "quality_profile": "showcase",
     "legend": {
       "mode": "hidden"
@@ -11,75 +11,75 @@
     "views": [
       {
         "id": "probe-decide",
-        "label": "探测与决策台账",
+        "label": "Probe and Decision Record",
         "focus": ["probe", "preflight", "answers"],
-        "note": "先读取本地、远端和权限事实，再让使用者确认无法探测的项目级取舍。"
+        "note": "Read local, remote, and permission facts first, then ask the user to decide project-level choices that cannot be detected."
       },
       {
         "id": "validation-fanout",
-        "label": "三路验证汇合",
+        "label": "Three-Way Validation Join",
         "focus": ["render", "quality-check", "actionlint", "draft-rehearsal", "green-gate"],
-        "note": "基础门禁、workflow 语义和远端演练全部通过才算真绿。"
+        "note": "Baseline gates, workflow semantics, and the remote rehearsal must all pass before the run is verified green."
       },
       {
         "id": "apply-close",
-        "label": "远端落地与收尾",
+        "label": "Remote Apply and Closeout",
         "focus": ["green-gate", "remote-apply"],
-        "note": "真绿后才写远端配置，最后回写文档并只做本地提交。"
+        "note": "Only write remote configuration after a verified green run; then update the docs and create a local commit."
       }
     ]
   },
   "lanes": [
     {
       "id": "decision",
-      "label": "探测与决策"
+      "label": "Probe + Decisions"
     },
     {
       "id": "generation",
-      "label": "台账驱动生成"
+      "label": "Workflow Generation"
     },
     {
       "id": "baseline",
-      "label": "零依赖基础门禁"
+      "label": "Baseline Gates"
     },
     {
       "id": "semantics",
-      "label": "workflow 语义门禁"
+      "label": "Workflow Semantics"
     },
     {
       "id": "remote",
-      "label": "远端演练与落地"
+      "label": "Remote Rehearsal"
     },
     {
       "id": "blocked",
-      "label": "人工授权阻塞",
+      "label": "Authorization Blocked",
       "variant": "exception"
     }
   ],
   "phases": [
     {
       "id": "discover",
-      "label": "探测",
+      "label": "Probe",
       "fromCol": 0,
       "toCol": 1
     },
     {
       "id": "decide-generate",
-      "label": "决策与生成",
+      "label": "Decide + Generate",
       "fromCol": 2,
       "toCol": 2,
       "variant": "emphasis"
     },
     {
       "id": "verify",
-      "label": "并行验证与真绿判定",
+      "label": "Verify in Parallel",
       "fromCol": 3,
       "toCol": 4,
       "variant": "security"
     },
     {
       "id": "land",
-      "label": "落地",
+      "label": "Apply",
       "fromCol": 5,
       "toCol": 5,
       "variant": "dashed"
@@ -128,7 +128,7 @@
       "lane": "decision",
       "col": 0,
       "type": "database",
-      "label": "读取本地、远端与权限信号",
+      "label": "Read Repo and Access Signals",
       "width": 230
     },
     {
@@ -136,7 +136,7 @@
       "lane": "decision",
       "col": 1,
       "type": "security",
-      "label": "执行 preflight",
+      "label": "Run Preflight",
       "width": 170
     },
     {
@@ -144,7 +144,7 @@
       "lane": "blocked",
       "col": 2,
       "type": "external",
-      "label": "停止并引导人工授权",
+      "label": "Stop for Manual Authorization",
       "width": 200
     },
     {
@@ -152,7 +152,7 @@
       "lane": "decision",
       "col": 2,
       "type": "database",
-      "label": "确认取舍并写入决策台账",
+      "label": "Record Confirmed Decisions",
       "width": 220
     },
     {
@@ -160,7 +160,7 @@
       "lane": "generation",
       "col": 2,
       "type": "backend",
-      "label": "渲染 managed workflow",
+      "label": "Render Managed Workflow",
       "width": 210
     },
     {
@@ -168,7 +168,7 @@
       "lane": "baseline",
       "col": 3,
       "type": "security",
-      "label": "运行零依赖门禁",
+      "label": "Run Zero-Dependency Gates",
       "width": 180
     },
     {
@@ -176,7 +176,7 @@
       "lane": "semantics",
       "col": 3,
       "type": "security",
-      "label": "运行 actionlint",
+      "label": "Run actionlint",
       "width": 180
     },
     {
@@ -184,7 +184,7 @@
       "lane": "remote",
       "col": 3,
       "type": "cloud",
-      "label": "临时分支与 draft PR 演练",
+      "label": "Run Draft PR Rehearsal",
       "width": 220
     },
     {
@@ -192,7 +192,7 @@
       "lane": "decision",
       "col": 4,
       "type": "security",
-      "label": "逐 job / step 断言真绿",
+      "label": "Verify Every Job and Step",
       "width": 210
     },
     {
@@ -200,7 +200,7 @@
       "lane": "generation",
       "col": 3,
       "type": "backend",
-      "label": "根据失败日志修正根因",
+      "label": "Fix Root Cause from Logs",
       "width": 210
     },
     {
@@ -208,7 +208,7 @@
       "lane": "remote",
       "col": 5,
       "type": "cloud",
-      "label": "远端 apply，回写文档并本地提交",
+      "label": "Apply, Document, Commit Locally",
       "width": 250
     }
   ],
@@ -217,14 +217,14 @@
       "id": "probe-preflight",
       "from": "probe",
       "to": "preflight",
-      "label": "事实清单",
+      "label": "Facts",
       "role": "main"
     },
     {
       "id": "preflight-answers",
       "from": "preflight",
       "to": "answers",
-      "label": "权限与前置条件通过",
+      "label": "Access ready",
       "variant": "emphasis",
       "role": "main"
     },
@@ -232,7 +232,7 @@
       "id": "preflight-stop",
       "from": "preflight",
       "to": "authorization-stop",
-      "label": "scope 缺失或非 admin",
+      "label": "Missing scope/admin",
       "variant": "security",
       "role": "error"
     },
@@ -240,21 +240,21 @@
       "id": "answers-render",
       "from": "answers",
       "to": "render",
-      "label": "台账已确认",
+      "label": "Decisions confirmed",
       "role": "main"
     },
     {
       "id": "render-quality",
       "from": "render",
       "to": "quality-check",
-      "label": "本地基础检查",
+      "label": "Baseline checks",
       "role": "main"
     },
     {
       "id": "render-actionlint",
       "from": "render",
       "to": "actionlint",
-      "label": "workflow 语义检查",
+      "label": "Semantic checks",
       "role": "async"
     },
     {
@@ -268,28 +268,28 @@
       "id": "quality-green",
       "from": "quality-check",
       "to": "green-gate",
-      "label": "通过",
+      "label": "Pass",
       "role": "main"
     },
     {
       "id": "actionlint-green",
       "from": "actionlint",
       "to": "green-gate",
-      "label": "通过",
+      "label": "Pass",
       "role": "return"
     },
     {
       "id": "rehearsal-green",
       "from": "draft-rehearsal",
       "to": "green-gate",
-      "label": "逐步骤成功",
+      "label": "Steps pass",
       "role": "return"
     },
     {
       "id": "green-repair",
       "from": "green-gate",
       "to": "repair",
-      "label": "任一路失败",
+      "label": "Any check fails",
       "variant": "security",
       "role": "error"
     },
@@ -297,7 +297,7 @@
       "id": "repair-render",
       "from": "repair",
       "to": "render",
-      "label": "重新生成与验证",
+      "label": "Regenerate and validate",
       "variant": "security",
       "role": "error"
     },
@@ -305,7 +305,7 @@
       "id": "green-apply",
       "from": "green-gate",
       "to": "remote-apply",
-      "label": "真绿",
+      "label": "Verified green",
       "variant": "emphasis",
       "role": "main"
     }

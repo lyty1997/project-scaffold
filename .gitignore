@@ -25,7 +25,12 @@ coverage/
 scripts/dev/dev-workflow.env
 .claude/settings.local.json
 
-# CI/CD 探测结果：环境快照而非决策，不入库（决策在 docs/contracts/cicd-answers.json）
+# PlantUML is an external, checksum-pinned tool; local JAR copies are never committed.
+plantuml.jar
+plantuml-*.jar
+
+# CI/CD probe output is an environment snapshot, not a decision record; keep it untracked.
+# Decisions belong in docs/contracts/cicd-answers.json.
 .cicd/
 
 # Logs

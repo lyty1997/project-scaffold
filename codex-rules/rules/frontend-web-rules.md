@@ -1,21 +1,23 @@
-# 网站前端规范
+# Frontend Web Rules
 
-定位、页面层级和技术选型先写入相关设计；未确定技术栈时可保留零依赖静态入口，引入框架、组件库、图标库、分析脚本或第三方服务前先记录决策。
+English | [Chinese](frontend-web-rules-zh.md)
 
-## 内容与交互
+Record positioning, page hierarchy, and technology choices in the relevant design first. A zero-dependency static entry point is acceptable while the stack is undecided. Record a decision before adding a framework, component library, icon library, analytics script, or third-party service.
 
-- 首屏应让访问者理解 `__BRAND_NAME__` 是什么。
-- 导航保持稳定、简短、可扫描；内容与产品服务入口层级明确。
-- 不用复杂装饰或遮挡正文的动效替代内容层次。
-- 交互页面必须呈现错误、空、加载和权限不足等适用状态。
-- 资源路径、内部链接和站点入口应纳入现有质量检查。
+## Content and interaction
 
-## 渲染验证
+- The first screen should explain what `__BRAND_NAME__` is.
+- Keep navigation stable, concise, and scannable, with clear hierarchy for content and product entry points.
+- Do not substitute complex decoration or content-obscuring animation for information hierarchy.
+- Interactive pages must present applicable error, empty, loading, and insufficient-permission states.
+- Include asset paths, internal links, and site entry points in the existing quality checks.
 
-前端改动必须实际运行页面并检查：
+## Render verification
 
-- 桌面端和移动端关键视图可用，文本不重叠或溢出。
-- 导航、锚点、按钮和链接可访问。
-- 无隐私、凭证或未经确认的产品承诺。
+Run the page and verify the following for every frontend change:
 
-无法启动浏览器或截图时，必须说明未完成的视觉验证及风险；静态检查不能替代渲染验证。
+- Critical desktop and mobile views are usable, with no overlapping or overflowing text.
+- Navigation, anchors, buttons, and links are accessible.
+- The page contains no private data, credentials, or unconfirmed product promises.
+
+If a browser or screenshot cannot be produced, report the missing visual verification and its risk. Static checks do not replace render verification.

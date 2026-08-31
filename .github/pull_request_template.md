@@ -1,24 +1,24 @@
-## 变更摘要
+English | [Chinese](pull_request_template-zh.md)
 
-- 
+## Summary
 
-**对应设计文档**：<!-- 这次改动依据 docs/ 下哪份设计文档？纯 bug 修复/无设计影响可填"无" -->
+-
 
+**Related design:** <!-- Which document under docs/ supports this change? Use "None" for a pure bug fix with no design impact. -->
 
+## Content and product boundaries
 
-## 内容与产品边界
+- [ ] If this change affects positioning, information architecture, content models, routes, SEO, deployment, user data, comments, subscriptions, or products and services, the relevant `docs/` design was updated first.
+- [ ] Future products or services are not presented as live capabilities.
+- [ ] No API key, secret, token, real private data, non-public business plan, or customer data is written, printed, or committed.
+- [ ] Any new third-party service or user-data collection documents the fields, purpose, storage, and deletion process.
+- [ ] Paired English and `-zh.md` documentation remains synchronized.
 
-- [ ] 如触及定位、信息架构、内容模型、路由、SEO、部署、用户数据、评论、订阅或产品服务，已先更新 `docs/`。
-- [ ] 未把未来产品服务写成已上线能力。
-- [ ] 未写入、打印或提交 API Key、Secret、token、真实隐私数据、未公开商业计划或客户数据。
-- [ ] 如引入第三方服务或用户数据采集，已说明数据字段、用途、存储和删除方式。
-
-## 验证
+## Verification
 
 - [ ] `npm run quality`
-- [ ] UI 改动已完成实际渲染或截图验证。
+- [ ] UI changes were verified with an actual render or screenshot.
 
-## 备注
+## Notes
 
-- 
-
+-

@@ -2,8 +2,8 @@
   "schema_version": 1,
   "diagram_type": "architecture",
   "meta": {
-    "title": "基础模型能力提升后的脚手架演进",
-    "locale": "zh-CN",
+    "title": "Scaffold Evolution as Foundation Models Improve",
+    "locale": "en",
     "quality_profile": "showcase",
     "viewBox": [1140, 660],
     "legend": {
@@ -12,21 +12,21 @@
     "views": [
       {
         "id": "context-evolution",
-        "label": "规则与上下文变薄",
+        "label": "Leaner Rules and Context",
         "focus": ["model", "thin-rules", "context", "invariants"],
-        "note": "模型能力提升可以减少常驻规则，并提高按任务装配上下文的精度。"
+        "note": "Stronger models can reduce always-on rules and assemble task-specific context more precisely."
       },
       {
         "id": "verification-evolution",
-        "label": "验证与治理变长",
+        "label": "Deeper Verification and Governance",
         "focus": ["model", "verification", "evaluation", "invariants"],
-        "note": "能力提升应转化为更长的真实验证链和基于评测的规则治理。"
+        "note": "Capability gains should produce deeper real-world verification and evaluation-driven rule governance."
       },
       {
         "id": "collaboration-boundary",
-        "label": "并行协作仍受边界约束",
+        "label": "Parallel Work Still Needs Guardrails",
         "focus": ["model", "collaboration", "invariants"],
-        "note": "并行度可以提高，但所有权、资源和交付证据不能消失。"
+        "note": "Parallelism can increase, but ownership, resource boundaries, and delivery evidence must remain explicit."
       }
     ]
   },
@@ -43,7 +43,7 @@
     {
       "id": "model",
       "type": "cloud",
-      "label": "基础模型能力提升",
+      "label": "Stronger Foundation Models",
       "row": 2,
       "col": 0,
       "size": [180, 70]
@@ -51,8 +51,8 @@
     {
       "id": "thin-rules",
       "type": "security",
-      "label": "更薄的常驻规则",
-      "sublabel": "保留目标与不变量",
+      "label": "Leaner Always-On Rules",
+      "sublabel": "Keep goals and invariants",
       "row": 0,
       "col": 1,
       "size": [190, 70]
@@ -60,8 +60,8 @@
     {
       "id": "context",
       "type": "database",
-      "label": "更精准的上下文装配",
-      "sublabel": "按任务检索事实和历史",
+      "label": "Precise Context Assembly",
+      "sublabel": "Retrieve facts and history per task",
       "row": 1,
       "col": 1,
       "size": [210, 70]
@@ -69,8 +69,8 @@
     {
       "id": "verification",
       "type": "security",
-      "label": "更长的自验证闭环",
-      "sublabel": "从修改走到真实环境证据",
+      "label": "Deeper Self-Verification",
+      "sublabel": "From changes to real-world evidence",
       "row": 2,
       "col": 1,
       "size": [210, 70]
@@ -78,8 +78,8 @@
     {
       "id": "evaluation",
       "type": "backend",
-      "label": "基于评测的规则治理",
-      "sublabel": "失败归因、去重与删旧",
+      "label": "Evaluation-Driven Rules",
+      "sublabel": "Attribute failures and retire stale rules",
       "row": 3,
       "col": 1,
       "size": [210, 70]
@@ -87,8 +87,8 @@
     {
       "id": "collaboration",
       "type": "backend",
-      "label": "受控的并行协作",
-      "sublabel": "明确所有权、资源与交付证据",
+      "label": "Controlled Parallel Work",
+      "sublabel": "Explicit ownership, resources, and evidence",
       "row": 4,
       "col": 1,
       "size": [220, 70]
@@ -96,8 +96,8 @@
     {
       "id": "invariants",
       "type": "database",
-      "label": "始终保留的工程不变量",
-      "sublabel": "项目事实、权限边界、测试与证据",
+      "label": "Enduring Engineering Invariants",
+      "sublabel": "Project facts, permissions, tests, and evidence",
       "row": 2,
       "col": 2,
       "size": [230, 76]

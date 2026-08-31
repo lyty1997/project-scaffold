@@ -1,7 +1,10 @@
-# 语言与解释规范
+# Language and Explanation
 
-- 与用户对话、`docs/` 和用户可见 UI 默认使用简体中文。
-- 代码注释以中文为主；协议、API、类型名和其他标准英文术语保留原文。
-- 面向用户说明新概念时，先说它解决什么问题，再说工程落点。
-- 对熟悉技术语境的用户保持简洁；只有概念影响决策或理解时才补充定义。
-- 注释解释原因、边界和非显然约束，不复述代码。关键契约、隐私边界和资源路径处理应能从注释或设计文档追溯。
+English | [Chinese](language-zh.md)
+
+- Use English by default for `docs/`, repository-facing UI, public copy, Agent instructions, code comments, CLI output, and commit subjects. Match an explicit user conversation language.
+- Maintain synchronized Chinese documentation in the paired `-zh.md` files defined by [Language and Localization](../../docs/architecture/localization.md).
+- Preserve standard spelling for protocols, APIs, types, identifiers, and other technical terms.
+- When introducing a concept, first explain the problem it solves, then identify its engineering location.
+- Be concise with technically experienced users. Define a concept only when it affects a decision or understanding.
+- Comments explain reasons, boundaries, and non-obvious constraints rather than restating code. Critical contracts, privacy boundaries, and asset-path handling must remain traceable to comments or design documents.

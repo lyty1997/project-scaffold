@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
-"""CI/CD 搭建提醒 hook（PostToolUse）。
+"""PostToolUse hook that reminds a project to set up CI/CD.
 
-只在三个条件同时成立时输出一条提醒：
-项目已初始化、已经长出源码、还没有 CI/CD 台账。
+It emits one reminder only when the project has been initialized, real source
+code exists, and no CI/CD decision ledger exists yet.
 
-它永远不阻断动作。PostToolUse 只能提醒；
-要阻断得用 PreToolUse 的 decision:block。
+The hook never blocks an action. PostToolUse can only add a reminder; blocking
+requires a PreToolUse ``decision:block`` response.
 
-必须独立成脚本：现有 post-edit-safety.py
-按扩展名分发技术栈，对 .md / .yml / .c / .cpp
-一律提前返回、完全静默，扩它的 CHECKS 表覆盖不到。
+This logic must remain separate from post-edit-safety.py. That hook dispatches
+by source extension and deliberately returns silently for files such as .md,
+.yml, .c, and .cpp, so extending its CHECKS table would not cover this case.
 
-去重：同一天最多提醒一次，状态写在 .cicd/ 下
-（该目录已被 .gitignore 忽略）。提醒变噪音就等于没提醒。
+To avoid noise, the hook records state under the ignored .cicd/ directory and
+emits at most one reminder per day.
 """
 
 from __future__ import annotations
@@ -23,7 +23,7 @@ import sys
 from datetime import date
 from pathlib import Path
 
-# 构建系统特征：命中任意一条即认为项目已长出实体。
+# Any build-system marker indicates that the project has real implementation.
 BUILD_MARKERS: tuple[str, ...] = (
     "CMakeLists.txt", "Makefile", "GNUmakefile", "meson.build",
     "configure.ac", "pyproject.toml", "setup.py", "requirements.txt",
@@ -32,7 +32,7 @@ BUILD_MARKERS: tuple[str, ...] = (
 SOURCE_SUFFIXES: frozenset[str] = frozenset({
     ".c", ".h", ".cc", ".cpp", ".hpp", ".py", ".ts", ".tsx", ".rs", ".go",
 })
-# 脚手架自身目录不算项目源码，否则一 clone 就误报。
+# Exclude scaffold-owned directories so a fresh clone does not trigger a reminder.
 SCAFFOLD_DIRECTORIES: frozenset[str] = frozenset({
     ".git", ".claude", ".githooks", ".github", "codex-rules",
     "docs", "scripts", "node_modules",
@@ -41,7 +41,7 @@ ANSWERS_RELATIVE = "docs/contracts/cicd-answers.json"
 
 
 def _load_payload() -> dict[str, object] | None:
-    """读 stdin 载荷；读不到或格式不对返回 None（静默放行）。"""
+    """Read the stdin payload, returning None on missing or malformed input."""
     try:
         raw = sys.stdin.read()
     except OSError:
@@ -56,7 +56,7 @@ def _load_payload() -> dict[str, object] | None:
 
 
 def _project_root() -> Path | None:
-    """定位仓库根：先用 CLAUDE_PROJECT_DIR，否则向上找 .git。"""
+    """Locate the repository root from CLAUDE_PROJECT_DIR or a parent .git."""
     env_root = os.environ.get("CLAUDE_PROJECT_DIR")
     if env_root:
         candidate = Path(env_root)
@@ -70,11 +70,11 @@ def _project_root() -> Path | None:
 
 
 def _is_initialized(root: Path) -> bool:
-    """package.json 里不再有 __PLACEHOLDER__ 才算完成初始化。"""
+    """Treat package.json as initialized when no __PLACEHOLDER__ remains."""
     package_json = root / "package.json"
     if not package_json.is_file():
-        # 纯 C/C++ 等项目没有 package.json，
-        # 无法用这个信号判断，按已初始化处理。
+        # Projects such as pure C/C++ repositories may not have package.json,
+        # so this signal cannot prove they are uninitialized.
         return True
     try:
         text = package_json.read_text(encoding="utf-8")
@@ -87,7 +87,7 @@ def _is_initialized(root: Path) -> bool:
 
 
 def _has_source(root: Path) -> bool:
-    """存在构建系统标记或项目源码文件。"""
+    """Return whether a build marker or project source file exists."""
     if any((root / marker).is_file() for marker in BUILD_MARKERS):
         return True
     for entry in root.iterdir():
@@ -100,7 +100,7 @@ def _has_source(root: Path) -> bool:
 
 
 def _already_reminded_today(root: Path) -> bool:
-    """同一天只提醒一次；顺手把今天记下。"""
+    """Record today's reminder and report whether it already ran today."""
     state_path = root / ".cicd" / "reminder-state.json"
     today = date.today().isoformat()
     if state_path.is_file():
@@ -119,28 +119,28 @@ def _already_reminded_today(root: Path) -> bool:
             json.dumps({"lastRemindedOn": today}), encoding="utf-8"
         )
     except OSError as error:
-        # 写不了状态就照常提醒，只是可能重复。
-        # 把原因透出，不悄悄吞掉。
+        # Still emit the reminder when state cannot be stored, but surface the
+        # cause because the reminder may repeat.
         sys.stderr.write(
-            f"cicd-reminder: 无法写入提醒状态（{error}）\n"
+            f"cicd-reminder: could not write reminder state ({error})\n"
         )
     return False
 
 
 def _reminder_text() -> str:
-    """提醒正文。"""
+    """Build the user-facing reminder."""
     return (
-        f"这个项目已经有源码，但还没有 CI/CD 台账（{ANSWERS_RELATIVE}）。\n"
-        "建议现在搭：跑 `npm run cicd:probe` 看探测结果，\n"
-        "或用 setup-cicd skill 走完整闭环"
-        "（探测 → 拍板 → 生成 → 实测转绿 → 远端配置）。\n"
-        "暂时不搭的话，把决定和理由记进 "
-        "docs/architecture/open-decisions.md，别让它悬着。"
+        f"This project has source code but no CI/CD decision ledger ({ANSWERS_RELATIVE}).\n"
+        "Consider setting it up now: run `npm run cicd:probe` to inspect the facts,\n"
+        "or use the setup-cicd skill for the full loop "
+        "(probe, decide, generate, validate, and configure the remote).\n"
+        "If setup is intentionally deferred, record the decision and rationale in "
+        "docs/architecture/open-decisions.md."
     )
 
 
 def main() -> int:
-    """判定三个条件，命中则输出一条提醒。"""
+    """Emit a reminder when all three eligibility conditions are met."""
     payload = _load_payload()
     if payload is None:
         return 0
