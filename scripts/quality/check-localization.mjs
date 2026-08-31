@@ -1,3 +1,4 @@
+import { spawnSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { basename, dirname, extname, relative, resolve } from "node:path";
 import { listFiles, projectRoot, readText } from "./lib/files.mjs";
@@ -34,6 +35,10 @@ const ROOT_DOCUMENTS = [
   "README.md",
   "SCAFFOLD.md",
   ".github/pull_request_template.md",
+];
+const INDEX_VISIBLE_ENGLISH_FILES = [
+  ".agents/skills/archify/SKILL.md",
+  ".agents/skills/archify/agents/openai.yaml",
 ];
 
 function shown(path) {
@@ -116,26 +121,49 @@ function isEnglishScanExcluded(path) {
   );
 }
 
-function isAllowedFunctionalData(path, line, previousLine) {
+function isAllowedFunctionalData(pathShown, line, previousLine) {
   if (line.includes(ALLOW_MARKER) || previousLine.includes(ALLOW_MARKER)) return true;
-  if (shown(path) === "docs/contracts/contract-rules.json") {
+  if (pathShown === "docs/contracts/contract-rules.json") {
     return /^\s*"(?:term|use)"\s*:/.test(line);
   }
   return false;
 }
 
+function scanEnglishText(pathShown, text, errors) {
+  const lines = text.split(/\r?\n/);
+  for (const [index, line] of lines.entries()) {
+    if (!HAN.test(line)) continue;
+    const previousLine = index > 0 ? lines[index - 1] : "";
+    if (!isAllowedFunctionalData(pathShown, line, previousLine)) {
+      errors.push(`${pathShown}:${index + 1}: contains Han text on an English-default surface`);
+    }
+  }
+}
+
 function checkEnglishSurfaces() {
   const errors = [];
+  const scanned = new Set();
   for (const path of listFiles(ROOT, isTextFile)) {
     if (isEnglishScanExcluded(path)) continue;
-    const lines = readText(path).split(/\r?\n/);
-    for (const [index, line] of lines.entries()) {
-      if (!HAN.test(line)) continue;
-      const previousLine = index > 0 ? lines[index - 1] : "";
-      if (!isAllowedFunctionalData(path, line, previousLine)) {
-        errors.push(`${shown(path)}:${index + 1}: contains Han text on an English-default surface`);
-      }
+    const pathShown = shown(path);
+    scanned.add(pathShown);
+    scanEnglishText(pathShown, readText(path), errors);
+  }
+
+  // Hosted Codex may mount .agents as an empty read-only skill view. CI sees the
+  // tracked files, so scan their staged bytes when the working-tree paths are hidden.
+  for (const pathShown of INDEX_VISIBLE_ENGLISH_FILES) {
+    if (scanned.has(pathShown)) continue;
+    const indexed = spawnSync("git", ["show", `:${pathShown}`], {
+      cwd: ROOT,
+      encoding: "utf8",
+      maxBuffer: 1024 * 1024,
+    });
+    if (indexed.status !== 0) {
+      errors.push(`${pathShown}: cannot read tracked bytes from the Git index`);
+      continue;
     }
+    scanEnglishText(pathShown, indexed.stdout, errors);
   }
   return errors;
 }

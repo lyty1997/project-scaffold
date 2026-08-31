@@ -14,6 +14,7 @@
 - 实现：新增项目级 `plantuml-in-markdown` Skill 及中文参考、安全的 Markdown 提取/编译器、原子 SVG 渲染器、提交的 smoke fixture、`check:plantuml` / `gen:plantuml`、Archify 专项命令别名、组合图表命令，以及校验 SHA-256 后才下载 PlantUML 1.2026.1 的 CI job。PlantUML 禁止 include/import，不加入不可跨机器复现的 SVG 字节新鲜度门禁。
 - Archify 共存：更新 vendored Skill，把明确的 PlantUML 与内联围栏请求路由到互补工作流；登记第四项项目本地修改并刷新 vendored tree 摘要；现有 7 张 Archify 图继续遵守 9/9、浏览器复核和 canonical PNG 契约。
 - 验证：PlantUML fixture 完成“提取 → 编译 → 写回 → 全量重编”，生成非空 116×290 PNG 与 SVG，并通过人工可读性复核。`check:plantuml` 通过；组合 `check:diagrams` 通过 7 份 Archify showcase 9/9 源与 1 个安全编译的 PlantUML 块；仓库 workflow 通过 actionlint v1.7.12；完整 `npm run quality` 在托管沙箱外通过（沙箱会以 EPERM 阻止 fixture 启动嵌套 Node）。
+- CI 跟进：首次推送仅因 CI 能看到 tracked `.agents/skills/archify/agents/openai.yaml` 的中文，而托管 Codex 挂载在本地遮蔽该路径而失败。现已把元数据改成英文，并让 `check:localization` 在工作树挂载遮蔽 `.agents` 时从 Git 索引读取 staged 字节，消除本地与 CI 的可见性差异。
 - 数据与外部服务：未新增运行时服务、遥测、用户数据收集或 npm 依赖。CI 新增 Java 设置与固定官方 PlantUML JAR 的摘要校验下载；图表编译本身离线且自包含。
 
 ## 2026-08-31 CST / 仓库文档默认英文并持续维护中文译本
