@@ -12,6 +12,8 @@ __BRAND_NAME__ is __PROJECT_TAGLINE__. Replace this paragraph with an accurate d
 
 ## Engineering documentation
 
+Project explanations and design documents have maintained Chinese translations. Agent rules, Skills, and contributor workflow guidance are maintained in English only; see [Language and Localization](docs/architecture/localization.md).
+
 - Claude Code guidance: [CLAUDE.md](CLAUDE.md)
 - Project rules: [AGENTS.md](AGENTS.md)
 - Documentation index: [docs/README.md](docs/README.md)

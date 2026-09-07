@@ -10,6 +10,7 @@ This directory is the source of truth for project positioning, architecture, the
 - [Technical article: AI Coding Scaffold—From One Conversation to a Reusable Engineering Loop](sharing/ai-coding-scaffold.md)
 - [Architecture overview](architecture/overview.md)
 - [Quality gates](architecture/quality-gates.md)
+- [Agent prompt design and reduction assessment](architecture/agent-prompts.md)
 - [Diagram system: Archify + PlantUML](architecture/diagram-system.md)
 - [Portable single-file documents](architecture/portable-documents.md)
 - [Language and localization](architecture/localization.md)

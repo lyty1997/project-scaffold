@@ -259,13 +259,13 @@ GitHub App installation token 需要先增加生成短期 token 的专用步骤�
 
 ### 4.8 执行体 `.claude/skills/setup-cicd/SKILL.md`
 
-形状照抄既有的 `sync-shared-rules`（读台账 → 逐目标实际探查 → 按各自机制适配 → 实测校验 → 写回并本地提交 → 更新台账），它已经是本仓库验证过的"探查 + 现场适配"范式。
+Skill 维护目标项目的执行顺序；[CI/CD 规则](../../codex-rules/rules/cicd-workflow.md)维护文件归属和真实绿灯标准；本设计维护 schema 与生成器不变量。只读取所选流程需要的章节，分层依据见 [Agent 提示词设计](agent-prompts-zh.md)。
 
-SKILL.md 结尾必须写明**什么才算验证通过**（沿用[图表系统](diagram-system-zh.md)的“确定性回执不能代替真实视觉复核”原则），以及可勾选的收工清单。
+Skill 的交付要求应引用规范验收标准，并说明仍缺少的证据。仅完成本地生成不能证明 CI/CD 已经可用；Skill 不再复制规则中的验收清单。
 
 ## 五、端到端流程
 
-**第 0 步 preflight 必须最先跑，且在写任何文件之前**——否则会生成一堆文件后卡在推不上去。
+目标项目交付须在写台账或生成文件前完成 preflight。脚手架框架维护执行本地门禁，不依赖目标台账或远端探测。复用会话中已确立的事实和授权；需要补充决策或权限时，先完成已授权、可供审阅的准备工作。Skill 本身不授予远端写入权限。
 
 | 步 | 动作 | 失败处理 |
 | --- | --- | --- |
@@ -278,7 +278,7 @@ SKILL.md 结尾必须写明**什么才算验证通过**（沿用[图表系统](d
 | 6 | 临时分支 + draft PR 触发真机实测，部署步骤走 `dry_run=true` | —— |
 | 7 | 按"真绿判据"逐 job 逐 step 断言 | 失败则取日志定位 → 修 → 再推，直到转绿 |
 | 8 | 远端 apply：`gh secret set` / 开 Pages / 建 environment | 逐项记录成功与跳过原因 |
-| 9 | 回写台账、同步更新 `docs/progress.md` 与 `docs/progress-zh.md`、本地提交（不自动 push） | —— |
+| 9 | 回写台账和两份进度文档；在会话已授权范围内提交、推送或合并 | 需要额外授权时，展示已验证改动及剩余具体动作 |
 
 第 6 步用 draft PR 而不是 `gh workflow run --ref`：**`workflow_dispatch` 要求 workflow 文件已存在于默认分支**，否则 API 返回 404 且错误文案具有误导性。而本仓库 `ci.yml` 已有裸 `pull_request:` 触发，任意分支开 PR 都会命中。实测确认 `pull_request` 事件 run 的 `headSha` 就是分支 head commit，`gh run list -c <SHA>` 可无歧义定位。
 

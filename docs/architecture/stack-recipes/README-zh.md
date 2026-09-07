@@ -5,7 +5,7 @@
 状态：active
 最近更新：__在实际使用时更新为当前日期__
 
-本目录**不是脚手架默认引入的依赖**，纯粹是"一旦你在 [待决策问题](../open-decisions-zh.md) 里选定了某个技术栈，可以直接复制粘贴的参考配置"。这些配置片段与 [`.claude/rules/python-coding-rules.md`](../../../.claude/rules-zh/python-coding-rules-zh.md)、[`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules-zh/typescript-coding-rules-zh.md) 已经用文字规定的规范一一对应——那两份文件说"要做什么"，这里给"具体怎么配"。
+本目录提供在[待决策问题](../open-decisions-zh.md)中选定技术栈后的可选配置，默认不引入依赖。[Python](../../../.claude/rules/python-coding-rules.md) 和 [TypeScript](../../../.claude/rules/typescript-coding-rules.md) 规则保留精简的编码约束，配方提供按需采用的工具设置。命令、依赖和覆盖率要求以项目实际配置为准，规则或配方不会自动作出这些选择。
 
 ## 使用方式
 

@@ -1,8 +1,3 @@
-# Language Rules
+# Language
 
-English | [Chinese](../rules-zh/language-zh.md)
-
-- Conversation: match the user's explicit language; otherwise use English.
-- Code comments and docstrings: English, preserving standard technical terms.
-- Commit subjects: English Conventional Commits in the form `<type>(<scope>): <English subject>`.
-- `docs/`: canonical English documents with synchronized `-zh.md` Chinese translations.
+`AGENTS.md` owns language and translation scope. For explanations and comments, use the [language rule](../../codex-rules/rules/language.md).

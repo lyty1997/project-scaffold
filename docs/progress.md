@@ -8,6 +8,30 @@ Entry format: `timestamp / topic / completed work / remaining work`. Since 2026-
 
 Append new tasks below in reverse chronological order.
 
+## 2026-09-07 CST / Simplify Agent prompts for gpt-6-astra
+
+- Delivery scope: the user requested commit and push. The handoff uses the current `dev` branch and includes the preceding English-only instruction cleanup and its localization gate; remote completion is checked against the pushed commit's CI run.
+- Assessment: traced root instructions, task routing, Claude rules/hooks, first-party Skills, and the pinned Archify bridge. Recorded the design and official OpenAI evidence in [Agent Prompt Design](architecture/agent-prompts.md) before edits; preserved the existing uncommitted English-only cleanup and six reasoning principles.
+- Changes: centralized shared constraints, replaced duplicate Claude rules with conditional links, shortened workflow and Skill procedures, and removed nonexistent commands, automatic stack adoption, invented test roles, and conflicting approval/push instructions. Aligned CI/CD design and stack recipes with the canonical rules; added reusable prompt-drift guidance.
+- Source-level ablation: compared root/workflow, focused rules, and first-party Skills against the task-start snapshot with the same eight manual acceptance scenarios. First-party instruction text fell from 90,672 to 36,538 UTF-8 bytes (59.7%); including the unchanged pinned Archify entry, 107,105 to 52,971 (50.5%). Earlier translation deletions, design/history prose, installed Skills, and host context are excluded from the claimed reduction.
+- Verification: `npm run quality` passed outside the managed sandbox after its nested CI/CD fixture processes were denied with `EPERM`. All four first-party Skills passed metadata validation. A synthetic uint16 TIFF under a `.jpg` name confirmed temporary preview output, 1280×853 grayscale conversion, and unchanged source bytes. Manual route/constraint review retained the eight required outcomes and corrected the language-reading exception for translation edits.
+- Remaining uncertainty: actual Astra latency, token usage, approval frequency, and task quality require controlled task replay; fresh-session discovery of the environment-obscured `.agents` bridge remains an environment check. No script, dependency, workflow YAML, UI, vendored package, user-data collection, or third-party service was added or changed by this task.
+
+## 2026-09-07 CST / Reasoning and design principles in Agent instructions
+
+- Completed: added six actionable principles to `AGENTS.md`: first principles, timely adversarial review, autonomous ablation experiments with Occam's razor, explicit uncertainty reporting, independent and critical thinking, and continuous checks for high cohesion and low coupling. Ablations compare one removed or disabled element against a baseline using the same acceptance checks; experiments remain reversible and within the authorized scope.
+- Scope: retained the English-only instruction contract and linked the existing architecture principles. This change updates instructions only; there is no executable design or implementation change to ablate. Its effect on future Agent behavior remains unverified and should be assessed in subsequent tasks.
+- Verification: `npm run check:docs`, `npm run check:localization`, and `git diff --check` passed. Reviewed the six principles against existing decision boundaries and architecture guidance.
+- Remaining work: none for this documentation change. No user-data collection or third-party service was added.
+
+## 2026-09-06 CST / English-only Agent and contributor instructions
+
+- Scope: narrowed the localization contract before cleanup. Maintained Chinese translations now cover only project explanations and design documents: `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. This supersedes the instruction-translation scope recorded on 2026-08-31; that entry remains a historical record.
+- Cleanup: removed 31 Chinese instruction and workflow copies (root Agent/contributor entry points, Codex rules and known issues, Claude rules, first-party Skills, and the PR template), removed their language-switch links, and redirected retained Chinese project documents to canonical English instructions. All 20 project Chinese documents remain. Updated active language, stack-dispatch, contribution, and known-issue guidance so it no longer requests translated instructions.
+- Gate: `check:localization` requires reciprocal pairs only for project documents and rejects Chinese instruction copies, including uppercase `-ZH.md` variants and populated translated rules directories. English-default scanning, functional Chinese data, and vendored exceptions remain in place.
+- Verification: `npm run quality` passed outside the managed sandbox after the sandbox blocked nested Node processes in existing CI/CD fixtures with `EPERM`. Seventeen temporary positive/negative localization scenarios passed, covering retained pairs, rejected instruction copies and translated directories, and existing exceptions. Markdown links, language pairing, and `git diff --check` passed; an independent review confirmed the deletion and preservation counts.
+- Remaining work: none. No user-data collection, telemetry, third-party service, dependency, or network integration was added.
+
 ## 2026-08-31 CST / Complementary Archify and PlantUML diagram system
 
 - Decision: replaced the former “Archify replaces PlantUML” rule with an explicit complementary matrix. Archify owns polished interactive overviews, complex workflows/data flows/lifecycles, themes, search, route tracing, and canonical PNG export. PlantUML owns Markdown-inline, diff-friendly ERD/class, precise state, and focused sequence/activity diagrams plus fast batch compilation. One illustration may have only one editable source.

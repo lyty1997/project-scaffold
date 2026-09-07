@@ -1,7 +1,5 @@
 # Contributing
 
-English | [Chinese](CONTRIBUTING-zh.md)
-
 This file collects entry points for contributors. Detailed rules remain in their designated sources of truth and are not duplicated here.
 
 ## Before you start
@@ -24,7 +22,7 @@ Changes to positioning, information architecture, content sections, routes, publ
 
 - Run `npm run quality` and ensure it passes. CI runs the same baseline on Ubuntu and Windows.
 - Verify UI changes with an actual render or screenshot. For a static page, check at least the entry file, asset references, and critical links.
-- Update both [docs/progress.md](docs/progress.md) and [docs/progress-zh.md](docs/progress-zh.md) when the task ends. After fixing a reusable bug, record its cause and solution in [known-issues.md](codex-rules/known-issues.md) and [known-issues-zh.md](codex-rules/known-issues-zh.md).
+- Update both [docs/progress.md](docs/progress.md) and [docs/progress-zh.md](docs/progress-zh.md) when the task ends. After fixing a reusable bug, record its cause and solution in [known-issues.md](codex-rules/known-issues.md).
 
 ## Infrastructure not yet selected
 

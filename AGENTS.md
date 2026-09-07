@@ -1,48 +1,33 @@
 # __PROJECT_NAME__ - Project Rules
 
-English | [Chinese](AGENTS-zh.md)
+__PROJECT_NAME__ is __PROJECT_TAGLINE__. Establish purpose before implementation and credible content before presentation. When creating a new project from this scaffold, run `npm run init` if uppercase placeholders wrapped in double underscores remain; scaffold maintenance preserves them.
 
-## Purpose and sources of truth
+## Sources and scope
 
-__PROJECT_NAME__ is __PROJECT_TAGLINE__. Public content must be credible, traceable, and maintainable; presentation must never conceal an unimplemented capability.
+- `docs/` owns design facts and public claims; `package.json` and `.github/workflows/` own commands and CI behavior.
+- Use [docs/README.md](docs/README.md) and the [rule index](codex-rules/global-AGENTS.md) to load only task-relevant context and needed history. Read one language for background; inspect both when editing a pair.
+- These project constraints apply to every Agent. Detailed rules and Skills supplement them; explicit user instructions take precedence over their guidance.
 
-- `docs/`: source of truth for positioning, architecture, content models, products and services, deployment, and public claims.
-- `AGENTS.md`: project-level constraints that every Agent must always follow.
-- `codex-rules/`: task-specific execution guidance for Codex; it does not replace `docs/`.
-- `package.json` and `.github/workflows/`: source of truth for current commands and CI behavior.
+## Reasoning and design
 
-**Establish the purpose before implementation; establish credible content before visual presentation.** When this scaffold is used to create a new project and uppercase placeholders wrapped in double underscores remain, run `npm run init` before continuing.
+- **First principles:** Start from confirmed goals, evidence, and constraints; challenge assumptions.
+- **Adversarial review:** For consequential, complex, or uncertain choices, test counterexamples and failure modes; resolve findings or report limitations.
+- **Ablation and Occam's razor:** Test added complexity by reversibly removing one element against a baseline with the same acceptance checks. Record the result and prefer the simplest passing design; if infeasible, explain what remains unverified.
+- **Uncertainty:** Keep unresolved questions, missing evidence, impact, and next verification steps current in updates and handoff.
+- **Independent judgment:** Assess suggestions and conclusions against evidence; explain disagreements and revise when warranted.
+- **High cohesion, low coupling:** Keep responsibilities together and dependencies behind explicit contracts; investigate changes spreading across modules. Follow [architecture evolution](docs/architecture/overview.md#evolution-principles).
 
-## Minimal end-to-end workflow
+## Execution and boundaries
 
-1. Read `docs/README.md` and the design documents relevant to the task. Use the [Codex rule index](codex-rules/global-AGENTS.md) to load only the applicable detailed rules.
-2. Inspect the worktree and current implementation. Distinguish explicit user requirements, verifiable facts, and choices that only the user can make.
-3. When the change falls within a documentation-first area below, update the relevant design, contract, or pending-decision record before implementation.
-4. Complete the smallest verifiable loop. Do not introduce infrastructure the current design does not require or add redundant fallbacks that hide a root cause.
-5. Run checks proportional to the risk, update `docs/progress.md` and `docs/progress-zh.md`, and report changes, verification, and remaining issues.
+1. Inspect the worktree and implementation; preserve existing changes. Use `apply_patch` for manual edits.
+2. Update `docs/` before changing positioning, information architecture, content models, public copy/pages, routes/SEO, products/services, interactions/data, third-party scripts, deployment, or stack. Record technology choices in [Open Decisions](docs/architecture/open-decisions.md) first.
+3. Reuse verified facts and session authorization. Do not invent user intent, preferences, priorities, acceptance criteria, business facts, or permission. Resolve routine implementation details within scope; for a missing user-owned choice, state facts, options, and consequences and pause only dependent work.
+4. Complete the smallest verifiable loop. Expose real failures; do not hide them with fake success, redundant fallbacks, or unsupported infrastructure.
+5. Run applicable configured formatter, lint, typecheck, tests, and focused checks after code changes. The baseline is `npm run quality`; do not invent absent commands. Verify UI changes with an actual render under [frontend rules](codex-rules/rules/frontend-web-rules.md). Stop repeating passing checks unless new evidence warrants it.
+6. Update both progress documents with changes, verification, and remaining issues. Report these and whether user-data collection or a third-party service was added; add neither by default. Record reusable bug guidance once in [Known Issues](codex-rules/known-issues.md).
 
-## Decisions and boundaries
+Never commit, print, or write credentials, real private/customer data, or non-public business plans. Distinguish facts, opinions, plans, and pending decisions; never present unreleased capabilities as delivered. Destructive or irreversible actions require an explicit request and risk confirmation.
 
-- Do not invent the user's intent, preferences, priorities, acceptance criteria, business facts, or authorization. Verify what can be verified. If a remaining uncertainty requires a user choice, state the known facts, options, and consequences, then pause work that depends on that choice.
-- Changes to positioning, information architecture, content models, public pages or copy, routes, SEO, products and services, user interactions or data, third-party scripts, deployment, or the technology stack require a prior `docs/` update. Record technology choices in `docs/architecture/open-decisions.md` first.
-- Clearly distinguish facts, opinions, plans, and items awaiting confirmation. Never describe an unreleased capability as delivered.
-- Do not commit, print, or write credentials, real private data, customer data, or non-public business plans.
-- Do not perform destructive or irreversible operations unless the user explicitly requests them and confirms the risk.
+## Language
 
-## Editing and verification
-
-- Inspect the worktree before editing and preserve the user's existing changes. Use `apply_patch` for manual edits.
-- After code changes, run the existing formatter, lint, typecheck, tests, and relevant focused checks. The complete baseline gate is `npm run quality`.
-- For UI changes, follow the [frontend web rules](codex-rules/rules/frontend-web-rules.md) and verify an actual render.
-- When adding or resolving a bug, review and refine `codex-rules/known-issues.md` as needed. Keep only reusable symptom / cause / fix guidance there.
-- At completion, state whether the change adds user-data collection or a third-party service. Do not introduce either by default.
-
-## Language and entry points
-
-English is the default language for repository documentation, user-visible UI, Agent-facing instructions, code comments, CLI output, and commit subjects. Follow the user's explicit conversation language. Maintain each existing Chinese document as a synchronized `-zh.md` translation; the detailed pairing and exception rules are defined in [Language and Localization](docs/architecture/localization.md).
-
-- [Documentation index](docs/README.md)
-- [Chinese documentation index](docs/README-zh.md)
-- [Codex rule index](codex-rules/global-AGENTS.md)
-- [Quality gates](docs/architecture/quality-gates.md)
-- [Known issues](codex-rules/known-issues.md)
+Use English for repository content, UI, instructions, comments, CLI output, and commit subjects; follow the user's conversation language. Maintain Chinese pairs only for `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. Agent/contributor instructions, rules, Skills, and the PR template remain English only. See [Localization](docs/architecture/localization.md).

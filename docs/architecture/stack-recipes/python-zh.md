@@ -2,7 +2,7 @@
 
 [English](python.md) | 中文
 
-可选，仅在 [待决策问题](../open-decisions-zh.md) 确定后端语言选 Python 后才需要落地。规则依据见 [`.claude/rules/python-coding-rules.md`](../../../.claude/rules-zh/python-coding-rules-zh.md)。
+可选，仅在 [待决策问题](../open-decisions-zh.md) 确定后端语言选 Python 后才需要落地。规则依据见 [`.claude/rules/python-coding-rules.md`](../../../.claude/rules/python-coding-rules.md)。
 
 ## `pyproject.toml`：ruff + mypy + pytest
 

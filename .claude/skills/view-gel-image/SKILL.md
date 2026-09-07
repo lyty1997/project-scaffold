@@ -1,94 +1,17 @@
 ---
 name: view-gel-image
-description: Safely inspect very large, 16-bit, or unusual raster images such as electrophoresis gels, microscopy TIFF files, and large scans without exhausting the multimodal context on the original. Trigger when the user asks to view a `.tif`, `.tiff`, a `.jpg` that is actually TIFF, an image larger than 2 MB, a known non-8-bit raster, or when direct image reading reports unsupported bit depth or excessive size.
+description: Preview TIFF, high-bit-depth, or oversized scientific rasters when direct viewing is unsupported or impractical. Ordinary directly viewable PNG/JPEG files do not need conversion.
 ---
 
-# view-gel-image: Safe Large-Image Preview
+# Scientific Image Preview
 
-English | [Chinese](SKILL-zh.md)
+Create a temporary preview for visual inspection; preserve the original for measurements, ROI/grid detection, and quantitative analysis.
 
-## When to use it
+- Limit input to the named files or diagnosed failure list. For a requested directory, convert that directory and inspect a representative batch first.
+- Prefer a compatible project preview helper. Otherwise copy this Skill's `scripts/compress_for_preview.py` into a temporary directory's `scripts/` folder so its `outputs/preview/` stays temporary. Always supply an explicit absolute input path; the helper's default input is project-specific.
+- The helper uses NumPy, Pillow, and scikit-image. Use an existing compatible environment; report missing dependencies rather than adding project dependencies as a side effect.
+- Run `python <helper-path> <absolute-input-path>`. It detects content rather than trusting extensions, drops alpha, normalizes to uint8 grayscale, and downsamples to a 1280-pixel long edge. `LONG_EDGE=2048` can retain more band detail.
+- Inspect conversion diagnostics, then view the generated PNGs in small batches. Reuse previews only when input, settings, and file identity match; equal stems from different inputs need separate output directories.
+- Global min/max normalization can hide bands near bright outliers. If relevant detail is unclear, use a larger preview or a documented percentile-normalized preview. Preview intensities and coordinates are not measurement data.
 
-1. The input is `.tif`, `.tiff`, a `.jpg` whose actual format is TIFF, or a PNG larger than 2 MB.
-2. The image is known to be 16-bit or otherwise not uint8.
-3. Direct image reading reports excessive size or unsupported bit depth.
-4. Several images need batch diagnosis.
-
-An 8-bit PNG or JPEG smaller than 1 MB can normally be viewed directly without this Skill.
-
-## Core principle
-
-**Do not read the original directly.**
-
-- A 16-bit TIFF may use a misleading `.jpg` extension, as seen in FluxGel batch5/batch6, and the multimodal decoder may reject it.
-- An original whose longest side exceeds 3000 px consumes substantial context, especially when several images are inspected together.
-- Converting a gel image to uint8 and downsampling normally preserves enough diagnostic detail to assess band positions and ROI alignment.
-
-Use this sequence: compress, write to a temporary preview location, then read the preview.
-
-## Required workflow
-
-### 1. Prepare the compression script
-
-Prefer an existing project `scripts/compress_for_preview.py`. If none exists, copy this Skill's `scripts/compress_for_preview.py` into the project.
-
-Script contract:
-
-- Input: one file or a directory containing supported image extensions.
-- Output: `outputs/preview/<stem>.png`, grayscale uint8 with a default 1280 px long edge.
-- Set `LONG_EDGE=1536` or another value for a larger preview.
-- Conversion: 16-bit → float → linear normalization `(x - min) / (max - min)` → `[0, 255]` uint8.
-
-### 2. Bound the input set
-
-- When the user names images, compress only those images.
-- For “all failed images,” extract the failure list first, then compress the named files.
-- For a directory, compress the directory but initially view only a small representative batch.
-
-### 3. Run compression
-
-```bash
-python scripts/compress_for_preview.py path/to/image.jpg
-python scripts/compress_for_preview.py test_images/batch5/
-LONG_EDGE=1536 python scripts/compress_for_preview.py batch4/
-```
-
-Output stays under `outputs/preview/<stem>.png`. The script prints original dimensions, bit depth, output dimensions, and file size for each image; inspect that output first when conversion fails.
-
-### 4. View the preview
-
-```text
-Read outputs/preview/Batch5-P1+P2.png
-```
-
-Estimate the context budget before each call. One compressed PNG is typically 300–500 KB, then grows by roughly 1.33× under base64 plus image tiling. View at most four to six files in parallel and split larger sets into batches.
-
-### 5. Reuse a fresh preview
-
-When `outputs/preview/<stem>.png` exists and its mtime is newer than the original, view it directly instead of recompressing.
-
-## Common pitfalls
-
-### A `.jpg` may actually be TIFF
-
-Pillow's `Image.open` detects the magic bytes rather than trusting the extension, and `np.array(img)` can return the uint16 ndarray directly. Use the same normalization path instead of assuming a `.jpg` is 8-bit.
-
-### RGBA alpha can distort grayscale
-
-For a TIFF with alpha, drop it with `raw[..., :3]` before taking the RGB mean. Do not include alpha through `raw.mean(axis=2)`.
-
-### Outliers can dominate normalization
-
-Global min-max normalization can make a gel too dark when a few wells are extremely bright. If bands become unreadable, switch to percentile normalization with `lo = P1(arr)` and `hi = P99(arr)`. The current script uses global min-max because it is usually sufficient; document the change if it is replaced.
-
-### A small long edge can hide the grid
-
-The 1280 px default downsamples a 4000×3000 original by roughly three times. Marker and lane structure remain visible, but individual band boundaries may not. Use `LONG_EDGE=2048` for band-alignment detail.
-
-### Preview pixels are not algorithm input
-
-The compressed output exists only for visual inspection. Do not feed it to `detect_roi` or grid detection because those parameters are calibrated to original image dimensions.
-
-## Background
-
-This failure mode was first recorded in another image-processing project's known issues when a 16-bit TIFF used a `.jpg` extension. If it appears here, record the reusable conclusion in this project's known-issues documents. The ROI detector's v1 through v6 iterations also used the repeated modify → compress → view several images loop, which is the Skill's intended use.
+Report findings with the original-to-preview mapping and any detail lost during conversion.

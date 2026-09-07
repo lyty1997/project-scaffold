@@ -1,15 +1,5 @@
 # Security and Privacy
 
-English | [Chinese](security-privacy-zh.md)
+The root rules prohibit exposing credentials and private data. Exclude local environment files; commit only `.env.example` templates without real secrets. Secret scanning complements review.
 
-## Credentials
-
-- Do not commit, print, or write API keys, secrets, tokens, passwords, private keys, cookies, sessions, or real service credentials.
-- Exclude `.env` and environment files by default. Commit only `.env.example` files with no real values.
-- Secret scanning does not replace human review.
-
-## Data and public content
-
-- Do not publish personal private data, customer information, unauthorized screenshots, internal communications, non-public business plans, or customer data.
-- Before adding forms, comments, subscriptions, login, analytics, or third-party scripts, record the collected fields, purpose, storage, retention, and deletion process.
-- Preserve sources when citing external material, distinguish facts from opinions, and do not reproduce long passages of copyrighted content.
+Before collecting user data or adding third-party scripts, document fields, purpose, storage, retention, deletion, and dependencies. Public material must not expose unauthorized screenshots or internal communications. Keep source attribution and distinguish facts from opinions; do not reproduce long copyrighted passages.

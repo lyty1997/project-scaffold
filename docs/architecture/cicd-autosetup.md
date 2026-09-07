@@ -190,13 +190,13 @@ The third layer must be a new standalone hook. The existing `post-edit-safety.py
 
 ### 4.8 Execution Component: `.claude/skills/setup-cicd/SKILL.md`
 
-Its structure follows the existing `sync-shared-rules` workflow: read the ledger → inspect each real target → adapt through each target's mechanism → perform real verification → write back and commit locally → update the ledger. That is this repository's proven pattern for “inspection + in-context adaptation.”
+The Skill owns the target-project execution sequence. [CI/CD rules](../../codex-rules/rules/cicd-workflow.md) own file ownership and true-green criteria; this design owns the schema and renderer invariants. Read only the sections needed for the selected workflow. The [Agent prompt design](agent-prompts.md) defines this division.
 
-The end of `SKILL.md` must define **what counts as verified**, following the [diagram system](diagram-system.md) principle that a deterministic receipt cannot replace real visual review, and provide a checkable completion list.
+The Skill's handoff must reference the canonical acceptance criteria and state the evidence still missing. Local generation alone cannot establish operational CI/CD; do not duplicate the rule's checklist in the Skill.
 
 ## 5. End-to-End Flow
 
-**Step 0, the preflight, must run first and before any file is written.** Otherwise, setup may generate a collection of files only to discover that they cannot be pushed.
+For target-project delivery, run the preflight before writing its ledger or generated files. Scaffold framework maintenance uses local gates and does not require a target ledger or remote probe. Reuse facts and authorization already established in the session. Prepare authorized reviewable work before requesting any missing decision or additional permission; the Skill itself grants no remote-write authority.
 
 | Step | Action | Failure handling |
 | --- | --- | --- |
@@ -209,7 +209,7 @@ The end of `SKILL.md` must define **what counts as verified**, following the [di
 | 6 | Use a temporary branch and draft PR for a real runner test, with deployment steps using `dry_run=true` | — |
 | 7 | Assert every job and step according to the true-green criteria | On failure, retrieve logs, diagnose, fix, and push again until green |
 | 8 | Apply remote settings with `gh secret set`, enable Pages, and create the environment | Record each success and every reason for skipping an item |
-| 9 | Write back to the ledger, update `docs/progress.md` and `docs/progress-zh.md`, and commit locally without pushing automatically | — |
+| 9 | Write back to the ledger and both progress documents; commit, push, or merge within the session's authorized scope | If additional authorization is needed, present the validated changes and exact remaining action |
 
 Step 6 uses a draft PR instead of `gh workflow run --ref`: **`workflow_dispatch` requires the workflow file to exist on the default branch**, otherwise the API returns 404 with a misleading error message. This repository's `ci.yml` already has an unfiltered `pull_request:` trigger, so a PR from any branch matches it. Testing confirmed that a `pull_request` event run's `headSha` is the branch head commit, allowing `gh run list -c <SHA>` to locate it unambiguously.
 

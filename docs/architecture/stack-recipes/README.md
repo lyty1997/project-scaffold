@@ -5,7 +5,7 @@ English | [Chinese](README-zh.md)
 Status: active
 Last updated: __replace with the current date when applying these recipes__
 
-This directory does **not** introduce any dependency into the scaffold by default. It contains reference configurations that you can copy once you have selected a technology stack in [Open Decisions](../open-decisions.md). These snippets correspond directly to the conventions described in [`.claude/rules/python-coding-rules.md`](../../../.claude/rules/python-coding-rules.md) and [`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules/typescript-coding-rules.md): those two files say *what* to do, while this directory shows *how* to configure it.
+These are optional configurations for a stack selected in [Open Decisions](../open-decisions.md); they introduce no dependency by default. The [Python](../../../.claude/rules/python-coding-rules.md) and [TypeScript](../../../.claude/rules/typescript-coding-rules.md) rules define concise coding constraints. These recipes offer tool settings to adopt when needed. Actual project configuration determines commands, dependencies, and coverage requirements; a rule or recipe does not select them automatically.
 
 ## How to use these recipes
 

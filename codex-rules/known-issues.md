@@ -1,14 +1,13 @@
 # Known Issues
 
-English | [Chinese](known-issues-zh.md)
-
 Read only the rows relevant to the task. Historical investigation stays in `docs/progress.md`; this file keeps reusable conclusions only.
 
 | Area | Risk and handling |
 | --- | --- |
 | Cross-platform line endings | `.gitattributes` is authoritative. Shell scripts and hooks use LF; PowerShell scripts use CRLF. Do not rely on machine-specific `core.autocrlf` settings. |
 | Windows PowerShell 5.1 | PowerShell 5.1 may interpret BOM-less UTF-8 through a legacy code page. Keep `.ps1` files as UTF-8 with BOM (`ef bb bf`) and CRLF even when their current prose is English. |
-| Bilingual Agent rules | Claude automatically discovers `.claude/rules/*.md`. Store maintained Chinese translations under `.claude/rules-zh/`, not beside the English runtime rules, or both instruction sets may load into every session. |
+| Duplicate Agent instructions | Translated rules and Skills duplicate instructions in model context and create maintenance drift. Keep Agent and contributor guidance in English only; maintain Chinese pairs only for `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. `check:localization` rejects Chinese instruction copies. |
+| Prompt drift and unnecessary pauses | Repeated workflows can disagree about approvals, tools, or delivery. Keep shared constraints in `AGENTS.md`, route Claude to canonical task rules, and let selected Skills own procedures. Verify commands against project configuration; reuse session authorization and ask only for missing user decisions or permissions. |
 | Text scanners | Quality gates scan scripts and documentation, including their own examples. Avoid complete credential shapes and parseable fake secret URLs. An unquoted secret value must end at the line or comment so `token = functionCall(...)` is not misread as a credential. Use an allow marker only after confirming a real false positive. |
 | Git hooks | `.githooks/*` must be mode `100755` in the Git index. Test a new hook in a real repository; syntax checks alone do not prove Git invokes it. |
 | Archify offline boundary | The upstream template requests Google Fonts, which can stall Chrome `loadEventFired` without network access and creates an undeclared third-party request when a local diagram opens. This repository's vendored template removes remote fonts and disables automatic update checks in the Skill. Reapply `.claude/skills/archify/LOCAL_CHANGES.md` during an upgrade. |

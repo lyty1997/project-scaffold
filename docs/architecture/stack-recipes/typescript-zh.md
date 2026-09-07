@@ -2,7 +2,7 @@
 
 [English](typescript.md) | 中文
 
-可选，仅在 [待决策问题](../open-decisions-zh.md) 确定前端/后端技术栈选 TypeScript 后才需要落地。规则依据见 [`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules-zh/typescript-coding-rules-zh.md)。落地后这是本仓库第一次引入第三方 npm 依赖，记得同步更新 `docs/architecture/open-decisions.md` 与 `docs/architecture/open-decisions-zh.md` 的“依赖与锁文件策略”一节。
+可选，仅在 [待决策问题](../open-decisions-zh.md) 确定前端/后端技术栈选 TypeScript 后才需要落地。规则依据见 [`.claude/rules/typescript-coding-rules.md`](../../../.claude/rules/typescript-coding-rules.md)。落地后这是本仓库第一次引入第三方 npm 依赖，记得同步更新 `docs/architecture/open-decisions.md` 与 `docs/architecture/open-decisions-zh.md` 的“依赖与锁文件策略”一节。
 
 ## `tsconfig.json`：strict 全家桶
 
@@ -83,7 +83,7 @@ export default defineConfig({
 
 ## 提交信息机器门禁：两种选择
 
-脚手架自带的 `.githooks/commit-msg`（见 [Git 工作流规范](../../../.claude/rules-zh/git-workflow-zh.md)）是零依赖 shell 实现，直接可用，无需额外配置。如果你的项目已经引入 npm 生态的 git hook 管理（如 husky），也可以换成等价的 `commitlint`：
+脚手架自带的 `.githooks/commit-msg`（见 [Git 工作流规范](../../../.claude/rules/git-workflow.md)）是零依赖 shell 实现，直接可用，无需额外配置。如果你的项目已经引入 npm 生态的 git hook 管理（如 husky），也可以换成等价的 `commitlint`：
 
 ```js
 // commitlint.config.cjs
