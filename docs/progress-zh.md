@@ -8,6 +8,13 @@
 
 下面按新任务倒序追加条目。
 
+## 2026-11-03 CST / 提交 Agent 提示词优化并申请合并
+
+- 授权与范围：用户要求提交、推送、创建 PR 并合并。在基于 `dev` 的隔离工作区中准备 `feature/agent-prompt-boundaries`；[PR #7](https://github.com/lyty1997/project-scaffold/pull/7) 面向 `main`，包括已有 `2bdb0c6` 提示词整合提交及本轮修订。原工作区未提交的本地化和 Archify 清理保持原样。
+- 提交：将 19 个文件的修订提交为 `b08140c79806438897b6ba13afe6d9b9c1027032`，通过既有提交 hooks，推送分支并创建 PR。隔离内容的完整 `npm run quality`、4 个 Skill 元数据及空白检查通过。
+- 远端证据：源修订的 [PR CI](https://github.com/lyty1997/project-scaffold/actions/runs/41664549666) 已在该精确 SHA 和 `pull_request` 事件下成功结束；预期 4 个 jobs 及必要 steps 全部通过，包含 Ubuntu/Windows 质量门禁、图表检查和 workflow lint。这份证据早于本交付记录提交；最终分支头和合并提交的验证记录于关联 PR。
+- 限制：未新增受控模型行为回放或新会话发现测试，未新增用户数据收集或第三方服务。本条记录提交证据，不预报合并结果。
+
 ## 2026-11-03 CST / 优化 Agent 指令与 Skill 边界
 
 - 设计：在修改提示词前更新中英文 Agent 提示词设计，取消固定模型假设，区分当前决策与 9 月评估；统一 CI/CD 文档、贡献指南及进度说明的范围边界。

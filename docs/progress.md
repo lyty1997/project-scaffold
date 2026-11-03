@@ -8,6 +8,13 @@ Entry format: `timestamp / topic / completed work / remaining work`. Reuse verif
 
 Append new tasks below in reverse chronological order.
 
+## 2026-11-03 CST / Submit Agent prompt optimization for merge
+
+- Authorization and scope: the user requested commit, push, PR creation, and merge. Prepared `feature/agent-prompt-boundaries` in an isolated worktree based on `dev`; PR [#7](https://github.com/lyty1997/project-scaffold/pull/7) targets `main` and includes the existing `2bdb0c6` prompt-consolidation commit plus this revision. Uncommitted localization and Archify cleanup remains untouched in the original worktree.
+- Submission: committed the 19-file revision as `b08140c79806438897b6ba13afe6d9b9c1027032`, passed the configured commit hooks, pushed the branch, and opened the PR. Full local `npm run quality`, four Skill metadata checks, and whitespace checks passed on the isolated contents.
+- Remote evidence: the source revision's [PR CI run](https://github.com/lyty1997/project-scaffold/actions/runs/41664549666) completed successfully for that exact SHA and `pull_request` event. All four expected jobs and their required steps passed: Ubuntu/Windows quality gates, diagram checks, and workflow lint. This evidence predates this delivery-record commit; final-head and merge-commit verification are recorded on the associated PR.
+- Limits: no controlled model-behavior replay or fresh-session discovery test was added. No user-data collection or third-party service was added. This entry records submission evidence, not an anticipated merge result.
+
 ## 2026-11-03 CST / Tune Agent instructions and Skill boundaries
 
 - Design: updated both Agent Prompt Design documents before prompt edits; removed the fixed-model assumption and distinguished current decisions from the September assessment. Aligned CI/CD documentation, contributor guidance, and progress-log instructions with the same scope boundaries.
