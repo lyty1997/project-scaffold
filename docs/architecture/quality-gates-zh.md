@@ -14,7 +14,7 @@
 | --- | --- |
 | `check:js` | 对初始化器、共享模块和质量脚本执行语法检查 |
 | `check:docs` | 检查 Markdown 链接、双语配对和语言索引 |
-| `check:localization` | 检查默认英文表面不得出现未放行 Han 字符并校验文档成对互链；功能性中文只能通过显式 marker 或契约字段放行 |
+| `check:localization` | 检查默认英文表面不得出现未放行 Han 字符；校验项目文档（`README`、`SCAFFOLD` 和 `docs/`）成对互链；拒绝仅维护英文的指令出现中文副本；功能性中文只能通过显式 marker 或契约字段放行 |
 | `check:portable-docs` | 验证本地图发现、路径边界、输入摘要、原字节内嵌和本地链接剥离 |
 | `check:contracts` | 按 `docs/contracts/contract-rules.json` 与 `contract-terms.json` 扫描命名契约 |
 | `check:secrets` | 检测常见凭证形态，不能代替人工审查 |

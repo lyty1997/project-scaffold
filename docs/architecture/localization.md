@@ -4,23 +4,26 @@ English | [Chinese](localization-zh.md)
 
 Status: active
 
-Last updated: 2026-08-31
+Last updated: 2026-09-06
 
 Applies to: repository-facing documentation, Agent instructions, first-party source comments and messages, public UI copy, and generated diagrams
 
 ## Decision
 
-English is the project's default and primary maintenance language. The default GitHub repository entry point is `README.md`; Chinese readers can switch to `README-zh.md`. The same convention applies throughout the repository: an English document keeps its existing filename, while its maintained Chinese translation uses the `-zh.md` suffix in the same directory.
+English is the project's default and primary maintenance language. Maintained Chinese translations are limited to project explanations and design documentation: `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. Each English document keeps its existing filename, while its Chinese translation uses the `-zh.md` suffix in the same directory.
 
-Every language pair links to its counterpart near the top of the document. English documents link to other English documents by default; Chinese translations link to the corresponding `-zh.md` document whenever one exists. Commands, identifiers, paths, protocol names, trademarks, and historical facts keep their exact technical spelling. Chinese translations of automatically loaded `.claude/rules/*.md` files live under `.claude/rules-zh/` so Claude does not load two equivalent rule sets into every session.
+Agent instructions and contributor workflow guidance have one English version only: `AGENTS.md`, `CLAUDE.md`, `CONTRIBUTING.md`, `codex-rules/` (including its index and known issues), `.claude/rules/`, first-party Skill instructions, and the PR template. Do not create translated copies or a separate translated rules directory. This keeps duplicate instructions out of model context and avoids maintaining equivalent prompt sets.
+
+Every retained language pair links to its counterpart near the top of the document. English documents link to other English documents by default; Chinese translations link to the corresponding `-zh.md` document whenever one exists and to the canonical English file for instructions maintained only in English. Commands, identifiers, paths, protocol names, trademarks, and historical facts keep their exact technical spelling.
 
 ## Source and synchronization contract
 
 - The English document is the canonical source for current behavior, design, and public wording.
-- A change to a paired document must update both languages in the same change. The Chinese file is a maintained translation, not an archive.
-- Existing Chinese project documents are preserved by copying their current meaning into `*-zh.md` before the default path is rewritten in English.
-- New first-party documentation should be authored in English and must include a Chinese counterpart unless its content is generated, vendored, or explicitly recorded as language-neutral.
+- A change to a paired project document must update both languages in the same change. The Chinese file is a maintained translation, not an archive.
+- Preserve existing Chinese project explanations and design documents within the paired scope above. Remove Chinese instruction and workflow copies, their language-switch links, and requirements to recreate them.
+- New first-party documentation uses English. A Chinese counterpart is required only within the paired project-document scope above; generated, vendored, and explicitly language-neutral content retain their existing exceptions.
 - `docs/README.md` indexes the canonical English documents and links to `docs/README-zh.md`. The Chinese entry point indexes the corresponding Chinese documents without duplicating every translation in the English index.
+- `check:localization` validates reciprocal links for the retained project-document pairs and rejects Chinese copies of English-only instructions, including uppercase `-ZH.md` variants. English-default text scanning and functional-data exceptions remain in effect.
 
 ## Code, UI, and generated artifacts
 

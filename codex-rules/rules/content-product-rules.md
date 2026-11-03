@@ -1,20 +1,9 @@
-# Content and Product Rules
+# Content and Products
 
-English | [Chinese](content-product-rules-zh.md)
+Use the [Content and Product Roadmap](../../docs/product/content-roadmap.md) for positioning and stage boundaries. Do not publish placeholders or unverifiable claims.
 
-Project positioning and stage boundaries are defined in the [Content and Product Roadmap](../../docs/product/content-roadmap.md). Do not publish uninitialized placeholder copy.
+- Technical content explains the problem, tradeoffs, implementation boundaries, and evidence; retain primary-source links.
+- Before exposing a product/service entry, define its target user, core problem, scope/non-goals, support channel, privacy boundary, and confirmed pricing/trial/delivery assumptions.
+- Before comments, forms, subscriptions, or community features, define fields, purpose, storage, retention, deletion/export, abuse controls, and third-party dependencies under [security rules](security-privacy.md).
 
-## Public claims
-
-- Clearly distinguish facts, opinions, plans, and pending decisions.
-- Never present an unreleased capability as live or promise an unverifiable benefit or result.
-- Technical content should explain the problem, tradeoffs, implementation boundaries, and retrospective conclusions instead of reading as generic marketing.
-- Prefer official documentation or original sources for external facts and retain the links.
-
-## Conditions for launching a product
-
-Before exposing a product or service entry point, its design must define the target user, core problem, service boundaries and non-goals, support or feedback channel, privacy boundary, and assumptions about pricing, trials, or delivery.
-
-## Discussion and feedback
-
-Before adding comments, forms, subscriptions, or community features, design the collected fields, purpose, storage location, retention period, deletion and export process, anti-abuse controls, and third-party dependencies. See [Security and Privacy](security-privacy.md).
+The root rules govern truthful capability status and documentation before public changes.

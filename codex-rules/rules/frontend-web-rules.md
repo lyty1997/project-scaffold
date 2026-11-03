@@ -1,23 +1,9 @@
-# Frontend Web Rules
+# Frontend Web
 
-English | [Chinese](frontend-web-rules-zh.md)
+Follow the root documentation-first boundary. A zero-dependency static entry is valid while the stack is undecided.
 
-Record positioning, page hierarchy, and technology choices in the relevant design first. A zero-dependency static entry point is acceptable while the stack is undecided. Record a decision before adding a framework, component library, icon library, analytics script, or third-party service.
-
-## Content and interaction
-
-- The first screen should explain what `__BRAND_NAME__` is.
-- Keep navigation stable, concise, and scannable, with clear hierarchy for content and product entry points.
-- Do not substitute complex decoration or content-obscuring animation for information hierarchy.
-- Interactive pages must present applicable error, empty, loading, and insufficient-permission states.
-- Include asset paths, internal links, and site entry points in the existing quality checks.
-
-## Render verification
-
-Run the page and verify the following for every frontend change:
-
-- Critical desktop and mobile views are usable, with no overlapping or overflowing text.
-- Navigation, anchors, buttons, and links are accessible.
-- The page contains no private data, credentials, or unconfirmed product promises.
-
-If a browser or screenshot cannot be produced, report the missing visual verification and its risk. Static checks do not replace render verification.
+- Explain what `__BRAND_NAME__` is on the first screen. Keep navigation and information hierarchy clear; decoration must not obscure content.
+- Provide applicable loading, empty, error, and insufficient-permission states.
+- Cover asset paths, internal links, and entry points in existing checks.
+- Run the actual project entry point and inspect critical desktop/mobile views, overflow, navigation, anchors, buttons, and accessible interaction. Check for private data and unconfirmed promises.
+- If browser/render evidence is unavailable, report the gap and risk; static checks do not replace an actual render.

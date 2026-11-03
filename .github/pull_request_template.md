@@ -1,5 +1,3 @@
-English | [Chinese](pull_request_template-zh.md)
-
 ## Summary
 
 -
@@ -12,7 +10,7 @@ English | [Chinese](pull_request_template-zh.md)
 - [ ] Future products or services are not presented as live capabilities.
 - [ ] No API key, secret, token, real private data, non-public business plan, or customer data is written, printed, or committed.
 - [ ] Any new third-party service or user-data collection documents the fields, purpose, storage, and deletion process.
-- [ ] Paired English and `-zh.md` documentation remains synchronized.
+- [ ] Project explanations and design documents (`README.md`, `SCAFFOLD.md`, and Markdown under `docs/`) remain synchronized with their `-zh.md` translations; Agent and contributor instructions remain English only.
 
 ## Verification
 

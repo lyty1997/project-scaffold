@@ -12,11 +12,13 @@ __BRAND_NAME__ 是__PROJECT_TAGLINE__。请在这里准确说明项目实际做�
 
 ## 工程文档入口
 
-- Claude Code 指引：[CLAUDE-zh.md](CLAUDE-zh.md)
-- 项目规范：[AGENTS-zh.md](AGENTS-zh.md)
+项目说明和设计文档保留持续维护的中文译本；Agent 规则、Skills 和贡献协作流程仅维护英文，详见[语言与本地化](docs/architecture/localization-zh.md)。
+
+- Claude Code 指引：[CLAUDE.md](CLAUDE.md)
+- 项目规范：[AGENTS.md](AGENTS.md)
 - 文档入口：[docs/README-zh.md](docs/README-zh.md)
 - 项目进度：[docs/progress-zh.md](docs/progress-zh.md)
-- Codex 规则：[codex-rules/global-AGENTS-zh.md](codex-rules/global-AGENTS-zh.md)
+- Codex 规则：[codex-rules/global-AGENTS.md](codex-rules/global-AGENTS.md)
 - 质量门禁脚本：[scripts/quality](scripts/quality)
 
 ## 本地检查

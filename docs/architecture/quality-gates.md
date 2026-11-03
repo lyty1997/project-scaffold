@@ -14,7 +14,7 @@ This document defines the repository's checks and how to run them. `package.json
 | --- | --- |
 | `check:js` | Syntax-check the initializer, shared modules, and quality scripts |
 | `check:docs` | Validate Markdown links, bilingual pairs, and language indexes |
-| `check:localization` | Reject unapproved Han characters on default English surfaces and validate reciprocal document pairs; allow functional Chinese only through explicit markers or contract fields |
+| `check:localization` | Reject unapproved Han characters on default English surfaces; validate reciprocal project-document pairs (`README`, `SCAFFOLD`, and `docs/`); reject Chinese copies of English-only instructions; allow functional Chinese only through explicit markers or contract fields |
 | `check:portable-docs` | Exercise local-image discovery, path boundaries, input digests, byte-preserving embedding, and local-link removal |
 | `check:contracts` | Scan naming contracts from `docs/contracts/contract-rules.json` and `contract-terms.json` |
 | `check:secrets` | Detect common credential shapes; it does not replace human review |

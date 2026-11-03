@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readdirSync } from "node:fs";
 import { basename, dirname, extname, relative, resolve } from "node:path";
 import { listFiles, projectRoot, readText } from "./lib/files.mjs";
 
@@ -28,14 +28,7 @@ const TEXT_BASENAMES = new Set([
   "commit-msg",
   "pre-commit",
 ]);
-const ROOT_DOCUMENTS = [
-  "AGENTS.md",
-  "CLAUDE.md",
-  "CONTRIBUTING.md",
-  "README.md",
-  "SCAFFOLD.md",
-  ".github/pull_request_template.md",
-];
+const ROOT_DOCUMENTS = ["README.md", "SCAFFOLD.md"];
 const INDEX_VISIBLE_ENGLISH_FILES = [
   ".agents/skills/archify/SKILL.md",
   ".agents/skills/archify/agents/openai.yaml",
@@ -50,7 +43,7 @@ function siblingChinesePath(path) {
 }
 
 function addTreePairs(pairs, directory) {
-  for (const path of listFiles(directory, (candidate) => candidate.endsWith(".md") && !candidate.endsWith("-zh.md"))) {
+  for (const path of listFiles(directory, (candidate) => candidate.endsWith(".md") && !/-zh\.md$/i.test(candidate))) {
     pairs.push([path, siblingChinesePath(path)]);
   }
 }
@@ -62,20 +55,6 @@ function documentPairs() {
   });
 
   addTreePairs(pairs, resolve(ROOT, "docs"));
-  addTreePairs(pairs, resolve(ROOT, "codex-rules"));
-
-  for (const english of listFiles(resolve(ROOT, ".claude/rules"), (path) => path.endsWith(".md"))) {
-    const stem = basename(english, ".md");
-    pairs.push([english, resolve(ROOT, ".claude/rules-zh", `${stem}-zh.md`)]);
-  }
-
-  for (const english of listFiles(resolve(ROOT, ".claude/skills"), (path) => {
-    const pathShown = shown(path);
-    return basename(path) === "SKILL.md" && !pathShown.startsWith(".claude/skills/archify/");
-  })) {
-    pairs.push([english, siblingChinesePath(english)]);
-  }
-
   return pairs;
 }
 
@@ -109,7 +88,35 @@ function isTextFile(path) {
 
 function isChineseDocument(path) {
   const pathShown = shown(path);
-  return pathShown.endsWith("-zh.md") || pathShown.startsWith(".claude/rules-zh/");
+  return /-zh\.md$/i.test(pathShown) && (pathShown.startsWith("docs/") || /^(?:README|SCAFFOLD)-zh\.md$/i.test(pathShown));
+}
+
+function checkEnglishOnlyInstructions() {
+  const errors = [];
+  for (const parent of [ROOT, resolve(ROOT, "codex-rules"), resolve(ROOT, ".claude")]) {
+    if (!existsSync(parent)) continue;
+    for (const entry of readdirSync(parent, { withFileTypes: true })) {
+      if (!entry.isDirectory() || !/^(?:codex-)?rules-zh$/i.test(entry.name)) continue;
+      const directory = resolve(parent, entry.name);
+      if (readdirSync(directory).length > 0) {
+        errors.push(`${shown(directory)}: translated rules directories must be empty or absent`);
+      }
+    }
+  }
+  for (const path of listFiles(ROOT)) {
+    const pathShown = shown(path);
+    const translatedRulesDirectory = /^(?:codex-rules-zh\/|codex-rules\/(?:.*\/)?rules-zh\/|\.claude\/rules-zh\/)/i.test(pathShown);
+    const translatedInstruction =
+      /^(?:(?:AGENTS|CLAUDE|CONTRIBUTING)|\.github\/pull_request_template)-zh\.md$/i.test(pathShown) ||
+      (/^(?:codex-rules\/|\.claude\/rules\/)/i.test(pathShown) && /-zh\.md$/i.test(pathShown)) ||
+      (/^\.(?:claude|agents)\/skills\//i.test(pathShown) &&
+        /^SKILL-zh\.md$/i.test(basename(path)) &&
+        !pathShown.startsWith(".claude/skills/archify/"));
+    if (translatedRulesDirectory || translatedInstruction) {
+      errors.push(`${pathShown}: instruction and workflow guidance must have one English version only`);
+    }
+  }
+  return errors;
 }
 
 function isEnglishScanExcluded(path) {
@@ -168,7 +175,7 @@ function checkEnglishSurfaces() {
   return errors;
 }
 
-const errors = [...checkDocumentPairs(), ...checkEnglishSurfaces()];
+const errors = [...checkDocumentPairs(), ...checkEnglishOnlyInstructions(), ...checkEnglishSurfaces()];
 
 if (errors.length > 0) {
   console.error(`Localization checks failed (${errors.length}):`);
@@ -176,4 +183,4 @@ if (errors.length > 0) {
   process.exit(1);
 }
 
-console.log("Localization checks passed: English defaults and Chinese document pairs are synchronized.");
+console.log("Localization checks passed: English-only instructions, English defaults, and project document pairs are valid.");

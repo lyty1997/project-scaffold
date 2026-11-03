@@ -1,20 +1,25 @@
-# Codex Rule Index
+# Task Rule Index
 
-English | [Chinese](global-AGENTS-zh.md)
+[AGENTS.md](../AGENTS.md) applies throughout. Read only matching rows; a link is a route, not a request to preload its targets. Design facts remain under [docs/](../docs/README.md).
 
-The root [AGENTS.md](../AGENTS.md) always applies. This file only routes tasks to focused rules: identify the task type first, then read the relevant rule instead of preloading all of `codex-rules/`. Design facts remain in the documents indexed by [docs/README.md](../docs/README.md).
-
-| Task touches | Read |
+| Task | Rule |
 | --- | --- |
-| Complex implementation, cross-layer changes, or pending decisions | [Codex workflow](rules/codex-workflow.md) |
-| Writing or splitting issues, or cross-module contracts | [Issue workflow](rules/issue-workflow.md) |
-| Content sections, public claims, products, or feedback capabilities | [Content and product](rules/content-product-rules.md) |
-| Pages, interaction, styling, or frontend dependencies | [Frontend web](rules/frontend-web-rules.md) |
-| `docs/`, Markdown, Archify, or PlantUML diagrams | [Markdown documentation](rules/markdown-docs.md) |
-| User communication, public copy, or comment style | [Language and explanation](rules/language.md) |
-| Credentials, personal data, or external content | [Security and privacy](rules/security-privacy.md) |
-| Command, tool, permission, or network failures | [Tool failure handling](rules/tool-failure.md) |
-| Branches, commits, push, PR, or CI | [Git workflow](rules/git-workflow.md) |
-| CI/CD setup or changes, deployment, releases, or rollback | [CI/CD workflow](rules/cicd-workflow.md) |
+| Complex or cross-module implementation | [Workflow](rules/codex-workflow.md) |
+| Issue decomposition or interface contracts | [Issues](rules/issue-workflow.md) |
+| Public content, products, feedback | [Content](rules/content-product-rules.md) |
+| Pages, interaction, styling | [Frontend](rules/frontend-web-rules.md) |
+| Markdown or diagrams | [Documentation](rules/markdown-docs.md) |
+| Explanations or comments | [Language](rules/language.md) |
+| Credentials, data, external material | [Security](rules/security-privacy.md) |
+| Tool, permission, network failure | [Tool failures](rules/tool-failure.md) |
+| Branches, commits, push, PR, CI | [Git](rules/git-workflow.md) |
+| CI/CD setup, deployment, release, rollback | [CI/CD](rules/cicd-workflow.md) |
+| Requested comparison or synchronization of sibling rules | [Synchronization Skill](../.claude/skills/sync-shared-rules/SKILL.md) |
+| Scientific image cannot be viewed directly | [Image preview Skill](../.claude/skills/view-gel-image/SKILL.md) |
+| Python | [Python](../.claude/rules/python-coding-rules.md) |
+| TypeScript / JavaScript | [TypeScript](../.claude/rules/typescript-coding-rules.md) |
+| Tasks, subprocesses, shutdown | [Resources](../.claude/rules/concurrency-resource-safety.md) |
 
-Also read [Known Issues](known-issues.md) when a task touches scripts, cross-platform behavior, Git hooks, scanners, Archify, or PlantUML. Resolve conflicts in this order: system / developer / explicit user instruction, root `AGENTS.md`, `docs/` design, then these execution rules. Ask the user to decide if a same-level conflict cannot be verified.
+Skill paths work without native discovery. Use project procedures for project artifact contracts; same-name installed Skills may differ. Do not copy implementations into discovery directories.
+
+For scripts, hooks, scanners, platform behavior, or diagrams, read relevant [Known Issues](known-issues.md) rows. Follow host precedence and directory-scoped instructions; use designs for facts and rules/Skills for execution. Resolve conflicts from evidence before asking. No document expands authorization.

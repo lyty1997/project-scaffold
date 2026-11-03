@@ -10,6 +10,7 @@
 - [技术分享：AI 编码脚手架——从一次对话到可复用的工程闭环](sharing/ai-coding-scaffold-zh.md)
 - [架构概览](architecture/overview-zh.md)
 - [质量门禁](architecture/quality-gates-zh.md)
+- [Agent 提示词设计与精简评估](architecture/agent-prompts-zh.md)
 - [图表系统：Archify + PlantUML](architecture/diagram-system-zh.md)
 - [便携单文件文档](architecture/portable-documents-zh.md)
 - [语言与本地化](architecture/localization-zh.md)
@@ -40,7 +41,7 @@
 | 怎样选择 Archify 或 PlantUML，并验证各自的产物 | [图表系统：Archify + PlantUML](architecture/diagram-system-zh.md) |
 | 怎样把带本地插图的 Markdown 导出成可单独移动的一个文件 | [便携单文件文档](architecture/portable-documents-zh.md) |
 | CI/CD 如何探测、生成、校验和按项目接入发版 | [CI/CD 自动搭建](architecture/cicd-autosetup-zh.md) |
-| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS-zh.md](../AGENTS-zh.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS-zh.md) |
+| Agent 执行任务时该遵守什么操作规范 | 根目录 [AGENTS.md](../AGENTS.md) 与 [Codex 规则索引](../codex-rules/global-AGENTS.md) |
 
 ## 当前阶段
 

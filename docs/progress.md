@@ -2,11 +2,51 @@
 
 English | [Chinese](progress-zh.md)
 
-This file is the project-progress source of truth for __PROJECT_NAME__. It records completed work and remaining items for each task in reverse chronological order and must be updated whenever a task finishes or is interrupted.
+This file records completed work, verification, and remaining items for __PROJECT_NAME__ in reverse chronological order. Update it after file-changing tasks or their interruption; read-only tasks do not write progress logs.
 
-Entry format: `timestamp / topic / completed work / remaining work`. Since 2026-07-14, an Agent must not make an unconfirmed decision for the user. When uncertainty remains, it must state known facts, options, and effects and ask the user to decide before implementing anything that depends on that decision. Historical entries labeled "Decision I made for you (can be overridden)" remain as records of the behavior at that time and are not the current working method.
+Entry format: `timestamp / topic / completed work / remaining work`. Reuse verified facts and authorization. When a user-owned decision is missing, state facts, options, and effects and pause only dependent work. Resolve routine implementation details within scope. Historical entries labeled "Decision I made for you (can be overridden)" are records, not the current working method.
 
 Append new tasks below in reverse chronological order.
+
+## 2026-11-03 CST / Submit Agent prompt optimization for merge
+
+- Authorization and scope: the user requested commit, push, PR creation, and merge. Prepared `feature/agent-prompt-boundaries` in an isolated worktree based on `dev`; PR [#7](https://github.com/lyty1997/project-scaffold/pull/7) targets `main` and includes the existing `2bdb0c6` prompt-consolidation commit plus this revision. Uncommitted localization and Archify cleanup remains untouched in the original worktree.
+- Submission: committed the 19-file revision as `b08140c79806438897b6ba13afe6d9b9c1027032`, passed the configured commit hooks, pushed the branch, and opened the PR. Full local `npm run quality`, four Skill metadata checks, and whitespace checks passed on the isolated contents.
+- Remote evidence: the source revision's [PR CI run](https://github.com/lyty1997/project-scaffold/actions/runs/41664549666) completed successfully for that exact SHA and `pull_request` event. All four expected jobs and their required steps passed: Ubuntu/Windows quality gates, diagram checks, and workflow lint. This evidence predates this delivery-record commit; final-head and merge-commit verification are recorded on the associated PR.
+- Limits: no controlled model-behavior replay or fresh-session discovery test was added. No user-data collection or third-party service was added. This entry records submission evidence, not an anticipated merge result.
+
+## 2026-11-03 CST / Tune Agent instructions and Skill boundaries
+
+- Design: updated both Agent Prompt Design documents before prompt edits; removed the fixed-model assumption and distinguished current decisions from the September assessment. Aligned CI/CD documentation, contributor guidance, and progress-log instructions with the same scope boundaries.
+- Changes: retained the six reasoning principles, scaled process to the change, made completion and read-only boundaries explicit, and added direct routes for rule comparison/synchronization and scientific-image preview. Kept diagram acceptance in the selected Skill/design. Clarified CI/CD assessment, local preparation, operational delivery, publication authorization, and safe retry handling.
+- Source review and ablation: manually compared the same 12 acceptance scenarios against the task-start snapshot. Removing the duplicate diagram checklist and workflow ablation sentence retained their requirements in the pinned Skill/design and root rules. Review caught and corrected a proposed PlantUML shortcut that conflicted with its canonical extraction/write-back loop, and scoped real Release PR verification to operational acceptance. This was source inspection, not an independent agent evaluation.
+- Measurement: root/router/Markdown route 7,264 → 7,562 UTF-8 bytes; Claude root/import/rule bodies 9,531 → 9,482; four first-party Skill entries 9,001 → 9,085; instruction corpus excluding Known Issues, designs/history, host/installed prompts, bridge, and vendored Archify 30,294 → 31,123 (+2.7%). The added scope/routing boundaries are deliberate; no runtime speedup or behavioral improvement was measured.
+- Verification: all `npm run quality` components passed. Its sandbox run reached CI/CD fixtures before nested Node processes were denied with `EPERM`; `npm run check:cicd` then passed outside the sandbox. All four edited Skills passed metadata validation; final documentation/localization and whitespace checks passed. Existing unrelated diffs and the vendored Skill were preserved.
+- Remaining: fresh-session instruction/Skill discovery and controlled end-to-end task replay remain unverified. No executable script, dependency, workflow, diagram artifact, host configuration, user-data collection, or third-party service was added or changed by this task. No commit or push was requested or performed.
+
+## 2026-09-07 CST / Simplify Agent prompts for gpt-6-astra
+
+- Delivery scope: the user requested commit and push. The handoff uses the current `dev` branch and includes the preceding English-only instruction cleanup and its localization gate; remote completion is checked against the pushed commit's CI run.
+- Assessment: traced root instructions, task routing, Claude rules/hooks, first-party Skills, and the pinned Archify bridge. Recorded the design and official OpenAI evidence in [Agent Prompt Design](architecture/agent-prompts.md) before edits; preserved the existing uncommitted English-only cleanup and six reasoning principles.
+- Changes: centralized shared constraints, replaced duplicate Claude rules with conditional links, shortened workflow and Skill procedures, and removed nonexistent commands, automatic stack adoption, invented test roles, and conflicting approval/push instructions. Aligned CI/CD design and stack recipes with the canonical rules; added reusable prompt-drift guidance.
+- Source-level ablation: compared root/workflow, focused rules, and first-party Skills against the task-start snapshot with the same eight manual acceptance scenarios. First-party instruction text fell from 90,672 to 36,538 UTF-8 bytes (59.7%); including the unchanged pinned Archify entry, 107,105 to 52,971 (50.5%). Earlier translation deletions, design/history prose, installed Skills, and host context are excluded from the claimed reduction.
+- Verification: `npm run quality` passed outside the managed sandbox after its nested CI/CD fixture processes were denied with `EPERM`. All four first-party Skills passed metadata validation. A synthetic uint16 TIFF under a `.jpg` name confirmed temporary preview output, 1280×853 grayscale conversion, and unchanged source bytes. Manual route/constraint review retained the eight required outcomes and corrected the language-reading exception for translation edits.
+- Remaining uncertainty: actual Astra latency, token usage, approval frequency, and task quality require controlled task replay; fresh-session discovery of the environment-obscured `.agents` bridge remains an environment check. No script, dependency, workflow YAML, UI, vendored package, user-data collection, or third-party service was added or changed by this task.
+
+## 2026-09-07 CST / Reasoning and design principles in Agent instructions
+
+- Completed: added six actionable principles to `AGENTS.md`: first principles, timely adversarial review, autonomous ablation experiments with Occam's razor, explicit uncertainty reporting, independent and critical thinking, and continuous checks for high cohesion and low coupling. Ablations compare one removed or disabled element against a baseline using the same acceptance checks; experiments remain reversible and within the authorized scope.
+- Scope: retained the English-only instruction contract and linked the existing architecture principles. This change updates instructions only; there is no executable design or implementation change to ablate. Its effect on future Agent behavior remains unverified and should be assessed in subsequent tasks.
+- Verification: `npm run check:docs`, `npm run check:localization`, and `git diff --check` passed. Reviewed the six principles against existing decision boundaries and architecture guidance.
+- Remaining work: none for this documentation change. No user-data collection or third-party service was added.
+
+## 2026-09-06 CST / English-only Agent and contributor instructions
+
+- Scope: narrowed the localization contract before cleanup. Maintained Chinese translations now cover only project explanations and design documents: `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. This supersedes the instruction-translation scope recorded on 2026-08-31; that entry remains a historical record.
+- Cleanup: removed 31 Chinese instruction and workflow copies (root Agent/contributor entry points, Codex rules and known issues, Claude rules, first-party Skills, and the PR template), removed their language-switch links, and redirected retained Chinese project documents to canonical English instructions. All 20 project Chinese documents remain. Updated active language, stack-dispatch, contribution, and known-issue guidance so it no longer requests translated instructions.
+- Gate: `check:localization` requires reciprocal pairs only for project documents and rejects Chinese instruction copies, including uppercase `-ZH.md` variants and populated translated rules directories. English-default scanning, functional Chinese data, and vendored exceptions remain in place.
+- Verification: `npm run quality` passed outside the managed sandbox after the sandbox blocked nested Node processes in existing CI/CD fixtures with `EPERM`. Seventeen temporary positive/negative localization scenarios passed, covering retained pairs, rejected instruction copies and translated directories, and existing exceptions. Markdown links, language pairing, and `git diff --check` passed; an independent review confirmed the deletion and preservation counts.
+- Remaining work: none. No user-data collection, telemetry, third-party service, dependency, or network integration was added.
 
 ## 2026-08-31 CST / Complementary Archify and PlantUML diagram system
 

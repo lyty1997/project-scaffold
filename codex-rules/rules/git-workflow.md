@@ -1,23 +1,10 @@
 # Git Workflow
 
-English | [Chinese](git-workflow-zh.md)
+The root rules cover worktree safety. Keep changes focused; exclude dependency directories, caches, build output, logs, and local environment files.
 
-## Worktree safety
-
-- Inspect status before editing and do not roll back the user's existing work.
-- Do not run destructive commands such as `git reset --hard` or `git checkout --` unless the user explicitly requests them and confirms the risk.
-- Keep each commit focused on one purpose and synchronize the related documentation, implementation, quality scripts, and CI.
-- Do not commit dependency directories, caches, build output, logs, or local environment files.
-
-## Branches and commits
-
-- Keep `main` stable and do not commit to it directly. Use `dev` as the development trunk and `feature/description` or `bugfix/description` for focused work.
-- Use `<type>(<scope>): <English subject>`, where type is one of `feat|fix|docs|style|refactor|test|chore`. Do not add `Co-Authored-By` trailers.
-- `.githooks/commit-msg` enforces this format. Git-generated merge, revert, Reapply, `fixup!`, `squash!`, and `amend!` subjects are exempt.
-- Run `git config core.hooksPath .githooks` after cloning and execute the relevant quality gates before committing.
-
-## Push, PR, and CI
-
-Observe `.github/workflows/ci.yml` after every push or merge. For a PR, run `gh pr checks <PR-number> --watch`. For a direct push, locate the run with `gh run list --branch <branch>` and then use `gh run watch <run-id>`.
-
-When CI fails, identify the root cause, reproduce and fix it locally, push the repair, and continue observing the new run. Never report pushed or merged work as complete while CI is failing or its status is unknown.
+- Keep `main` stable; use `dev` and focused `feature/description` or `bugfix/description` branches.
+- Subjects use `<type>(<scope>): <English subject>`, with `feat|fix|docs|style|refactor|test|chore`. No `Co-Authored-By` trailers.
+- `.githooks/commit-msg` owns exact validation and Git-generated subject exemptions. Enable hooks after cloning with `git config core.hooksPath .githooks`; pass applicable gates before committing.
+- Commit, push, and merge within the session's authorized scope. A rule alone does not request these actions.
+- After a push or merge, find CI for that commit SHA and verify expected checks. Use `gh pr checks <PR-number> --watch` or `gh run watch <run-id>`, then inspect the actual conclusions.
+- Diagnose failures, fix locally, and observe the repair run. Missing runs or unknown status cannot establish completion; use the [CI/CD evidence criteria](cicd-workflow.md#verified-remote-completion).

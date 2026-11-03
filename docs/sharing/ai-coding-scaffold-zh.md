@@ -316,8 +316,8 @@ Agent 可以根据文件、模块和任务类型自动定位相关设计、历�
 ## 实现与延伸阅读
 
 - [脚手架使用说明](../../SCAFFOLD-zh.md)：第一次拿到仓库时怎么用。
-- [项目级 Agent 规范](../../AGENTS-zh.md)：始终生效的边界。
-- [Codex 规则索引](../../codex-rules/global-AGENTS-zh.md)：如何按任务加载细则。
+- [项目级 Agent 规范](../../AGENTS.md)：始终生效的边界。
+- [Codex 规则索引](../../codex-rules/global-AGENTS.md)：如何按任务加载细则。
 - [文档入口](../README-zh.md)：如何组织项目真相源。
 - [质量门禁](../architecture/quality-gates-zh.md)：本地和 CI 实际检查什么。
 - [CI/CD 自动搭建](../architecture/cicd-autosetup-zh.md)：探测、台账、渲染和远端验收边界。
