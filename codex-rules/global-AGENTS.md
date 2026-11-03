@@ -14,8 +14,12 @@
 | Tool, permission, network failure | [Tool failures](rules/tool-failure.md) |
 | Branches, commits, push, PR, CI | [Git](rules/git-workflow.md) |
 | CI/CD setup, deployment, release, rollback | [CI/CD](rules/cicd-workflow.md) |
+| Requested comparison or synchronization of sibling rules | [Synchronization Skill](../.claude/skills/sync-shared-rules/SKILL.md) |
+| Scientific image cannot be viewed directly | [Image preview Skill](../.claude/skills/view-gel-image/SKILL.md) |
 | Python | [Python](../.claude/rules/python-coding-rules.md) |
 | TypeScript / JavaScript | [TypeScript](../.claude/rules/typescript-coding-rules.md) |
 | Tasks, subprocesses, shutdown | [Resources](../.claude/rules/concurrency-resource-safety.md) |
 
-For scripts, hooks, scanners, cross-platform behavior, or diagrams, read relevant [Known Issues](known-issues.md) rows. Resolve conflicts by system/developer/user instruction, root rules, design, then execution guidance; verify same-level conflicts before asking for a user decision.
+Skill paths work without native discovery. Use project procedures for project artifact contracts; same-name installed Skills may differ. Do not copy implementations into discovery directories.
+
+For scripts, hooks, scanners, platform behavior, or diagrams, read relevant [Known Issues](known-issues.md) rows. Follow host precedence and directory-scoped instructions; use designs for facts and rules/Skills for execution. Resolve conflicts from evidence before asking. No document expands authorization.

@@ -1,6 +1,6 @@
 ---
 name: plantuml-in-markdown
-description: Create, edit, or repair PlantUML embedded in Markdown and verify it by actual compilation. Use for explicit PlantUML requests or existing PlantUML blocks and render failures.
+description: Create or repair Markdown PlantUML diagrams with real compilation. Use for explicit PlantUML requests or changes to existing blocks, not surrounding prose.
 ---
 
 # PlantUML in Markdown
@@ -9,14 +9,14 @@ Select a type from the semantics: component for structure, sequence for calls/re
 
 ## Compile and deliver
 
-Set `PUML_JAR` to the pinned local JAR. Extract and compile all blocks, repair diagnosed source in the reported output directory, and recompile before writing it back:
+Run commands from the repository root with `PUML_JAR` set to the pinned local JAR. Extract and compile the blocks, repair diagnosed failures in the reported directory, and recompile changed sources before write-back:
 
 ```bash
 bash .claude/skills/plantuml-in-markdown/scripts/extract_and_compile.sh path/to/doc.md
 python3 .claude/skills/plantuml-in-markdown/scripts/write_back.py path/to/doc.md <reported-output-dir>
 ```
 
-After write-back, re-extract and compile the complete document. Run `npm run gen:plantuml`, inspect every resulting SVG for readable labels, direction, and complete content, then run `npm run check:plantuml`. Success needs zero compiler exit status and non-empty rendered artifacts; plausible source is insufficient.
+Run `npm run gen:plantuml` to compile the canonical sources and regenerate SVGs, inspect changed diagrams for readable labels, direction, and complete content, then run `npm run check:plantuml`. This also verifies the complete Markdown after any write-back. Success requires zero compiler exit status and non-empty artifacts; plausible source is insufficient.
 
 ## Source constraints
 

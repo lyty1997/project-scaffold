@@ -194,6 +194,8 @@ The Skill owns the target-project execution sequence. [CI/CD rules](../../codex-
 
 The Skill's handoff must reference the canonical acceptance criteria and state the evidence still missing. Local generation alone cannot establish operational CI/CD; do not duplicate the rule's checklist in the Skill.
 
+Assessment requests are read-only. A local-preparation request ends with probe-backed generation and local validation; it does not require or authorize a verification push, PR, or remote configuration. Operational delivery includes those steps only within session authorization. Report each evidence level separately rather than calling local preparation an operational deployment.
+
 ## 5. End-to-End Flow
 
 For target-project delivery, run the preflight before writing its ledger or generated files. Scaffold framework maintenance uses local gates and does not require a target ledger or remote probe. Reuse facts and authorization already established in the session. Prepare authorized reviewable work before requesting any missing decision or additional permission; the Skill itself grants no remote-write authority.
@@ -271,7 +273,7 @@ Express the verdict as deterministic assertions:
 4. Require the designated evidence step to exist and succeed.
 5. Require either an evidence artifact or a matching log sentinel.
 
-Wrap every `gh api` and `gh run` call in three retries with exponential backoff, and **strictly distinguish “API call failed (UNKNOWN)” from “the check concluded failure.”** Never allow missing data to pass by default. This directly implements the existing rule that completion must not be reported while CI is red or its state is unknown.
+Retry transient read-only `gh api` and `gh run` failures up to three times with backoff. Before retrying a remote mutation, inspect the actual state and reconcile any partial result; do not blindly repeat a write. **Strictly distinguish “API call failed (UNKNOWN)” from “the check concluded failure.”** Missing data never passes acceptance, and remote completion must not be reported while CI is red or unknown.
 
 ## 9. Rollback by Target, Without Promising the Impossible
 

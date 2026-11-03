@@ -8,7 +8,7 @@
 
 Respect an explicit tool choice. Use Archify for standalone interactive overviews and presentation artifacts; use PlantUML for compact Markdown-inline, diff-friendly technical models and batch compilation. Keep one editable source per illustration. Repository diagrams use these tools rather than Mermaid, handwritten SVG, or source-less screenshots; simple directory trees may remain ASCII.
 
-- **Archify:** read the [pinned Skill](../../.claude/skills/archify/SKILL.md). Codex's tracked `.agents/skills/archify/SKILL.md` bridges there. Typed JSON owns HTML and Viewer-native canonical PNG; Markdown links all three. Preserve showcase 9/9, four desktop containment checks, and both-theme visual review. Screenshots are temporary evidence.
-- **PlantUML:** read the [project Skill](../../.claude/skills/plantuml-in-markdown/SKILL.md). English Markdown owns the block and generated SVG; its Chinese pair reuses the SVG. Complete actual compilation and visual review.
+- **Archify:** use the [pinned Skill](../../.claude/skills/archify/SKILL.md) for typed JSON, interactive HTML, and native PNG delivery.
+- **PlantUML:** use the [project Skill](../../.claude/skills/plantuml-in-markdown/SKILL.md) for Markdown-owned source and compiled SVG.
 
-Commands and artifact boundaries: [Diagram System](../../docs/architecture/diagram-system.md). For standalone document export, read [Portable Documents](../../docs/architecture/portable-documents.md). Load only the selected capability.
+Load only the selected capability when creating or changing a diagram; prose-only edits do not require diagram regeneration. Its detailed acceptance and artifact ownership remain in the Skill and [Diagram System](../../docs/architecture/diagram-system.md). For standalone document export, use [Portable Documents](../../docs/architecture/portable-documents.md).

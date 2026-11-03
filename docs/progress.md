@@ -2,11 +2,20 @@
 
 English | [Chinese](progress-zh.md)
 
-This file is the project-progress source of truth for __PROJECT_NAME__. It records completed work and remaining items for each task in reverse chronological order and must be updated whenever a task finishes or is interrupted.
+This file records completed work, verification, and remaining items for __PROJECT_NAME__ in reverse chronological order. Update it after file-changing tasks or their interruption; read-only tasks do not write progress logs.
 
-Entry format: `timestamp / topic / completed work / remaining work`. Since 2026-07-14, an Agent must not make an unconfirmed decision for the user. When uncertainty remains, it must state known facts, options, and effects and ask the user to decide before implementing anything that depends on that decision. Historical entries labeled "Decision I made for you (can be overridden)" remain as records of the behavior at that time and are not the current working method.
+Entry format: `timestamp / topic / completed work / remaining work`. Reuse verified facts and authorization. When a user-owned decision is missing, state facts, options, and effects and pause only dependent work. Resolve routine implementation details within scope. Historical entries labeled "Decision I made for you (can be overridden)" are records, not the current working method.
 
 Append new tasks below in reverse chronological order.
+
+## 2026-11-03 CST / Tune Agent instructions and Skill boundaries
+
+- Design: updated both Agent Prompt Design documents before prompt edits; removed the fixed-model assumption and distinguished current decisions from the September assessment. Aligned CI/CD documentation, contributor guidance, and progress-log instructions with the same scope boundaries.
+- Changes: retained the six reasoning principles, scaled process to the change, made completion and read-only boundaries explicit, and added direct routes for rule comparison/synchronization and scientific-image preview. Kept diagram acceptance in the selected Skill/design. Clarified CI/CD assessment, local preparation, operational delivery, publication authorization, and safe retry handling.
+- Source review and ablation: manually compared the same 12 acceptance scenarios against the task-start snapshot. Removing the duplicate diagram checklist and workflow ablation sentence retained their requirements in the pinned Skill/design and root rules. Review caught and corrected a proposed PlantUML shortcut that conflicted with its canonical extraction/write-back loop, and scoped real Release PR verification to operational acceptance. This was source inspection, not an independent agent evaluation.
+- Measurement: root/router/Markdown route 7,264 → 7,562 UTF-8 bytes; Claude root/import/rule bodies 9,531 → 9,482; four first-party Skill entries 9,001 → 9,085; instruction corpus excluding Known Issues, designs/history, host/installed prompts, bridge, and vendored Archify 30,294 → 31,123 (+2.7%). The added scope/routing boundaries are deliberate; no runtime speedup or behavioral improvement was measured.
+- Verification: all `npm run quality` components passed. Its sandbox run reached CI/CD fixtures before nested Node processes were denied with `EPERM`; `npm run check:cicd` then passed outside the sandbox. All four edited Skills passed metadata validation; final documentation/localization and whitespace checks passed. Existing unrelated diffs and the vendored Skill were preserved.
+- Remaining: fresh-session instruction/Skill discovery and controlled end-to-end task replay remain unverified. No executable script, dependency, workflow, diagram artifact, host configuration, user-data collection, or third-party service was added or changed by this task. No commit or push was requested or performed.
 
 ## 2026-09-07 CST / Simplify Agent prompts for gpt-6-astra
 

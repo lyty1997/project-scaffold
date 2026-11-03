@@ -6,7 +6,9 @@ Design and schema: [Automated CI/CD Setup](../../docs/architecture/cicd-autosetu
 
 - For a concrete project, propose setup when its stack, first dependency/artifact, deployment, or release work appears, or source exists without a CI/CD ledger. Record an explicit deferral in Open Decisions and do not ask repeatedly.
 - Scaffold detector, renderer, gates, and baseline CI maintenance: update the design, then run `npm run quality`, `npm run check:workflows`, and `npm run check:workflows:fixtures`. No target ledger or remote probe is required.
-- Target-project delivery: follow [setup-cicd](../../.claude/skills/setup-cicd/SKILL.md). Probe before writing the ledger or generated files. Use declared commands and existing decisions; ask only for missing build/test commands, deployment target, release cadence/gate, and release/version/tag/credential choices.
+- Target-project setup: follow [setup-cicd](../../.claude/skills/setup-cicd/SKILL.md). Probe before writing the ledger or generated files. Use declared commands and existing decisions; ask only for missing build/test commands, deployment target, release cadence/gate, and release/version/tag/credential choices.
+
+Assessment-only requests remain read-only. Local preparation ends with validated files and explicit remote verification gaps; it does not authorize a push, draft PR, or remote configuration. Apply operational completion criteria only when operational delivery is requested.
 
 ## Ownership and deployment
 
