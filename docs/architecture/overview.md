@@ -14,9 +14,9 @@ The first release of __PROJECT_NAME__ aims to establish a maintainable __PROJECT
 
 The following is a placeholder example. Replace it with the actual architecture of your project:
 
-[![Static preview of the interactive architecture overview](../diagrams/architecture-overview.archify.png)](../diagrams/architecture-overview.archify.html)
+[![Static preview of the interactive architecture overview](../../scaffold/docs/diagrams/architecture-overview.archify.png)](../../scaffold/docs/diagrams/architecture-overview.archify.html)
 
-[Open the interactive diagram](../diagrams/architecture-overview.archify.html) · [View the Typed JSON diagram source](../diagrams/architecture-overview.architecture.json)
+[Open the interactive diagram](../../scaffold/docs/diagrams/architecture-overview.archify.html) · [View the Typed JSON diagram source](../../scaffold/docs/diagrams/architecture-overview.architecture.json)
 
 Based on the actual project, explain whether it currently includes a runtime backend, database, authentication, comment system, user-data collection, or similar capabilities, and state the stage of each capability.
 

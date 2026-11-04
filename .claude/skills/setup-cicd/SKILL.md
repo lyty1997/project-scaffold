@@ -5,7 +5,7 @@ description: Set up or change a target project's CI/CD automation. Use for reque
 
 # Project CI/CD Setup
 
-Use the [CI/CD rule](../../../codex-rules/rules/cicd-workflow.md) for ownership and remote acceptance, and relevant [design](../../../docs/architecture/cicd-autosetup.md) sections for the ledger schema and selected targets. Run commands from the repository root.
+Use the [CI/CD rule](../../../codex-rules/rules/cicd-workflow.md) for ownership and remote acceptance, and relevant [design](../../../scaffold/docs/architecture/cicd-autosetup.md) sections for the ledger schema and selected targets. Run commands from the repository root.
 
 Match the requested scope: assessment is read-only; local preparation generates and validates files; operational delivery also exercises runners and authorized remote controls. Reuse session authorization. If another permission is needed, finish the independent local preparation and present the exact remaining action. This Skill grants no remote-write authority.
 

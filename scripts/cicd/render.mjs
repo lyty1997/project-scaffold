@@ -1,6 +1,6 @@
 // CI/CD renderer: decision-ledger JSON -> workflow YAML.
 //
-// See docs/architecture/cicd-autosetup.md:
+// See scaffold/docs/architecture/cicd-autosetup.md:
 // - docs/contracts/cicd-answers.json is the source of truth and YAML is generated.
 //   This file writes but never reads YAML, so no YAML parser dependency is needed.
 // - Structural and security safeguards are enforced here rather than delegated to

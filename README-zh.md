@@ -2,73 +2,40 @@
 
 [English](README.md) | 中文
 
-__BRAND_NAME__ 是__PROJECT_TAGLINE__。请在这里准确说明项目实际做什么、服务谁、第一版聚焦什么，以及后续版本可能如何演进。
+> 工程模板：用已验证的工程事实替换下列提示和明确标注的样例。
 
-## 项目核心定位
+__BRAND_NAME__ 是 __PROJECT_TAGLINE__。
 
-- 核心定位：在这里概括项目要解决的问题和产品形态。
-- 关键能力入口：在这里列出面向用户或团队的主要功能、页面入口。
-- 后续演进方向：新能力上线前，先在 `docs/` 中完成定位、边界和信息架构设计，再落地实现。
+## 目的与范围
 
-## 工程文档入口
+- 用户：__说明本工程服务于谁__。
+- 核心问题：__说明要解决的问题__。
+- 当前能力：__只列出已实现且验证的能力__。
+- 非目标：__说明本版本明确不包含的内容__。
 
-项目说明和设计文档保留持续维护的中文译本；Agent 规则、Skills 和贡献协作流程仅维护英文，详见[语言与本地化](docs/architecture/localization-zh.md)。
+仅作样例：“一个用于保存链接和跟踪阅读状态的本地阅读清单工具。”这是假设样例，不代表已经交付的能力。
 
-- Claude Code 指引：[CLAUDE.md](CLAUDE.md)
-- 项目规范：[AGENTS.md](AGENTS.md)
-- 文档入口：[docs/README-zh.md](docs/README-zh.md)
-- 项目进度：[docs/progress-zh.md](docs/progress-zh.md)
-- Codex 规则：[codex-rules/global-AGENTS.md](codex-rules/global-AGENTS.md)
-- 质量门禁脚本：[scripts/quality](scripts/quality)
+## 运行工程
 
-## 本地检查
+__选定技术栈后，填写真实的安装、配置和运行命令。__
 
-首次使用本脚手架创建新项目时，先执行占位符替换：
+脚手架没有应用启动命令，不要将占位测试或构建命令写成已经实现的流程。
 
-```bash
-npm run init
-# 或
-node scripts/init.mjs
-```
+## 工程入口
 
-再运行质量门禁：
+- [工程文档](docs/README-zh.md)
+- [工程进度](docs/progress-zh.md)
+- [Agent 规则](AGENTS.md)及[贡献指南](CONTRIBUTING.md)
+- [脚手架指南](SCAFFOLD-zh.md)：初始化及附带工程工具
+
+运行已配置基线：
 
 ```bash
 npm run quality
 ```
 
-本地 pre-commit 门禁与 CI 一致。克隆后执行一次即可启用仓库 hooks：
+采用实际技术栈时，在基线之外加入工程真实检查。
 
-```bash
-git config core.hooksPath .githooks
-```
+## 许可
 
-基础 `quality` 命令只使用 Node.js 内置能力，无需安装第三方 npm 包。图表采用 Archify 与 PlantUML 互补工作流：仓库 vendored 经过审查的 Archify 实现与 PlantUML 创作 Skill；CI 只在独立图表 job 中下载并校验固定 PlantUML JAR。
-
-- 使用 `node --check` 做 JavaScript 语法检查。
-- 检查 Markdown 内部链接、双语文档配对，以及 `docs/README.md` / `docs/README-zh.md` 的索引完整性。
-- 检查契约词表和禁用旧名回潮。
-- 检查常见密钥形态。
-- 检查静态站点入口和资源引用。
-- 通过正负 fixture 检查便携单文件文档的图片发现、路径边界、内嵌字节完整性和本地断链剥离。
-- `npm run check:archify` 校验 Archify Typed JSON、HTML 新鲜度和原生 PNG 边界；`npm run review:archify` 负责真实浏览器视觉复核。
-- `npm run check:plantuml` 安全编译 Markdown 内联 PlantUML 并检查生成 SVG；`npm run check:diagrams` 聚合两套工具。
-
-PlantUML 命令需要本地 JAR；Archify 仍保持自包含：
-
-```bash
-export PUML_JAR=/absolute/path/to/plantuml-1.2026.1.jar
-npm run check:diagrams
-```
-
-选型规则与产物契约见[图表系统：Archify + PlantUML](docs/architecture/diagram-system-zh.md)。
-
-需要把带本地图的 Markdown 单独移出仓库时，安装 Pandoc 2.12 或更高版本后生成自包含 HTML。输出位于已忽略的 `build/portable-docs/`，移动一个 HTML 即可交付：
-
-```bash
-npm run export:portable-docs -- docs/sharing/ai-coding-scaffold.md
-```
-
-## 许可证
-
-本项目以 [Apache License 2.0](LICENSE) 授权。相比 MIT，它仍保持宽松使用，同时增加明确的专利授权、变更声明和更清晰的 notice 保留条款。`npm run init` 会填写许可证附录中的版权年份与归属者。
+[Apache License 2.0](LICENSE)。初始化填写版权年份及持有人。

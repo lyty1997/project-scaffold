@@ -3,6 +3,7 @@
 
 # Documentation, contracts and quality gates need explicit owner review.
 /docs/ @__GITHUB_OWNER__
+/scaffold/ @__GITHUB_OWNER__
 /codex-rules/ @__GITHUB_OWNER__
 /scripts/quality/ @__GITHUB_OWNER__
 /.github/workflows/ @__GITHUB_OWNER__

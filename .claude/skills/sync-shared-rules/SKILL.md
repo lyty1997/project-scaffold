@@ -7,7 +7,7 @@ description: Compare or synchronize engineering rules across named repositories 
 
 Determine whether the request is comparison-only or synchronization. Comparison is read-only, including the ledger and progress logs. Synchronization changes only the named rules and targets; commits, pushes, and PRs require session authorization.
 
-1. Establish the requested rule and target repositories. Read the [synchronization ledger](../../../docs/architecture/sibling-repo-sync.md) for those targets; verify its paths and mechanisms against current files.
+1. Establish the requested rule and target repositories. Read the [synchronization ledger](../../../scaffold/docs/architecture/sibling-repo-sync.md) for those targets; verify its paths and mechanisms against current files.
 2. Inspect each target's Agent instructions, affected rules/checkers, branch, and worktree. Preserve unrelated changes.
 
 For synchronization:

@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "description": "Only these target-project files may receive identity-token replacement. Scaffold sources, reference documents, examples, and outputs are excluded.",
+  "files": [
+    "README.md",
+    "README-zh.md",
+    "AGENTS.md",
+    "package.json",
+    "LICENSE",
+    ".github/CODEOWNERS",
+    "public/index.html",
+    "codex-rules/rules/frontend-web-rules.md",
+    "docs/README.md",
+    "docs/README-zh.md",
+    "docs/progress.md",
+    "docs/progress-zh.md",
+    "docs/architecture/overview.md",
+    "docs/architecture/overview-zh.md",
+    "docs/architecture/glossary.md",
+    "docs/architecture/glossary-zh.md",
+    "docs/architecture/open-decisions.md",
+    "docs/architecture/open-decisions-zh.md",
+    "docs/product/content-roadmap.md",
+    "docs/product/content-roadmap-zh.md",
+    "docs/contracts/contract-rules.json",
+    "docs/contracts/contract-terms.json",
+    "docs/contracts/site-checks.json",
+    "scripts/dev/dev-workflow.env.example"
+  ]
+}

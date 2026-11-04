@@ -28,14 +28,14 @@ const SECRET_PATTERNS = [
   { name: "credential in URL", pattern: /[a-z][a-z0-9+.-]*:\/\/[^/\s:@]+:[^/\s:@]+@/i },
 ];
 
-// Keep this aligned with scripts/init.mjs isTextFile: scan regular text
+// Keep this aligned with scaffold/scripts/init.mjs isTextFile: scan regular text
 // extensions plus extensionless text files so secrets cannot hide in shell,
 // PowerShell, Python, or files such as CODEOWNERS.
 const TEXT_EXTENSIONS = new Set([
   ".css", ".html", ".js", ".json", ".jsx", ".md", ".mjs", ".cjs", ".ts", ".tsx",
   ".txt", ".yaml", ".yml", ".toml", ".ini", ".conf", ".env", ".sh", ".ps1", ".py",
 ]);
-const EXTENSIONLESS_TEXT_FILES = new Set([".gitignore", ".editorconfig", ".gitattributes", "pre-commit", "CODEOWNERS", "Dockerfile"]);
+const EXTENSIONLESS_TEXT_FILES = new Set([".gitignore", ".editorconfig", ".gitattributes", "pre-commit", "CODEOWNERS", "Dockerfile", ".env.example", "dev-workflow.env.example"]);
 
 function isScannable(path) {
   if (TEXT_EXTENSIONS.has(extname(path))) return true;

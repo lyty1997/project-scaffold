@@ -35,7 +35,7 @@ SOURCE_SUFFIXES: frozenset[str] = frozenset({
 # Exclude scaffold-owned directories so a fresh clone does not trigger a reminder.
 SCAFFOLD_DIRECTORIES: frozenset[str] = frozenset({
     ".git", ".claude", ".githooks", ".github", "codex-rules",
-    "docs", "scripts", "node_modules",
+    "docs", "scripts", "scaffold", "node_modules",
 })
 ANSWERS_RELATIVE = "docs/contracts/cicd-answers.json"
 

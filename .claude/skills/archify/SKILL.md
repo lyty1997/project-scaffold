@@ -36,7 +36,7 @@ Use this bounded path for ordinary generation. Do not read the optional Viewer R
 
 ## Update awareness
 
-This project vendors a reviewed Archify commit and disables automatic update checks. Do not run `scripts/check-update.mjs` during diagram work. Upgrades require an explicit maintainer task that updates the pinned commit in `docs/architecture/diagram-system.md`, reviews upstream changes, reapplies `LOCAL_CHANGES.md`, and reruns the complete validation and visual-review loop.
+This project vendors a reviewed Archify commit and disables automatic update checks. Do not run `scripts/check-update.mjs` during diagram work. Upgrades require an explicit maintainer task that updates the pinned commit in `scaffold/docs/architecture/diagram-system.md`, reviews upstream changes, reapplies `LOCAL_CHANGES.md`, and reruns the complete validation and visual-review loop.
 
 Do not read `renderers/shared/geometry.mjs`, renderer source, validator source, tests, or benchmarks before the first candidate. Inspect implementation only for an unsupported internal diagnostic or after two focused repairs fail.
 

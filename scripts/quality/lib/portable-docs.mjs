@@ -21,6 +21,10 @@ import { listFiles, projectRoot } from "./files.mjs";
 export const ROOT = projectRoot();
 export const DOCS_ROOT = resolve(ROOT, "docs");
 export const PORTABLE_BUILD_ROOT = resolve(ROOT, "build/portable-docs");
+const PORTABLE_SCOPES = [
+  { source: DOCS_ROOT, output: PORTABLE_BUILD_ROOT },
+  { source: resolve(ROOT, "scaffold/docs"), output: resolve(ROOT, "scaffold/build/portable-docs") },
+];
 export const PORTABLE_TEMPLATE = resolve(ROOT, "scripts/docs/portable-template.html");
 export const PORTABLE_LINK_FILTER = resolve(ROOT, "scripts/docs/portable-local-links.lua");
 export const PORTABLE_EXPORTER = resolve(ROOT, "scripts/docs/export-portable.mjs");
@@ -353,9 +357,10 @@ export function inspectPortableSource(
 
 export function portableOutputPath(sourcePath) {
   const source = resolve(sourcePath);
-  if (!pathInside(DOCS_ROOT, source)) throw new Error(`Portable source is outside docs/: ${source}`);
-  const outputRelative = relative(DOCS_ROOT, source).replace(/\.md$/i, ".html");
-  return resolve(PORTABLE_BUILD_ROOT, outputRelative);
+  const scope = PORTABLE_SCOPES.find((candidate) => pathInside(candidate.source, source));
+  if (!scope) throw new Error(`Portable source is outside docs/ or scaffold/docs/: ${source}`);
+  const outputRelative = relative(scope.source, source).replace(/\.md$/i, ".html");
+  return resolve(scope.output, outputRelative);
 }
 
 export function findPortableSources(requested = []) {
@@ -366,7 +371,7 @@ export function findPortableSources(requested = []) {
       return resolve(ROOT, value);
     });
   } else {
-    candidates = listFiles(DOCS_ROOT, (path) => path.endsWith(".md")).filter((path) =>
+    candidates = PORTABLE_SCOPES.flatMap((scope) => listFiles(scope.source, (path) => path.endsWith(".md"))).filter((path) =>
       findMarkdownImages(readFileSync(path, "utf8")).length > 0
     );
   }
@@ -374,7 +379,9 @@ export function findPortableSources(requested = []) {
   const unique = [...new Set(candidates)].sort();
   if (unique.length === 0) throw new Error("No document containing a local Markdown image was found.");
   for (const path of unique) {
-    if (!pathInside(DOCS_ROOT, path)) throw new Error(`Portable documents must be inside docs/: ${path}`);
+    if (!PORTABLE_SCOPES.some((scope) => pathInside(scope.source, path))) {
+      throw new Error(`Portable documents must be inside docs/ or scaffold/docs/: ${path}`);
+    }
     inspectPortableSource(path);
   }
   return unique;

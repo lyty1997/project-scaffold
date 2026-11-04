@@ -1,13 +1,16 @@
 # Known Issues
 
-Read only the rows relevant to the task. Historical investigation stays in `docs/progress.md`; this file keeps reusable conclusions only.
+Read only the rows relevant to the task. Historical investigation stays in `scaffold/docs/progress.md`; this file keeps reusable conclusions only.
 
 | Area | Risk and handling |
 | --- | --- |
 | Cross-platform line endings | `.gitattributes` is authoritative. Shell scripts and hooks use LF; PowerShell scripts use CRLF. Do not rely on machine-specific `core.autocrlf` settings. |
 | Windows PowerShell 5.1 | PowerShell 5.1 may interpret BOM-less UTF-8 through a legacy code page. Keep `.ps1` files as UTF-8 with BOM (`ef bb bf`) and CRLF even when their current prose is English. |
 | Duplicate Agent instructions | Translated rules and Skills duplicate instructions in model context and create maintenance drift. Keep Agent and contributor guidance in English only; maintain Chinese pairs only for `README.md`, `SCAFFOLD.md`, and Markdown under `docs/`. `check:localization` rejects Chinese instruction copies. |
+| Localization scan exclusions | Exempting whole translated documents or all vendored HTML hides translated code and first-party comments. `check:localization` scans tagged code/configuration fences in Chinese documents and Archify HTML templates/artifacts. Preserve Chinese prose, plain-text illustrations, and documented functional locale data; regenerate dependents after fixing a template comment. |
 | Prompt drift and unnecessary pauses | Keep constraints in `AGENTS.md`, route task rules to selected Skills, and leave detailed acceptance with its owner. Reuse authorization; distinguish read-only, local preparation, and operational delivery. Do not count placeholder commands as behavioral evidence or source-byte reductions as model-performance results. |
+| Initialization ownership | Initialize only the validated `scaffold/project-files.json` allowlist; broad repository scans can rewrite scaffold reference examples and maintenance records. Explicit environment example files are text even though their final suffix is `.example`. Propagate a failed quality gate through the initializer exit status. |
+| Maintenance fixtures after initialization | Template layout fixtures assume unresolved identity and empty initial project history. Run them only while the package name is `__PROJECT_SLUG__`; initialized projects explicitly skip them while normal quality gates continue. Documentation example tokens must not select maintenance mode. Regression-check the skip after customizing project docs and adding dated progress. Exclude `scaffold/` from project-source probes. |
 | Text scanners | Quality gates scan scripts and documentation, including their own examples. Avoid complete credential shapes and parseable fake secret URLs. An unquoted secret value must end at the line or comment so `token = functionCall(...)` is not misread as a credential. Use an allow marker only after confirming a real false positive. |
 | Git hooks | `.githooks/*` must be mode `100755` in the Git index. Test a new hook in a real repository; syntax checks alone do not prove Git invokes it. |
 | Archify offline boundary | The upstream template requests Google Fonts, which can stall Chrome `loadEventFired` without network access and creates an undeclared third-party request when a local diagram opens. This repository's vendored template removes remote fonts and disables automatic update checks in the Skill. Reapply `.claude/skills/archify/LOCAL_CHANGES.md` during an upgrade. |

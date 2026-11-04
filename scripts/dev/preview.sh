@@ -13,7 +13,7 @@ if [ -f "${env_file}" ]; then
   set +a
 fi
 
-PORT="${PREVIEW_PORT:?Error: PREVIEW_PORT is not set. Copy scripts/dev/dev-workflow.env.example to dev-workflow.env and configure it, or run scripts/init.mjs}"
+PORT="${PREVIEW_PORT:?Error: PREVIEW_PORT is not set. Copy scripts/dev/dev-workflow.env.example to dev-workflow.env and configure it, or run npm run init}"
 PREVIEW_HOST="${PREVIEW_HOST:?Error: PREVIEW_HOST is not set; configure it in the same way as PREVIEW_PORT}"
 SERVE_DIR="${PREVIEW_SERVE_DIR:-public}"
 

@@ -3,7 +3,7 @@ import { relative, resolve } from "node:path";
 import { listFiles, projectRoot, readText } from "./lib/files.mjs";
 
 const ROOT = projectRoot();
-const DOCS_ROOT = resolve(ROOT, "docs");
+const DOCS_ROOTS = [resolve(ROOT, "docs"), resolve(ROOT, "scaffold/docs")];
 const SKIP_PREFIXES = ["#", "http://", "https://", "mailto:", "tel:"];
 
 function markdownFiles() {
@@ -137,7 +137,7 @@ function englishPathFor(chinesePath) {
   return chinesePath.replace(/-zh\.md$/, ".md");
 }
 
-function checkDocsLanguageIndexes() {
+function checkDocsLanguageIndexes(DOCS_ROOT) {
   const englishIndex = resolve(DOCS_ROOT, "README.md");
   const chineseIndex = resolve(DOCS_ROOT, "README-zh.md");
   const errors = [];
@@ -153,10 +153,10 @@ function checkDocsLanguageIndexes() {
   const chineseTargets = linkedMarkdownTargets(chineseIndex);
 
   if (!englishTargets.has(chineseIndex)) {
-    errors.push("docs/README.md does not link to docs/README-zh.md");
+    errors.push(`${relative(ROOT, englishIndex).replaceAll("\\", "/")} does not link to ${relative(ROOT, chineseIndex).replaceAll("\\", "/")}`);
   }
   if (!chineseTargets.has(englishIndex)) {
-    errors.push("docs/README-zh.md does not link to docs/README.md");
+    errors.push(`${relative(ROOT, chineseIndex).replaceAll("\\", "/")} does not link to ${relative(ROOT, englishIndex).replaceAll("\\", "/")}`);
   }
 
   for (const docPath of listFiles(DOCS_ROOT, (path) => path.endsWith(".md"))) {
@@ -184,7 +184,7 @@ function checkDocsLanguageIndexes() {
   return errors;
 }
 
-const errors = [...checkInternalLinks(), ...checkDocsLanguageIndexes()];
+const errors = [...checkInternalLinks(), ...DOCS_ROOTS.flatMap(checkDocsLanguageIndexes)];
 
 if (errors.length > 0) {
   console.error("Markdown documentation checks failed:");
