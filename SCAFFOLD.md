@@ -1,27 +1,62 @@
-# Scaffold Guide
+# Project Scaffold
 
 English | [Chinese](SCAFFOLD-zh.md)
 
-This is a technology-neutral project scaffold built around documentation-first development, contract vocabulary, CI-enforced quality gates, and a cross-machine preview workflow. It was extracted from the AxialMuseWebsite project and does not prescribe a frontend or backend stack.
+This is the scaffold's README. The root [README](README.md) and [docs/](docs/README.md) describe the target project; scaffold design, maintenance history, examples, and initialization live under `scaffold/`.
 
-## Getting started
+## Ownership
 
-1. Use the repository contents as the starting point for a new project by cloning and replacing the remote or by downloading an archive.
-2. Run `node scripts/init.mjs` or `npm run init`, then answer the prompts for the project name, brand name, and GitHub details. To enable the optional cross-machine preview workflow (local rendering host plus remote serving host), select it and provide the remote host settings. The script replaces every placeholder and finishes by running `npm run quality`.
-3. Run `git config core.hooksPath .githooks` to enable the local pre-commit quality gate and commit-message gate. The latter enforces the zero-dependency `<type>(<scope>): <English subject>` Conventional Commit format without husky or commitlint.
-4. If the cross-machine preview workflow is enabled, follow the **Remote restart** section in `docs/architecture/dev-workflow.md` to generate an SSH key and install it in the remote `~/.ssh/authorized_keys` file.
-5. After verifying the initialized project, delete both `SCAFFOLD.md` and `SCAFFOLD-zh.md`. They only apply before initialization; `README.md` and `README-zh.md` then become the project's normal entry points.
+```text
+README.md                 Target-project placeholders and labeled examples
+SCAFFOLD.md               Scaffold usage and maintenance entrypoint
+docs/                     Target-project design, contracts, and progress
+scripts/                  Ongoing project engineering tools
+build/                    Ignored project output
+scaffold/
+  docs/                   Scaffold design, references, diagrams, and history
+  scripts/                Initialization and framework regression checks
+  examples/               CI/CD and compiler fixtures
+  build/                  Ignored scaffold output
+```
 
-## Included
+Agent discovery entries, hooks, workflows, reusable rules, and Skills keep their standard locations. Their presence does not imply that an application stack or business capability has been implemented.
 
-- Layered Agent rules based on `AGENTS.md` / `CLAUDE.md` and `codex-rules/`. General language, security, privacy, tool-failure, and Git workflow rules are reusable; content, product, and frontend wording must be adapted to the project while preserving the documentation-first and fact-versus-plan principles.
-- A `docs/` design skeleton covering architecture, terminology, pending decisions, the content roadmap, and cross-machine preview. These are placeholder templates that must be completed with project facts. English files are canonical and paired `-zh.md` files provide maintained Chinese translations.
-- `docs/contracts/`, which contains a reusable contract-vocabulary mechanism in `check-contracts.mjs`. The terms and checks in `contract-terms.json` and `contract-rules.json` are examples and must be replaced with the project's real brand names, retired names, and cross-layer constraints. `site-checks.json` configures the optional static-entry check, which skips cleanly if the project has no entry such as `public/index.html`.
-- Zero-dependency Node.js quality gates under `scripts/quality/`: JavaScript syntax, Markdown links and bilingual indexes, contract vocabulary, secret patterns, static entry points, portable documents, CI/CD contracts, and generated diagrams. CI runs the same baseline command on Ubuntu and Windows.
-- `scripts/docs/`, which uses local Pandoc 2.12 or later to export Markdown with local images as portable HTML under `build/portable-docs/`. Images are embedded, relative links become path hints, and output is not committed.
-- Complementary diagram workflows: pinned Archify under `.claude/skills/archify/` for polished interactive artifacts, and `.claude/skills/plantuml-in-markdown/` for inline, diff-friendly technical diagrams. The tool-selection, source, export, and combined CI contracts are defined in `docs/architecture/diagram-system.md`.
-- `scripts/dev/`, including cross-platform `sync.sh` / `sync.ps1` and the optional `preview.sh`, `restart-remote.ps1`, and `serve.py` workflow. Runtime settings live in the ignored `scripts/dev/dev-workflow.env`, which the initializer can create.
+## Initialize a project
 
-## Not included
+1. Clone/download the repository and set the intended project remote.
+2. Run `npm run init` (or `node scaffold/scripts/init.mjs`) and supply confirmed project identity. Initialization validates the explicit [project-file list](scaffold/project-files.json) before replacing identity tokens.
+3. Enable local gates with `git config core.hooksPath .githooks`.
+4. Fill in the project README, design, decisions, roadmap, and progress using real facts. Select a stack in [project Open Decisions](docs/architecture/open-decisions.md).
+5. Run `npm run quality`. A failed check makes initialization exit unsuccessfully; fix its diagnostics before committing.
 
-This is not a preconfigured React, Vue, Express, or database starter. It supplies the collaboration, documentation-consistency, validation, and preview layer. Select and record the actual frontend, backend, and database stack using the process in `docs/architecture/open-decisions.md`.
+Initialization leaves this guide and all files under `scaffold/` unchanged. Project progress starts empty; scaffold history is in [its own progress log](scaffold/docs/progress.md). Keep the scaffold directory while supplied commands and references depend on it.
+
+Optional preview settings use the [cross-machine workflow](scaffold/docs/architecture/dev-workflow.md). CI/CD setup uses declared commands and the [setup guide](scaffold/docs/architecture/cicd-autosetup.md); deferred decisions remain in project Open Decisions. Neither option authorizes remote changes by itself.
+
+## Supplied tools
+
+`npm run quality` is the Node.js-only baseline for syntax, links/indexes, localization, portable-document invariants, contracts, secret patterns, static entrypoints, and CI/CD safety. Hooks and the Ubuntu/Windows CI matrix run the baseline. Framework fixtures live under `scaffold/examples/`; their runners live under `scaffold/scripts/`.
+
+- [Quality gates](scaffold/docs/architecture/quality-gates.md)
+- [Agent prompt design](scaffold/docs/architecture/agent-prompts.md)
+- [Archify and PlantUML](scaffold/docs/architecture/diagram-system.md)
+- [Language and localization](scaffold/docs/architecture/localization.md)
+- [Stack reference recipes](scaffold/docs/architecture/stack-recipes/README.md)
+
+For diagram validation, set a local checksum-pinned PlantUML JAR and run `npm run check:diagrams`. Archify's reviewed implementation remains in `.claude/skills/archify/`. Diagram tools and optional Pandoc are outside the Node-only baseline.
+
+## Export documentation
+
+With local Pandoc 2.12 or later:
+
+```bash
+npm run export:portable-docs -- scaffold/docs/sharing/ai-coding-scaffold.md
+```
+
+Project sources under `docs/` export to `build/portable-docs/`; scaffold sources under `scaffold/docs/` export to `scaffold/build/portable-docs/`. Generated files are ignored and never become editable sources.
+
+## Maintain the scaffold
+
+Start from the [scaffold documentation index](scaffold/docs/README.md) and [ownership design](scaffold/docs/architecture/scaffold-layout.md). Update scaffold history for maintenance tasks and project history for project tasks. The scaffold does not prescribe React, a backend, a database, or deployment infrastructure.
+
+Run `npm run quality`, `npm run check:scaffold`, `npm run check:workflows`, `npm run check:workflows:fixtures`, and the applicable diagram checks when maintaining these capabilities. Workflow checks require the pinned actionlint described in Quality Gates.

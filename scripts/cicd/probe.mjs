@@ -1,6 +1,6 @@
 // CI/CD probe: collect facts without making decisions.
 //
-// Design constraints are documented in docs/architecture/cicd-autosetup.md:
+// Design constraints are documented in scaffold/docs/architecture/cicd-autosetup.md:
 // - Probe facts help choose a toolchain; they never guess build or test commands.
 //   Report facts such as package.json script names, not assumptions such as
 //   "the build command is npm run build."
@@ -10,6 +10,7 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { basename, extname, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { listFiles, projectRoot, readJson, readText } from "../quality/lib/files.mjs";
 
 const ROOT = projectRoot();
@@ -48,7 +49,7 @@ const SOURCE_EXTENSIONS = new Set([
 ]);
 
 // Exclude probe and quality scripts so scaffold files do not skew project-source facts.
-const SELF_PREFIXES = ["scripts/", ".claude/", ".githooks/", "codex-rules/", "docs/"];
+const SELF_PREFIXES = ["scripts/", ".claude/", ".githooks/", "codex-rules/", "docs/", "scaffold/"];
 
 function repoPath(...parts) {
   return resolve(ROOT, ...parts);
@@ -108,10 +109,10 @@ function detectStaticEntries() {
   return STATIC_ENTRIES.filter((entry) => existsSync(repoPath(entry)));
 }
 
-function detectSourceExtensions() {
+export function detectSourceExtensions(root = ROOT) {
   const counts = {};
-  for (const filePath of listFiles(ROOT, (path) => SOURCE_EXTENSIONS.has(extname(path)))) {
-    const relativePath = relative(ROOT, filePath).replaceAll("\\", "/");
+  for (const filePath of listFiles(root, (path) => SOURCE_EXTENSIONS.has(extname(path)))) {
+    const relativePath = relative(root, filePath).replaceAll("\\", "/");
     if (isSelfFile(relativePath)) continue;
     const ext = extname(filePath);
     counts[ext] = (counts[ext] ?? 0) + 1;
@@ -265,27 +266,34 @@ function summarize(facts) {
   return lines.join("\n");
 }
 
-const facts = {
-  probedAt: new Date().toISOString(),
-  local: {
-    buildMarkers: detectBuildMarkers(),
-    node: detectNodeScripts(),
-    python: detectPythonFacts(),
-    staticEntries: detectStaticEntries(),
-    sourceExtensions: detectSourceExtensions(),
-    existingWorkflows: detectExistingWorkflows(),
-  },
-  remote: probeRemote(),
-};
-facts.preflight = buildPreflight(facts.remote);
+function main() {
+  const facts = {
+    probedAt: new Date().toISOString(),
+    local: {
+      buildMarkers: detectBuildMarkers(),
+      node: detectNodeScripts(),
+      python: detectPythonFacts(),
+      staticEntries: detectStaticEntries(),
+      sourceExtensions: detectSourceExtensions(),
+      existingWorkflows: detectExistingWorkflows(),
+    },
+    remote: probeRemote(),
+  };
+  facts.preflight = buildPreflight(facts.remote);
 
-const outputDirectory = repoPath(".cicd");
-mkdirSync(outputDirectory, { recursive: true });
-const outputPath = resolve(outputDirectory, "probe.json");
-writeFileSync(outputPath, `${JSON.stringify(facts, null, 2)}\n`, "utf8");
+  const outputDirectory = repoPath(".cicd");
+  mkdirSync(outputDirectory, { recursive: true });
+  const outputPath = resolve(outputDirectory, "probe.json");
+  writeFileSync(outputPath, `${JSON.stringify(facts, null, 2)}\n`, "utf8");
 
-process.stdout.write(summarize(facts));
-process.stdout.write(`Fact inventory written to ${relative(ROOT, outputPath)}\n`);
+  process.stdout.write(summarize(facts));
+  process.stdout.write(`Fact inventory written to ${relative(ROOT, outputPath)}\n`);
 
-// Exit nonzero when blockers exist so callers cannot mistake them for approval to proceed.
-process.exit(facts.preflight.blockers.length > 0 ? 1 : 0);
+  // Exit nonzero when blockers exist so callers cannot mistake them for approval to proceed.
+  process.exitCode = facts.preflight.blockers.length > 0 ? 1 : 0;
+}
+
+// Importing the local source detector must not contact GitHub or write a probe snapshot.
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  main();
+}

@@ -29,6 +29,7 @@ const TEXT_BASENAMES = new Set([
   "pre-commit",
 ]);
 const ROOT_DOCUMENTS = ["README.md", "SCAFFOLD.md"];
+const PROSE_FENCE_LANGUAGES = new Set(["", "text", "txt", "plaintext"]);
 const INDEX_VISIBLE_ENGLISH_FILES = [
   ".agents/skills/archify/SKILL.md",
   ".agents/skills/archify/agents/openai.yaml",
@@ -55,6 +56,7 @@ function documentPairs() {
   });
 
   addTreePairs(pairs, resolve(ROOT, "docs"));
+  addTreePairs(pairs, resolve(ROOT, "scaffold/docs"));
   return pairs;
 }
 
@@ -88,7 +90,7 @@ function isTextFile(path) {
 
 function isChineseDocument(path) {
   const pathShown = shown(path);
-  return /-zh\.md$/i.test(pathShown) && (pathShown.startsWith("docs/") || /^(?:README|SCAFFOLD)-zh\.md$/i.test(pathShown));
+  return /-zh\.md$/i.test(pathShown) && (pathShown.startsWith("docs/") || pathShown.startsWith("scaffold/docs/") || /^(?:README|SCAFFOLD)-zh\.md$/i.test(pathShown));
 }
 
 function checkEnglishOnlyInstructions() {
@@ -121,11 +123,28 @@ function checkEnglishOnlyInstructions() {
 
 function isEnglishScanExcluded(path) {
   const pathShown = shown(path);
-  return (
-    isChineseDocument(path) ||
-    pathShown.startsWith(".claude/skills/archify/") ||
-    /^docs\/diagrams\/.*\.archify\.html$/.test(pathShown)
-  );
+  return pathShown.startsWith(".claude/skills/archify/") && extname(path).toLowerCase() !== ".html";
+}
+
+function englishCodeFences(text) {
+  let fence = null;
+  return text.split(/\r?\n/).map((line) => {
+    const marker = line.match(/^\s*(`{3,}|~{3,})(.*)$/);
+    if (!fence) {
+      if (marker) {
+        const language = marker[2].trim().split(/\s+/)[0].toLowerCase();
+        fence = { delimiter: marker[1], scan: !PROSE_FENCE_LANGUAGES.has(language) };
+      }
+      return "";
+    }
+    if (marker && marker[1][0] === fence.delimiter[0] &&
+        marker[1].length >= fence.delimiter.length && marker[2].trim() === "") {
+      fence = null;
+      return "";
+    }
+    // Preserve line numbers and adjacent allow markers for the shared scanner.
+    return fence.scan ? line : "";
+  }).join("\n");
 }
 
 function isAllowedFunctionalData(pathShown, line, previousLine) {
@@ -154,7 +173,8 @@ function checkEnglishSurfaces() {
     if (isEnglishScanExcluded(path)) continue;
     const pathShown = shown(path);
     scanned.add(pathShown);
-    scanEnglishText(pathShown, readText(path), errors);
+    const text = readText(path);
+    scanEnglishText(pathShown, isChineseDocument(path) ? englishCodeFences(text) : text, errors);
   }
 
   // Hosted Codex may mount .agents as an empty read-only skill view. CI sees the

@@ -14,9 +14,9 @@ __PROJECT_NAME__ 的首版目标是建立一个可维护的 __PROJECT_TAGLINE__�
 
 以下是占位示例，请替换成你项目的实际架构：
 
-[![架构概览交互图静态预览](../diagrams/architecture-overview.archify.png)](../diagrams/architecture-overview.archify.html)
+[![架构概览交互图静态预览](../../scaffold/docs/diagrams/architecture-overview.archify.png)](../../scaffold/docs/diagrams/architecture-overview.archify.html)
 
-[打开交互图](../diagrams/architecture-overview.archify.html) · [查看 Typed JSON 图表源](../diagrams/architecture-overview.architecture.json)
+[打开交互图](../../scaffold/docs/diagrams/architecture-overview.archify.html) · [查看 Typed JSON 图表源](../../scaffold/docs/diagrams/architecture-overview.architecture.json)
 
 请根据实际情况补充说明当前是否有运行时后端、数据库、登录、评论系统或用户数据采集等能力，以及各能力所处的阶段。
 

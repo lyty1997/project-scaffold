@@ -1,6 +1,6 @@
 # Task Rule Index
 
-[AGENTS.md](../AGENTS.md) applies throughout. Read only matching rows; a link is a route, not a request to preload its targets. Design facts remain under [docs/](../docs/README.md).
+[AGENTS.md](../AGENTS.md) applies throughout. Read only matching rows; links do not preload their targets. Route project facts through [docs/](../docs/README.md) and scaffold maintenance through [scaffold/docs/](../scaffold/docs/README.md).
 
 | Task | Rule |
 | --- | --- |

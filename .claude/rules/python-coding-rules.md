@@ -1,6 +1,6 @@
 # Python
 
-Apply to Python work using the project's configured tools. Read the [Python recipe](../../docs/architecture/stack-recipes/python.md) only when configuring the stack; it does not require adopting dependencies or a coverage target.
+Apply to Python work using the project's configured tools. Read the [Python recipe](../../scaffold/docs/architecture/stack-recipes/python.md) only when configuring the stack; it does not require adopting dependencies or a coverage target.
 
 - Annotate function parameters, returns, and generic element types; explain necessary `Any`. Validate external input with the established boundary schema.
 - Use context managers for files, connections, sessions, and locks; use `tempfile` for temporary files.

@@ -21,7 +21,7 @@ export const CODEX_SKILL_METADATA = resolve(
   ROOT,
   ".agents/skills/archify/agents/openai.yaml"
 );
-export const DIAGRAM_DIR = resolve(ROOT, "docs/diagrams");
+export const DIAGRAM_DIRS = [resolve(ROOT, "docs/diagrams"), resolve(ROOT, "scaffold/docs/diagrams")];
 export const DIAGRAM_TYPES = Object.freeze([
   "architecture",
   "workflow",
@@ -97,7 +97,7 @@ function assertSkillEntrypoints(contract, errors) {
     },
   };
   if (contract?.schema_version !== 2) {
-    errors.push("docs/contracts/archify.json schema_version must be 2.");
+    errors.push("scaffold/docs/contracts/archify.json schema_version must be 2.");
   }
   for (const [host, fields] of Object.entries(expected)) {
     for (const [field, value] of Object.entries(fields)) {
@@ -154,8 +154,9 @@ function assertSkillEntrypoints(contract, errors) {
 }
 
 export function findDiagramSpecs() {
-  if (!existsSync(DIAGRAM_DIR)) return [];
-  return listFiles(DIAGRAM_DIR, (path) => SPEC_PATTERN.test(path)).map(readDiagramSpec);
+  return DIAGRAM_DIRS.filter(existsSync)
+    .flatMap((directory) => listFiles(directory, (path) => SPEC_PATTERN.test(path)))
+    .map(readDiagramSpec);
 }
 
 export function readDiagramSpec(path) {
@@ -238,17 +239,17 @@ export function assertVendoredArchify() {
   }
   if (errors.length > 0) return errors;
 
-  const contractPath = resolve(ROOT, "docs/contracts/archify.json");
+  const contractPath = resolve(ROOT, "scaffold/docs/contracts/archify.json");
   const packagePath = resolve(ARCHIFY_ROOT, "package.json");
   try {
     const contract = readJson(contractPath);
     const pkg = readJson(packagePath);
     assertSkillEntrypoints(contract, errors);
     if (contract?.vendored_path !== ".claude/skills/archify") {
-      errors.push("docs/contracts/archify.json vendored_path does not match the actual directory.");
+      errors.push("scaffold/docs/contracts/archify.json vendored_path does not match the actual directory.");
     }
     if (!/^[a-f0-9]{40}$/.test(contract?.upstream?.commit ?? "")) {
-      errors.push("docs/contracts/archify.json must pin a 40-character upstream commit SHA.");
+      errors.push("scaffold/docs/contracts/archify.json must pin a 40-character upstream commit SHA.");
     }
     if (contract?.upstream?.package_version !== pkg.version) {
       errors.push(
@@ -371,7 +372,8 @@ export function nativePngExpectation(html) {
 }
 
 export function assertDocumentedArtifacts(specs) {
-  const markdownText = listFiles(resolve(ROOT, "docs"), (path) => path.endsWith(".md"))
+  const markdownText = ["docs", "scaffold/docs"].flatMap((directory) =>
+    listFiles(resolve(ROOT, directory), (path) => path.endsWith(".md")))
     .map((path) => readFileSync(path, "utf8"))
     .join("\n");
   const errors = [];

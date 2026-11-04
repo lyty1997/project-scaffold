@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Bidirectional synchronization: fetch, pull --rebase, and push the current
 # branch when needed. This implements the cross-machine preview loop described
-# in docs/architecture/dev-workflow.md and runs on Linux or Windows Git Bash.
+# in scaffold/docs/architecture/dev-workflow.md and runs on Linux or Windows Git Bash.
 set -euo pipefail
 
 repo_root="$(git rev-parse --show-toplevel)"

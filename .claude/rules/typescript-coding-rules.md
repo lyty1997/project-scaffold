@@ -1,6 +1,6 @@
 # TypeScript and JavaScript
 
-Use project configuration and installed tools. Read the [TypeScript recipe](../../docs/architecture/stack-recipes/typescript.md) only for stack configuration; it does not mandate new libraries or coverage targets.
+Use project configuration and installed tools. Read the [TypeScript recipe](../../scaffold/docs/architecture/stack-recipes/typescript.md) only for stack configuration; it does not mandate new libraries or coverage targets.
 
 - Preserve strict typing. Prefer `unknown` with narrowing to `any`; explain necessary assertions and `@ts-expect-error`. Validate external inputs and environment configuration through the established schema boundary.
 - Keep shared types and runtime schemas consistent. Handle absent indexed/Map values and exhaustive union cases.

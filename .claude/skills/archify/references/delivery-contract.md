@@ -45,7 +45,7 @@ image/contact-sheet sidecars rather than presenting prior evidence as current.
 This project keeps two bitmap outputs with different jobs:
 
 - `visual-check.*.png` is a full-page Viewer screenshot used only as temporary perceptual evidence.
-- `docs/diagrams/<name>.archify.png` is the committed Markdown image and must be the Viewer-native canonical full-diagram PNG.
+- `scaffold/docs/diagrams/<name>.archify.png` is the committed Markdown image and must be the Viewer-native canonical full-diagram PNG.
 
 Never copy, rename, crop, or post-process a `visual-check` screenshot into the committed PNG. From the repository root run:
 

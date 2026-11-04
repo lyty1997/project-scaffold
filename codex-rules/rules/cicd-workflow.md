@@ -1,6 +1,6 @@
 # CI/CD Rules
 
-Design and schema: [Automated CI/CD Setup](../../docs/architecture/cicd-autosetup.md).
+Design and schema: [Automated CI/CD Setup](../../scaffold/docs/architecture/cicd-autosetup.md).
 
 ## Scope
 

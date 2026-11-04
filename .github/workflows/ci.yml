@@ -34,6 +34,10 @@ jobs:
         run: npm run quality
         shell: bash
 
+      - name: Check scaffold layout
+        run: npm run check:scaffold
+        shell: bash
+
   diagrams:
     name: Archify + PlantUML diagram checks
     runs-on: ubuntu-latest
